@@ -22,56 +22,67 @@ class _GridMenuState extends State<GridMenu> {
   }
 
   Future<void> initializeCamera() async {
-    cameras = await availableCameras();
-    cameraController = CameraController(cameras[0], ResolutionPreset.high);
-    await cameraController.initialize();
-    setState(() {
-      isCameraInitialized = true;
-    });
+    try {
+      cameras = await availableCameras();
+      cameraController = CameraController(cameras[0], ResolutionPreset.high);
+      await cameraController.initialize();
+      setState(() {
+        isCameraInitialized = true;
+      });
+    } catch (e) {
+      print('Error initializing camera: $e');
+    }
   }
 
   @override
   void dispose() {
-    cameraController.dispose();
+    if (isCameraInitialized) {
+      cameraController.dispose();
+    }
     super.dispose();
   }
 
   void _showBottomSheet(BuildContext context, String title) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 20),
-                if (title == 'Describe Environment' && isCameraInitialized)
-                  Container(
-                    height: 550,
-                    child: DescribeEnvironment(cameraController: cameraController),
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return SingleChildScrollView(
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                if (title == 'GPS (Map)')
-                  Container(
-                    height: 550,
-                    //child: MapWidget(),
-                  ),
-                if (title != 'Describe Environment' && title != 'GPS (Map)')
-                  Text('Content for $title goes here.'),
-                // Add more content here as needed
-              ],
+                  SizedBox(height: 20),
+                  if (title == 'Describe Environment' && isCameraInitialized)
+                    Container(
+                      height: 550,
+                      child: DescribeEnvironment(
+                          cameraController: cameraController),
+                    )
+                  else if (title == 'Describe Environment' &&
+                      !isCameraInitialized)
+                    Center(child: CircularProgressIndicator()),
+                  if (title == 'GPS (Map)')
+                    Container(
+                      height: 550,
+                      //child: MapWidget(),
+                    ),
+                  if (title != 'Describe Environment' && title != 'GPS (Map)')
+                    Text('Content for $title goes here.'),
+                ],
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    });
   }
 
   @override
@@ -79,7 +90,10 @@ class _GridMenuState extends State<GridMenu> {
     final List<Map<String, dynamic>> menuOptions = [
       {'title': 'Describe Environment', 'icon': Icons.description},
       {'title': 'GPS (Map)', 'icon': Icons.map},
-      {'title': 'Scanner (Read Texts, QRs, ...)', 'icon': Icons.qr_code_scanner},
+      {
+        'title': 'Scanner (Read Texts, QRs, ...)',
+        'icon': Icons.qr_code_scanner
+      },
       {'title': 'Money Identifier', 'icon': Icons.attach_money},
     ];
 

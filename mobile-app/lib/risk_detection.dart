@@ -14,45 +14,57 @@ class RiskDetection extends StatefulWidget {
 }
 
 class RiskDetectionState extends State<RiskDetection> {
-  late CameraController _controller;
+  late CameraController controller;
   late Future<void> _initializeControllerFuture;
   Duration responseTime = Duration.zero;
   FlutterTts flutterTts = FlutterTts();
-  Timer? _timer;
+  Timer? timer;
 
-  final PictureService _pictureService = PictureService();
+  PictureService pictureService = PictureService();
 
   @override
   void initState() {
     super.initState();
     _initializeControllerFuture = _initializeCamera();
+    _initializeTTS();
   }
 
   Future<void> _initializeCamera() async {
     try {
-      _controller = CameraController(
+      controller = CameraController(
         widget.camera,
         ResolutionPreset.high,
       );
 
-      await _controller.initialize();
-      setState(() {});
+      await controller.initialize();
+      setState(() {}); // Rebuild widget after initialization
     } catch (e) {
       print('Error initializing camera: $e');
     }
   }
 
+  Future<void> _initializeTTS() async {
+    try {
+      await flutterTts.setLanguage("en-US");
+      await flutterTts.setSpeechRate(0.5);
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+    } catch (e) {
+      print('Error initializing TTS: $e');
+    }
+  }
+
   @override
   void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
+    timer?.cancel();
+    controller.dispose();
     super.dispose();
   }
 
-  Future<void> _takePicture() async {
-    await _pictureService.takePicture(
-      controller: _controller,
-      onLabelsDetected: _speakLabels,
+  Future<void> takePicture() async {
+    await pictureService.takePicture(
+      controller: controller,
+      onLabelsDetected: speakLabels,
       onResponseTimeUpdated: (duration) {
         setState(() {
           responseTime = duration;
@@ -61,7 +73,7 @@ class RiskDetectionState extends State<RiskDetection> {
     );
   }
 
-  Future<void> _speakLabels(List<dynamic> detectedObjects) async {
+  Future<void> speakLabels(List<dynamic> detectedObjects) async {
     for (var obj in detectedObjects) {
       String label = obj['label'];
       try {
@@ -101,15 +113,15 @@ class RiskDetectionState extends State<RiskDetection> {
                         children: [
                           Icon(Icons.warning, color: Colors.red, size: 40.0),
                           Switch(
-                            value: _timer?.isActive ?? false,
+                            value: timer?.isActive ?? false,
                             onChanged: (value) {
                               setState(() {
                                 if (value) {
-                                  _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-                                    _takePicture();
+                                  timer = Timer.periodic(Duration(seconds: 1), (timer) {
+                                    takePicture();
                                   });
                                 } else {
-                                  _timer?.cancel();
+                                  timer?.cancel();
                                 }
                               });
                             },
@@ -122,6 +134,8 @@ class RiskDetectionState extends State<RiskDetection> {
               ),
             ],
           );
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
         } else {
           return const Center(child: CircularProgressIndicator());
         }
