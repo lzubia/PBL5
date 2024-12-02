@@ -20,6 +20,7 @@ class _RiskDetectionState extends State<RiskDetection> {
   Timer? _timer;
 
   PictureService pictureService = PictureService();
+  PictureService pictureService = PictureService();
 
   @override
   void initState() {
@@ -49,8 +50,21 @@ class _RiskDetectionState extends State<RiskDetection> {
     }
   }
 
+  Future<void> _initializeTTS() async {
+    try {
+      await flutterTts.setLanguage("en-US");
+      await flutterTts.setSpeechRate(0.5);
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+    } catch (e) {
+      print('Error initializing TTS: $e');
+    }
+  }
+
   @override
   void dispose() {
+    timer?.cancel();
+    controller.dispose();
     timer?.cancel();
     controller.dispose();
     super.dispose();
