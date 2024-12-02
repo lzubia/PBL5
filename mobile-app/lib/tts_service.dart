@@ -44,7 +44,7 @@ class TtsService {
 
   Future<void> speakLabels(List<dynamic> detectedObjects) async {
     for (var obj in detectedObjects) {
-      String label = obj.toString(); // Convert each object to a string
+      String label = obj['label'];
       try {
         print("Speaking label: $label");
         await _flutterTts.speak(label);
