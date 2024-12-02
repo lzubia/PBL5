@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'risk_detection.dart';
 import 'grid_menu.dart';
 import 'settings_screen.dart';
+import 'picture_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final cameras = await availableCameras();
-  final firstCamera = cameras.first;
+  final pictureService = PictureService();
+  await pictureService.initializeCamera();
 
-  runApp(MyApp(camera: firstCamera));
+  runApp(MyApp(pictureService: pictureService));
 }
 
 class MyApp extends StatelessWidget {
-  final CameraDescription camera;
+  final PictureService pictureService;
 
-  const MyApp({super.key, required this.camera});
+  const MyApp({super.key, required this.pictureService});
 
   @override
   Widget build(BuildContext context) {
@@ -25,15 +25,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(camera: camera),
+      home: MyHomePage(pictureService: pictureService),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  final CameraDescription camera;
+  final PictureService pictureService;
 
-  const MyHomePage({super.key, required this.camera});
+  const MyHomePage({super.key, required this.pictureService});
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +59,10 @@ class MyHomePage extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: RiskDetection(camera: camera),
+            child: RiskDetection(pictureService: pictureService),
           ),
           Expanded(
-            child: GridMenu(),
+            child: GridMenu(pictureService: pictureService),
           ),
         ],
       ),
