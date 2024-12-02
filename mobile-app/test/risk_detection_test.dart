@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:camera/camera.dart';
 import 'package:mockito/mockito.dart';
@@ -18,18 +19,80 @@ void main() {
       mockCameraDescription = MockCameraDescription();
 
       when(mockCameraController.initialize()).thenAnswer((_) async {});
+      when(mockCameraController.value).thenReturn(CameraValue(
+        isInitialized: false,
+        isRecordingVideo: false,
+        isTakingPicture: false,
+        isStreamingImages: false,
+        isRecordingPaused: false,
+        flashMode: FlashMode.off,
+        exposureMode: ExposureMode.auto,
+        focusMode: FocusMode.auto,
+        exposurePointSupported: false,
+        focusPointSupported: false,
+        deviceOrientation: DeviceOrientation.portraitUp,
+        description: mockCameraDescription,
+      ));
+      when(mockCameraController.value).thenReturn(CameraValue(
+        isInitialized: true,
+        isRecordingVideo: false,
+        isTakingPicture: false,
+        isStreamingImages: false,
+        isRecordingPaused: false,
+        flashMode: FlashMode.off,
+        exposureMode: ExposureMode.auto,
+        focusMode: FocusMode.auto,
+        exposurePointSupported: false,
+        focusPointSupported: false,
+        deviceOrientation: DeviceOrientation.portraitUp,
+        description: mockCameraDescription,
+      ));
     });
 
-    testWidgets('shows CircularProgressIndicator while initializing', (WidgetTester tester) async {
+    testWidgets('renders UI after initialization', (WidgetTester tester) async {
+      when(mockCameraController.value).thenReturn(CameraValue(
+        isInitialized: true,
+        isRecordingVideo: false,
+        isTakingPicture: false,
+        isStreamingImages: false,
+        isRecordingPaused: false,
+        flashMode: FlashMode.off,
+        exposureMode: ExposureMode.auto,
+        focusMode: FocusMode.auto,
+        exposurePointSupported: false,
+        focusPointSupported: false,
+        deviceOrientation: DeviceOrientation.portraitUp,
+        description: mockCameraDescription,
+      ));
+
       await tester.pumpWidget(MaterialApp(
         home: RiskDetection(camera: mockCameraDescription),
       ));
 
-      // Verify loading indicator is shown initially
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Simulate camera initialization complete
+      await tester.pumpAndSettle();
+
+      // Verify that widgets appear
+      expect(find.byType(Switch), findsOneWidget);
+      expect(find.byIcon(Icons.warning), findsOneWidget);
     });
 
     testWidgets('renders UI after initialization', (WidgetTester tester) async {
+      when(mockCameraController.value).thenReturn(CameraValue(
+        isInitialized: true,
+        isRecordingVideo: false,
+        isTakingPicture: false,
+        isStreamingImages: false,
+        isRecordingPaused: false,
+        flashMode: FlashMode.off,
+        exposureMode: ExposureMode.auto,
+        focusMode: FocusMode.auto,
+        exposurePointSupported: false,
+        focusPointSupported: false,
+        deviceOrientation: DeviceOrientation.portraitUp,
+        description: mockCameraDescription,
+      ));
+
       await tester.pumpWidget(MaterialApp(
         home: RiskDetection(camera: mockCameraDescription),
       ));

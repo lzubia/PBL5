@@ -19,8 +19,7 @@ class _RiskDetectionState extends State<RiskDetection> {
   Duration responseTime = Duration.zero;
   Timer? _timer;
 
-  PictureService pictureService = PictureService();
-  PictureService pictureService = PictureService();
+  final PictureService _pictureService = PictureService();
 
   @override
   void initState() {
@@ -39,34 +38,10 @@ class _RiskDetectionState extends State<RiskDetection> {
     }
   }
 
-  Future<void> _initializeTTS() async {
-    try {
-      await flutterTts.setLanguage("en-US");
-      await flutterTts.setSpeechRate(0.5);
-      await flutterTts.setVolume(1.0);
-      await flutterTts.setPitch(1.0);
-    } catch (e) {
-      print('Error initializing TTS: $e');
-    }
-  }
-
-  Future<void> _initializeTTS() async {
-    try {
-      await flutterTts.setLanguage("en-US");
-      await flutterTts.setSpeechRate(0.5);
-      await flutterTts.setVolume(1.0);
-      await flutterTts.setPitch(1.0);
-    } catch (e) {
-      print('Error initializing TTS: $e');
-    }
-  }
-
   @override
   void dispose() {
-    timer?.cancel();
-    controller.dispose();
-    timer?.cancel();
-    controller.dispose();
+    _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -82,7 +57,6 @@ class _RiskDetectionState extends State<RiskDetection> {
     );
   }
 
->>>>>>> 823609a (test(mobile): :test_tube: tests)
   @override
   Widget build(BuildContext context) {
     if (!_controller.value.isInitialized) {
