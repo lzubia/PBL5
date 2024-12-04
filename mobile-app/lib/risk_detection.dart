@@ -5,29 +5,17 @@ import 'tts_service.dart';
 
 class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
+  final TtsService ttsService;
 
-  const RiskDetection({super.key, required this.pictureService});
+  const RiskDetection({super.key, required this.pictureService, required this.ttsService});
 
   @override
   _RiskDetectionState createState() => _RiskDetectionState();
 }
 
 class _RiskDetectionState extends State<RiskDetection> {
-  late TtsService _ttsService;
   Duration responseTime = Duration.zero;
   Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _ttsService = TtsService();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    await widget.pictureService.initializeCamera();
-    setState(() {});
-  }
 
   @override
   void dispose() {
@@ -38,7 +26,7 @@ class _RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture() async {
     await widget.pictureService.takePicture(
-      onLabelsDetected: _ttsService.speakLabels,
+      onLabelsDetected: widget.ttsService.speakLabels,
       onResponseTimeUpdated: (duration) {
         setState(() {
           responseTime = duration;
