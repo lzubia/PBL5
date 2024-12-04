@@ -65,7 +65,7 @@ class _RiskDetectionState extends State<RiskDetection> {
                       onChanged: (value) {
                         setState(() {
                           if (value) {
-                            _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+                            _timer = Timer.periodic(Duration(milliseconds: 1500), (timer) {
                               _takePicture();
                             });
                           } else {
