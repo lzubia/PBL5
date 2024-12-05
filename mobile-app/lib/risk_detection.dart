@@ -1,54 +1,32 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'picture_service.dart';
 import 'tts_service.dart';
 
 class RiskDetection extends StatefulWidget {
-  final CameraDescription camera;
+  final PictureService pictureService;
+  final TtsService ttsService;
 
-  const RiskDetection({super.key, required this.camera});
+  const RiskDetection({super.key, required this.pictureService, required this.ttsService});
 
   @override
   _RiskDetectionState createState() => _RiskDetectionState();
 }
 
 class _RiskDetectionState extends State<RiskDetection> {
-  late CameraController _controller;
-  late TtsService _ttsService;
   Duration responseTime = Duration.zero;
   Timer? _timer;
-
-  final PictureService _pictureService = PictureService();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = CameraController(widget.camera, ResolutionPreset.high);
-    _ttsService = TtsService();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    try {
-      await _controller.initialize();
-      setState(() {});
-    } catch (e) {
-      print('Error initializing camera: $e');
-    }
-  }
 
   @override
   void dispose() {
     _timer?.cancel();
-    _controller.dispose();
+    widget.pictureService.disposeCamera();
     super.dispose();
   }
 
   Future<void> _takePicture() async {
-    await _pictureService.takePicture(
-      controller: _controller,
-      onLabelsDetected: _ttsService.speakLabels,
+    await widget.pictureService.takePicture(
+      onLabelsDetected: widget.ttsService.speakLabels,
       onResponseTimeUpdated: (duration) {
         setState(() {
           responseTime = duration;
@@ -59,7 +37,7 @@ class _RiskDetectionState extends State<RiskDetection> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_controller.value.isInitialized) {
+    if (!widget.pictureService.isCameraInitialized) {
       return Container();
     }
     return Column(
@@ -87,7 +65,7 @@ class _RiskDetectionState extends State<RiskDetection> {
                       onChanged: (value) {
                         setState(() {
                           if (value) {
-                            _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+                            _timer = Timer.periodic(Duration(milliseconds: 1500), (timer) {
                               _takePicture();
                             });
                           } else {

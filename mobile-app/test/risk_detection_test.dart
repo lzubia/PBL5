@@ -1,108 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:camera/camera.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-
+import 'package:mockito/mockito.dart';
 import 'package:pbl5_menu/risk_detection.dart';
+import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/tts_service.dart';
 import 'risk_detection_test.mocks.dart';
 
-@GenerateMocks([CameraController, CameraDescription])
+@GenerateMocks([PictureService, TtsService])
 void main() {
-  group('RiskDetection Widget Tests', () {
-    late MockCameraController mockCameraController;
-    late MockCameraDescription mockCameraDescription;
+  late MockPictureService mockPictureService;
+  late MockTtsService mockTtsService;
 
-    setUp(() {
-      mockCameraController = MockCameraController();
-      mockCameraDescription = MockCameraDescription();
+  setUp(() {
+    mockPictureService = MockPictureService();
+    mockTtsService = MockTtsService();
+  });
 
-      when(mockCameraController.initialize()).thenAnswer((_) async {});
-      when(mockCameraController.value).thenReturn(CameraValue(
-        isInitialized: false,
-        isRecordingVideo: false,
-        isTakingPicture: false,
-        isStreamingImages: false,
-        isRecordingPaused: false,
-        flashMode: FlashMode.off,
-        exposureMode: ExposureMode.auto,
-        focusMode: FocusMode.auto,
-        exposurePointSupported: false,
-        focusPointSupported: false,
-        deviceOrientation: DeviceOrientation.portraitUp,
-        description: mockCameraDescription,
-      ));
-      when(mockCameraController.value).thenReturn(CameraValue(
-        isInitialized: true,
-        isRecordingVideo: false,
-        isTakingPicture: false,
-        isStreamingImages: false,
-        isRecordingPaused: false,
-        flashMode: FlashMode.off,
-        exposureMode: ExposureMode.auto,
-        focusMode: FocusMode.auto,
-        exposurePointSupported: false,
-        focusPointSupported: false,
-        deviceOrientation: DeviceOrientation.portraitUp,
-        description: mockCameraDescription,
-      ));
-    });
+  testWidgets('should display widgets when camera is initialized', (WidgetTester tester) async {
+    when(mockPictureService.isCameraInitialized).thenReturn(true);
 
-    testWidgets('renders UI after initialization', (WidgetTester tester) async {
-      when(mockCameraController.value).thenReturn(CameraValue(
-        isInitialized: true,
-        isRecordingVideo: false,
-        isTakingPicture: false,
-        isStreamingImages: false,
-        isRecordingPaused: false,
-        flashMode: FlashMode.off,
-        exposureMode: ExposureMode.auto,
-        focusMode: FocusMode.auto,
-        exposurePointSupported: false,
-        focusPointSupported: false,
-        deviceOrientation: DeviceOrientation.portraitUp,
-        description: mockCameraDescription,
-      ));
+    await tester.pumpWidget(MaterialApp(
+      home: RiskDetection(pictureService: mockPictureService, ttsService: mockTtsService),
+    ));
 
-      await tester.pumpWidget(MaterialApp(
-        home: RiskDetection(camera: mockCameraDescription),
-      ));
+    // Verify that widgets appear
+    expect(find.byType(Switch), findsOneWidget);
+    expect(find.byIcon(Icons.warning), findsOneWidget);
+  });
 
-      // Simulate camera initialization complete
-      await tester.pumpAndSettle();
+  testWidgets('should take picture periodically when switch is on', (WidgetTester tester) async {
+    when(mockPictureService.isCameraInitialized).thenReturn(true);
 
-      // Verify that widgets appear
-      expect(find.byType(Switch), findsOneWidget);
-      expect(find.byIcon(Icons.warning), findsOneWidget);
-    });
+    await tester.pumpWidget(MaterialApp(
+      home: RiskDetection(pictureService: mockPictureService, ttsService: mockTtsService),
+    ));
 
-    testWidgets('renders UI after initialization', (WidgetTester tester) async {
-      when(mockCameraController.value).thenReturn(CameraValue(
-        isInitialized: true,
-        isRecordingVideo: false,
-        isTakingPicture: false,
-        isStreamingImages: false,
-        isRecordingPaused: false,
-        flashMode: FlashMode.off,
-        exposureMode: ExposureMode.auto,
-        focusMode: FocusMode.auto,
-        exposurePointSupported: false,
-        focusPointSupported: false,
-        deviceOrientation: DeviceOrientation.portraitUp,
-        description: mockCameraDescription,
-      ));
+    // Turn on the switch
+    await tester.tap(find.byType(Switch));
+    await tester.pump();
 
-      await tester.pumpWidget(MaterialApp(
-        home: RiskDetection(camera: mockCameraDescription),
-      ));
-
-      // Simulate camera initialization complete
-      await tester.pumpAndSettle();
-
-      // Verify that widgets appear
-      expect(find.byType(Switch), findsOneWidget);
-      expect(find.byIcon(Icons.warning), findsOneWidget);
-    });
+    // Verify that takePicture is called periodically
+    verify(mockPictureService.takePicture(
+      onLabelsDetected: anyNamed('onLabelsDetected'),
+      onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+    )).called(greaterThan(0));
   });
 }

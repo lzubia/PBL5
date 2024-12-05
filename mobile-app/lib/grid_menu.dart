@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'describe_environment.dart';
-import 'dart:async';
+import 'picture_service.dart';
 
 class GridMenu extends StatefulWidget {
-  const GridMenu({super.key});
+  final PictureService pictureService;
+
+  const GridMenu({super.key, required this.pictureService});
 
   @override
   _GridMenuState createState() => _GridMenuState();
 }
 
 class _GridMenuState extends State<GridMenu> {
-  late List<CameraDescription> cameras;
-  late CameraController cameraController;
   bool isCameraInitialized = false;
 
   @override
@@ -22,23 +21,15 @@ class _GridMenuState extends State<GridMenu> {
   }
 
   Future<void> initializeCamera() async {
-    try {
-      cameras = await availableCameras();
-      cameraController = CameraController(cameras[0], ResolutionPreset.high);
-      await cameraController.initialize();
-      setState(() {
-        isCameraInitialized = true;
-      });
-    } catch (e) {
-      print('Error initializing camera: $e');
-    }
+    await widget.pictureService.initializeCamera();
+    setState(() {
+      isCameraInitialized = true;
+    });
   }
 
   @override
   void dispose() {
-    if (isCameraInitialized) {
-      cameraController.dispose();
-    }
+    widget.pictureService.disposeCamera();
     super.dispose();
   }
 
@@ -64,7 +55,7 @@ class _GridMenuState extends State<GridMenu> {
                     Container(
                       height: 550,
                       child: DescribeEnvironment(
-                          cameraController: cameraController),
+                          pictureService: widget.pictureService),
                     )
                   else if (title == 'Describe Environment' &&
                       !isCameraInitialized)

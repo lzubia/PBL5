@@ -1,0 +1,96 @@
+@startuml
+set namespaceSeparator ::
+
+class "pbl5_menu::describe_environment.dart::DescribeEnvironment" {
+  +CameraController cameraController
+  +Widget build()
+}
+
+"pbl5_menu::describe_environment.dart::DescribeEnvironment" o-- "camera::src::camera_controller.dart::CameraController"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "pbl5_menu::describe_environment.dart::DescribeEnvironment"
+
+class "pbl5_menu::grid_menu.dart::GridMenu" {
+  +_GridMenuState createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "pbl5_menu::grid_menu.dart::GridMenu"
+
+class "pbl5_menu::grid_menu.dart::_GridMenuState" {
+  +List<CameraDescription> cameras
+  +CameraController cameraController
+  +bool isCameraInitialized
+  +void initState()
+  +dynamic initializeCamera()
+  +void dispose()
+  -void _showBottomSheet()
+  +Widget build()
+}
+
+"pbl5_menu::grid_menu.dart::_GridMenuState" o-- "camera::src::camera_controller.dart::CameraController"
+"flutter::src::widgets::framework.dart::State" <|-- "pbl5_menu::grid_menu.dart::_GridMenuState"
+
+class "pbl5_menu::main.dart::MyApp" {
+  +CameraDescription camera
+  +Widget build()
+}
+
+"pbl5_menu::main.dart::MyApp" o-- "camera_platform_interface::src::types::camera_description.dart::CameraDescription"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "pbl5_menu::main.dart::MyApp"
+
+class "pbl5_menu::main.dart::MyHomePage" {
+  +CameraDescription camera
+  +Widget build()
+}
+
+"pbl5_menu::main.dart::MyHomePage" o-- "camera_platform_interface::src::types::camera_description.dart::CameraDescription"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "pbl5_menu::main.dart::MyHomePage"
+
+class "pbl5_menu::picture_service.dart::PictureService" {
+  +dynamic takePicture()
+}
+
+class "pbl5_menu::risk_detection.dart::RiskDetection" {
+  +CameraDescription camera
+  +_RiskDetectionState createState()
+}
+
+"pbl5_menu::risk_detection.dart::RiskDetection" o-- "camera_platform_interface::src::types::camera_description.dart::CameraDescription"
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "pbl5_menu::risk_detection.dart::RiskDetection"
+
+class "pbl5_menu::risk_detection.dart::_RiskDetectionState" {
+  -CameraController _controller
+  -TtsService _ttsService
+  +Duration responseTime
+  -Timer? _timer
+  -PictureService _pictureService
+  +void initState()
+  -dynamic _initializeCamera()
+  +void dispose()
+  -dynamic _takePicture()
+  +Widget build()
+}
+
+"pbl5_menu::risk_detection.dart::_RiskDetectionState" o-- "camera::src::camera_controller.dart::CameraController"
+"pbl5_menu::risk_detection.dart::_RiskDetectionState" o-- "pbl5_menu::tts_service.dart::TtsService"
+"pbl5_menu::risk_detection.dart::_RiskDetectionState" o-- "dart::async::Timer"
+"pbl5_menu::risk_detection.dart::_RiskDetectionState" o-- "pbl5_menu::picture_service.dart::PictureService"
+"flutter::src::widgets::framework.dart::State" <|-- "pbl5_menu::risk_detection.dart::_RiskDetectionState"
+
+class "pbl5_menu::settings_screen.dart::SettingsScreen" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "pbl5_menu::settings_screen.dart::SettingsScreen"
+
+class "pbl5_menu::tts_service.dart::TtsService" {
+  -FlutterTts _flutterTts
+  -void _initializeTts()
+  -dynamic _setTtsLanguage()
+  -dynamic _checkTtsAvailability()
+  +dynamic speakLabels()
+}
+
+"pbl5_menu::tts_service.dart::TtsService" o-- "flutter_tts::flutter_tts.dart::FlutterTts"
+
+
+@enduml

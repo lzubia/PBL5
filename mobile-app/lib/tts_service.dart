@@ -26,7 +26,7 @@ class TtsService {
 
   Future<void> _setTtsLanguage() async {
     await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setSpeechRate(0.5);
+    await _flutterTts.setSpeechRate(1);
     await _flutterTts.setVolume(1.0);
     await _flutterTts.setPitch(1.0);
   }
@@ -44,11 +44,11 @@ class TtsService {
 
   Future<void> speakLabels(List<dynamic> detectedObjects) async {
     for (var obj in detectedObjects) {
-      String label = obj['label'];
+      String label = obj; //['message'];
       try {
         print("Speaking label: $label");
         await _flutterTts.speak(label);
-        await Future.delayed(const Duration(seconds: 1));
+        await _flutterTts.awaitSpeakCompletion(true); // Ensure it finishes speaking
       } catch (e) {
         print("TTS error: $e");
       }

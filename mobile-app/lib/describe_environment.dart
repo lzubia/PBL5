@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+import 'picture_service.dart';
 
 class DescribeEnvironment extends StatelessWidget {
-  final CameraController cameraController;
+  final PictureService pictureService;
 
-  DescribeEnvironment({required this.cameraController});
+  DescribeEnvironment({required this.pictureService});
 
   @override
   Widget build(BuildContext context) {
-    return CameraPreview(cameraController);
+    return pictureService.getCameraPreview();
   }
 }
