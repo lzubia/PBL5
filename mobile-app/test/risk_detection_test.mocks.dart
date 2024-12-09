@@ -79,8 +79,19 @@ class _FakeFile_4 extends _i1.SmartFake implements _i5.File {
         );
 }
 
-class _FakeWidget_5 extends _i1.SmartFake implements _i6.Widget {
-  _FakeWidget_5(
+class _FakeMultipartRequest_5 extends _i1.SmartFake
+    implements _i3.MultipartRequest {
+  _FakeMultipartRequest_5(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeWidget_6 extends _i1.SmartFake implements _i6.Widget {
+  _FakeWidget_6(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -209,6 +220,31 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       );
 
   @override
+  _i4.MultipartRequestFactory get multipartRequestFactory =>
+      (super.noSuchMethod(
+        Invocation.getter(#multipartRequestFactory),
+        returnValue: (
+          String method,
+          Uri url,
+        ) =>
+            _FakeMultipartRequest_5(
+          this,
+          Invocation.getter(#multipartRequestFactory),
+        ),
+      ) as _i4.MultipartRequestFactory);
+
+  @override
+  set multipartRequestFactory(
+          _i4.MultipartRequestFactory? _multipartRequestFactory) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #multipartRequestFactory,
+          _multipartRequestFactory,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i7.Future<void> setupCamera() => (super.noSuchMethod(
         Invocation.method(
           #setupCamera,
@@ -243,7 +279,7 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
           #getCameraPreview,
           [],
         ),
-        returnValue: _FakeWidget_5(
+        returnValue: _FakeWidget_6(
           this,
           Invocation.method(
             #getCameraPreview,
@@ -287,16 +323,16 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
 
   @override
   _i7.Future<void> sendImageAndHandleResponse(
-    String? imagePath,
-    dynamic Function(List<String>)? onDetectObjects,
+    String? filePath,
+    dynamic Function(List<String>)? onDetectedObjects,
     dynamic Function(Duration)? onResponseTime,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
           #sendImageAndHandleResponse,
           [
-            imagePath,
-            onDetectObjects,
+            filePath,
+            onDetectedObjects,
             onResponseTime,
           ],
         ),
