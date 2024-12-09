@@ -3,15 +3,16 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
+import 'dart:async' as _i7;
+import 'dart:io' as _i5;
 
 import 'package:camera/camera.dart' as _i2;
-import 'package:flutter/material.dart' as _i4;
+import 'package:flutter/material.dart' as _i6;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:pbl5_menu/picture_service.dart' as _i5;
-import 'package:pbl5_menu/tts_service.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:pbl5_menu/picture_service.dart' as _i4;
+import 'package:pbl5_menu/tts_service.dart' as _i9;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -47,8 +48,39 @@ class _FakeClient_1 extends _i1.SmartFake implements _i3.Client {
         );
 }
 
-class _FakeWidget_2 extends _i1.SmartFake implements _i4.Widget {
-  _FakeWidget_2(
+class _FakeImageDecoder_2 extends _i1.SmartFake implements _i4.ImageDecoder {
+  _FakeImageDecoder_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeMultipartFileWrapper_3 extends _i1.SmartFake
+    implements _i4.MultipartFileWrapper {
+  _FakeMultipartFileWrapper_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeFile_4 extends _i1.SmartFake implements _i5.File {
+  _FakeFile_4(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeWidget_5 extends _i1.SmartFake implements _i6.Widget {
+  _FakeWidget_5(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -57,14 +89,14 @@ class _FakeWidget_2 extends _i1.SmartFake implements _i4.Widget {
         );
 
   @override
-  String toString({_i4.DiagnosticLevel? minLevel = _i4.DiagnosticLevel.info}) =>
+  String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
 }
 
 /// A class which mocks [PictureService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPictureService extends _i1.Mock implements _i5.PictureService {
+class MockPictureService extends _i1.Mock implements _i4.PictureService {
   MockPictureService() {
     _i1.throwOnMissingStub(this);
   }
@@ -121,14 +153,80 @@ class MockPictureService extends _i1.Mock implements _i5.PictureService {
       );
 
   @override
-  _i6.Future<void> initializeCamera() => (super.noSuchMethod(
+  _i4.ImageDecoder get imageDecoder => (super.noSuchMethod(
+        Invocation.getter(#imageDecoder),
+        returnValue: _FakeImageDecoder_2(
+          this,
+          Invocation.getter(#imageDecoder),
+        ),
+      ) as _i4.ImageDecoder);
+
+  @override
+  set imageDecoder(_i4.ImageDecoder? _imageDecoder) => super.noSuchMethod(
+        Invocation.setter(
+          #imageDecoder,
+          _imageDecoder,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.MultipartFileWrapper get multipartFileWrapper => (super.noSuchMethod(
+        Invocation.getter(#multipartFileWrapper),
+        returnValue: _FakeMultipartFileWrapper_3(
+          this,
+          Invocation.getter(#multipartFileWrapper),
+        ),
+      ) as _i4.MultipartFileWrapper);
+
+  @override
+  set multipartFileWrapper(_i4.MultipartFileWrapper? _multipartFileWrapper) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #multipartFileWrapper,
+          _multipartFileWrapper,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.File Function(String) get fileFactory => (super.noSuchMethod(
+        Invocation.getter(#fileFactory),
+        returnValue: (String path) => _FakeFile_4(
+          this,
+          Invocation.getter(#fileFactory),
+        ),
+      ) as _i5.File Function(String));
+
+  @override
+  set fileFactory(_i5.File Function(String)? _fileFactory) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #fileFactory,
+          _fileFactory,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i7.Future<void> setupCamera() => (super.noSuchMethod(
+        Invocation.method(
+          #setupCamera,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> initializeCamera() => (super.noSuchMethod(
         Invocation.method(
           #initializeCamera,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void disposeCamera() => super.noSuchMethod(
@@ -140,22 +238,22 @@ class MockPictureService extends _i1.Mock implements _i5.PictureService {
       );
 
   @override
-  _i4.Widget getCameraPreview() => (super.noSuchMethod(
+  _i6.Widget getCameraPreview() => (super.noSuchMethod(
         Invocation.method(
           #getCameraPreview,
           [],
         ),
-        returnValue: _FakeWidget_2(
+        returnValue: _FakeWidget_5(
           this,
           Invocation.method(
             #getCameraPreview,
             [],
           ),
         ),
-      ) as _i4.Widget);
+      ) as _i6.Widget);
 
   @override
-  _i6.Future<void> takePicture({
+  _i7.Future<void> takePicture({
     required dynamic Function(List<dynamic>)? onLabelsDetected,
     required dynamic Function(Duration)? onResponseTimeUpdated,
   }) =>
@@ -168,61 +266,71 @@ class MockPictureService extends _i1.Mock implements _i5.PictureService {
             #onResponseTimeUpdated: onResponseTimeUpdated,
           },
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<String> captureAndProcessImage() => (super.noSuchMethod(
+  _i7.Future<String> captureAndProcessImage() => (super.noSuchMethod(
         Invocation.method(
           #captureAndProcessImage,
           [],
         ),
-        returnValue: _i6.Future<String>.value(_i7.dummyValue<String>(
+        returnValue: _i7.Future<String>.value(_i8.dummyValue<String>(
           this,
           Invocation.method(
             #captureAndProcessImage,
             [],
           ),
         )),
-      ) as _i6.Future<String>);
+      ) as _i7.Future<String>);
 
   @override
-  _i6.Future<void> sendImageAndHandleResponse(
+  _i7.Future<void> sendImageAndHandleResponse(
     String? imagePath,
-    dynamic Function(List<dynamic>)? onLabelsDetected,
-    dynamic Function(Duration)? onResponseTimeUpdated,
+    dynamic Function(List<String>)? onDetectObjects,
+    dynamic Function(Duration)? onResponseTime,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
           #sendImageAndHandleResponse,
           [
             imagePath,
-            onLabelsDetected,
-            onResponseTimeUpdated,
+            onDetectObjects,
+            onResponseTime,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  List<String> parseLabelsFromResponse(String? responseBody) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #parseLabelsFromResponse,
+          [responseBody],
+        ),
+        returnValue: <String>[],
+      ) as List<String>);
 }
 
 /// A class which mocks [TtsService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTtsService extends _i1.Mock implements _i8.TtsService {
+class MockTtsService extends _i1.Mock implements _i9.TtsService {
   MockTtsService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i6.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i7.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
           [detectedObjects],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 }

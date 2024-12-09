@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -7,10 +8,48 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/picture_service.dart';
+
+import 'picture_service.dart';
+
+class ImageDecoder {
+  img.Image? decodeImage(Uint8List bytes) {
+    return img.decodeImage(bytes);
+  }
+
+  img.Image copyResize(img.Image image,
+      {required int width, required int height}) {
+    return img.copyResize(image, width: width, height: height);
+  }
+}
+
+class MultipartFileWrapper {
+  Future<http.MultipartFile> fromPath(String field, String filePath) {
+    return http.MultipartFile.fromPath(field, filePath);
+  }
+}
+
+typedef MultipartRequestFactory = http.MultipartRequest Function(String method, Uri url);
+
 class PictureService {
   late CameraController controller;
   late http.Client httpClient;
   bool isCameraInitialized = false;
+  late ImageDecoder imageDecoder; // Inject the decoder
+  late MultipartFileWrapper multipartFileWrapper;
+
+  PictureService({
+    http.Client? httpClient,
+    ImageDecoder? imageDecoder,
+    MultipartFileWrapper? multipartFileWrapper,
+    MultipartRequestFactory? multipartRequestFactory,
+  }) {
+    this.httpClient = httpClient ?? http.Client();
+    this.imageDecoder = imageDecoder ?? ImageDecoder();
+    this.multipartFileWrapper = multipartFileWrapper ?? MultipartFileWrapper();
+    this.multipartRequestFactory = multipartRequestFactory ?? (method, url) => http.MultipartRequest(method, url);
+  }
 
   Future<void> setupCamera() async {
     try {
@@ -59,6 +98,8 @@ class PictureService {
     }
   }
 
+  File Function(String path) fileFactory = (path) => File(path);
+
   Future<String> captureAndProcessImage() async {
     final directory = await getApplicationDocumentsDirectory();
     final timestamp = DateTime.now()
@@ -68,49 +109,50 @@ class PictureService {
     final imagePath = '${directory.path}/$timestamp.jpg';
 
     XFile picture = await controller.takePicture();
-    final originalImage = img.decodeImage(File(picture.path).readAsBytesSync());
+    final originalImage =
+        imageDecoder.decodeImage(fileFactory(picture.path).readAsBytesSync())!;
 
     // Resize the image to 640x480
     final resizedImage =
-        img.copyResize(originalImage!, width: 640, height: 480);
+        imageDecoder.copyResize(originalImage, width: 640, height: 480);
 
     // Save the resized image as JPEG
-    File(imagePath).writeAsBytesSync(img.encodeJpg(resizedImage));
+    fileFactory(imagePath).writeAsBytesSync(img.encodeJpg(resizedImage));
 
     return imagePath;
   }
 
+  late MultipartRequestFactory multipartRequestFactory;
+
   Future<void> sendImageAndHandleResponse(
-    String imagePath,
-    Function(List<dynamic>) onLabelsDetected,
-    Function(Duration) onResponseTimeUpdated,
-  ) async {
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://192.168.1.100:1880/process'),
-    );
-    request.files.add(await http.MultipartFile.fromPath(
-      'file',
-      imagePath,
-    ));
+      String filePath,
+      Function(List<String>) onDetectedObjects,
+      Function(Duration) onResponseTime) async {
+    print("sendImageAndHandleResponse called"); // Debug print
+    final request = multipartRequestFactory(
+        'POST', Uri.parse('http://192.168.1.2:1880/process'));
+
+    // Add the image file to the request
+    final file = await multipartFileWrapper.fromPath('file', filePath);
+    request.files.add(file);
 
     final startTime = DateTime.now();
-    final response = await request.send();
+    final response =
+        await httpClient.send(request); // Ensure this uses the mock httpClient
     final endTime = DateTime.now();
-
-    // Update response time
-    onResponseTimeUpdated(endTime.difference(startTime));
+    final duration = endTime.difference(startTime);
+    onResponseTime(duration);
 
     if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      final jsonResponse = jsonDecode(responseBody);
-      print('Image uploaded successfully: $jsonResponse');
-
-      // Pass detected objects to the callback
-      List<dynamic> detectedObjects = jsonResponse['message']; //detected_objects
-      onLabelsDetected(detectedObjects);
-    } else {
-      print('Image upload failed');
+      final responseData = await response.stream.bytesToString();
+      final detectedObjects = parseLabelsFromResponse(responseData);
+      onDetectedObjects(detectedObjects);
     }
+  }
+
+  List<String> parseLabelsFromResponse(String responseBody) {
+    // Parse the response body to extract labels
+    final decodedJson = jsonDecode(responseBody);
+    return List<String>.from(decodedJson['message']);
   }
 }
