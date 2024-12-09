@@ -77,7 +77,6 @@ void main() {
   late MockMultipartRequest mockMultipartRequest;
   late MockFile mockFile;
   late MockImageDecoder mockImageDecoder;
-  late MockMultipartFile mockMultipartFile;
   late MockMultipartFileWrapper mockMultipartFileWrapper;
 
   setUp(() {
@@ -89,7 +88,6 @@ void main() {
     mockMultipartRequest = MockMultipartRequest();
     mockImageDecoder = MockImageDecoder();
     mockFile = MockFile();
-    mockMultipartFile = MockMultipartFile();
     mockMultipartFileWrapper = MockMultipartFileWrapper();
 
     pictureService = PictureService(
@@ -101,16 +99,17 @@ void main() {
 
     pictureService.controller = mockController;
 
-    channel.setMockMethodCallHandler((MethodCall methodCall) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, (ByteData? message) async {
+      final MethodCall methodCall = StandardMethodCodec().decodeMethodCall(message);
       if (methodCall.method == 'getApplicationDocumentsDirectory') {
-        return '/mock/directory';
+        return const StandardMethodCodec().encodeSuccessEnvelope('/mock/directory');
       }
       return null;
     });
   });
 
   tearDown(() {
-    channel.setMockMethodCallHandler(null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, null);
   });
 
   test(
@@ -122,7 +121,7 @@ void main() {
 
   group('initializeCamera', () {
     test('should initialize the camera successfully', () async {
-      when(mockController.initialize()).thenAnswer((_) async => null);
+      when(mockController.initialize()).thenAnswer((_) async {});
 
       await pictureService.initializeCamera();
 
