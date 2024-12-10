@@ -7,7 +7,8 @@ class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
   final TtsService ttsService;
 
-  const RiskDetection({super.key, required this.pictureService, required this.ttsService});
+  const RiskDetection(
+      {super.key, required this.pictureService, required this.ttsService});
 
   @override
   _RiskDetectionState createState() => _RiskDetectionState();
@@ -40,7 +41,8 @@ class _RiskDetectionState extends State<RiskDetection> {
     if (!widget.pictureService.isCameraInitialized) {
       return Container();
     }
-    return Column(
+    return Material(
+        child: Column(
       children: [
         if (responseTime != Duration.zero)
           Padding(
@@ -65,7 +67,8 @@ class _RiskDetectionState extends State<RiskDetection> {
                       onChanged: (value) {
                         setState(() {
                           if (value) {
-                            _timer = Timer.periodic(Duration(milliseconds: 1500), (timer) {
+                            _timer = Timer.periodic(
+                                Duration(milliseconds: 1500), (timer) {
                               _takePicture();
                             });
                           } else {
@@ -81,6 +84,6 @@ class _RiskDetectionState extends State<RiskDetection> {
           ],
         ),
       ],
-    );
+    ));
   }
 }
