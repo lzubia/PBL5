@@ -8,6 +8,11 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    afterEvaluate { subproject ->
+        if (subproject.hasProperty("android")) {
+            subproject.android.ndkVersion = "27.0.12077973"
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
