@@ -11,6 +11,7 @@ void main() async {
   await pictureService.setupCamera();
   await pictureService.initializeCamera();
   final ttsService = TtsService();
+  ttsService.initializeTts();
 
   runApp(MyApp(pictureService: pictureService, ttsService: ttsService));
 }
