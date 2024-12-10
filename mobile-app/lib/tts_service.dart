@@ -1,44 +1,46 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TtsService {
-  final FlutterTts _flutterTts = FlutterTts();
+  late FlutterTts flutterTts;
 
   TtsService() {
-    _initializeTts();
+    WidgetsFlutterBinding.ensureInitialized();
+    flutterTts = FlutterTts();
   }
 
-  void _initializeTts() {
-    _flutterTts.setStartHandler(() {
+  void initializeTts() {
+    flutterTts.setStartHandler(() {
       print("TTS started");
     });
 
-    _flutterTts.setCompletionHandler(() {
+    flutterTts.setCompletionHandler(() {
       print("TTS completed");
     });
 
-    _flutterTts.setErrorHandler((msg) {
+    flutterTts.setErrorHandler((msg) {
       print("TTS error: $msg");
     });
 
-    _setTtsLanguage();
-    _checkTtsAvailability();
+    setTtsLanguage();
+    checkTtsAvailability();
   }
 
-  Future<void> _setTtsLanguage() async {
-    await _flutterTts.setLanguage("en-US");
-    await _flutterTts.setSpeechRate(1);
-    await _flutterTts.setVolume(1.0);
-    await _flutterTts.setPitch(1.0);
+  Future<void> setTtsLanguage() async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setSpeechRate(1);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
   }
 
-  Future<void> _checkTtsAvailability() async {
-    var languages = await _flutterTts.getLanguages;
+  Future<void> checkTtsAvailability() async {
+    var languages = await flutterTts.getLanguages;
     print("Available languages: $languages");
 
-    var isLanguageAvailable = await _flutterTts.isLanguageAvailable("en-US");
+    var isLanguageAvailable = await flutterTts.isLanguageAvailable("en-US");
     print("Is 'en-US' language available: $isLanguageAvailable");
 
-    var engines = await _flutterTts.getEngines;
+    var engines = await flutterTts.getEngines;
     print("Available TTS engines: $engines");
   }
 
@@ -47,8 +49,9 @@ class TtsService {
       String label = obj; //['message'];
       try {
         print("Speaking label: $label");
-        await _flutterTts.speak(label);
-        await _flutterTts.awaitSpeakCompletion(true); // Ensure it finishes speaking
+        await flutterTts.speak(label);
+        await flutterTts
+            .awaitSpeakCompletion(true); // Ensure it finishes speaking
       } catch (e) {
         print("TTS error: $e");
       }
