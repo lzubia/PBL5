@@ -69,7 +69,8 @@ class _RiskDetectionState extends State<RiskDetection> {
                           if (value) {
                             _timer = Timer.periodic(
                                 Duration(milliseconds: 1500), (timer) {
-                              _takePicture();
+                                  widget.ttsService.speakLabels(['Risk Detected']);
+                              //_takePicture();
                             });
                           } else {
                             _timer?.cancel();
