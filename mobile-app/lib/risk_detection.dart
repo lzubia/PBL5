@@ -7,11 +7,13 @@ import 'tts_service.dart';
 class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
   final TtsServiceGoogle ttsServiceGoogle;
+  final TtsService ttsService;
 
   const RiskDetection({
     super.key,
     required this.pictureService,
     required this.ttsServiceGoogle,
+    required this.ttsService,
   });
 
   @override

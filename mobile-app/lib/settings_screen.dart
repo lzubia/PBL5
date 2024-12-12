@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter/services.dart'; // For vibration
+import 'package:pbl5_menu/tts_service.dart';
 import 'database_helper.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final TtsServiceGoogle ttsService;
+  final TtsServiceGoogle ttsServiceGoogle;
+  final TtsService ttsService;
   final DatabaseHelper databaseHelper;
 
   const SettingsScreen({
+    required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
     super.key,
@@ -86,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
-    widget.ttsService.updateLanguage(languageCode, voiceName);
+    widget.ttsServiceGoogle.updateLanguage(languageCode, voiceName);
     setState(() {
       _language = languageCode;
     });

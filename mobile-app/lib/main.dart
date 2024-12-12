@@ -14,11 +14,15 @@ void main() async {
   await pictureService.initializeCamera();
   final databaseHelper = DatabaseHelper();
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
+  final ttsService = TtsService(databaseHelper);
+  
   ttsServiceGoogle.initializeTts();
+  ttsService.initializeTts();
 
   runApp(MyApp(
     pictureService: pictureService,
     ttsServiceGoogle: ttsServiceGoogle,
+    ttsService: ttsService,
     databaseHelper: databaseHelper,
   ));
 }
@@ -26,12 +30,14 @@ void main() async {
 class MyApp extends StatelessWidget {
   final PictureService pictureService;
   final TtsServiceGoogle ttsServiceGoogle;
+  final TtsService ttsService;
   final DatabaseHelper databaseHelper;
 
   const MyApp({
     super.key,
     required this.pictureService,
     required this.ttsServiceGoogle,
+    required this.ttsService,
     required this.databaseHelper,
   });
 
@@ -46,33 +52,42 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(
         pictureService: pictureService,
         ttsServiceGoogle: ttsServiceGoogle,
+        ttsService: ttsService,
         databaseHelper: databaseHelper,
       ),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   final PictureService pictureService;
   final TtsServiceGoogle ttsServiceGoogle;
+  final TtsService ttsService;
   final DatabaseHelper databaseHelper;
 
   const MyHomePage({
     super.key,
     required this.pictureService,
     required this.ttsServiceGoogle,
+    required this.ttsService,
     required this.databaseHelper,
   });
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  bool useGoogleTts = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'BEGIA',
+          'CIEGOTRON 3000',
           style: TextStyle(fontSize: 24.0), // Increase font size
         ),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(Icons.settings, size: 50.0),
@@ -81,8 +96,9 @@ class MyHomePage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => SettingsScreen(
-                    ttsService: ttsServiceGoogle,
-                    databaseHelper: databaseHelper,
+                    ttsServiceGoogle: widget.ttsServiceGoogle,
+                    ttsService: widget.ttsService,
+                    databaseHelper: widget.databaseHelper,
                   ),
                 ),
               );
@@ -95,12 +111,33 @@ class MyHomePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: RiskDetection(
-              pictureService: pictureService,
-              ttsServiceGoogle: ttsServiceGoogle,
+              pictureService: widget.pictureService,
+              ttsServiceGoogle: widget.ttsServiceGoogle,
+              ttsService: widget.ttsService,
             ),
           ),
           Expanded(
-            child: GridMenu(pictureService: pictureService),
+            child: GridMenu(pictureService: widget.pictureService),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'TTS Service: ${useGoogleTts ? "Google TTS" : "Demo TTS"}',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Switch(
+                  value: useGoogleTts,
+                  onChanged: (value) {
+                    setState(() {
+                      useGoogleTts = value;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
