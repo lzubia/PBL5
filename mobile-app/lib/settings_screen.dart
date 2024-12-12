@@ -27,9 +27,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _fontSize = 20.0; // Larger default font size
   String _language = 'English';
   bool _isDarkTheme = false;
+  double _speechRate = 1.0; // Default speech rate
 
-  final FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
+  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
 
   @override
   void initState() {
@@ -46,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _fontSize = prefs['fontSize'];
         _language = prefs['language'];
         _isDarkTheme = prefs['isDarkTheme'] == 1 ? true : false;
+        _speechRate = prefs['speechRate'] ?? 1.0;
         contacts = savedContacts;
       });
     } catch (e) {
@@ -74,8 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _savePreferences() async {
     try {
-      await widget.databaseHelper
-          .updatePreferences(_fontSize, _language, _isDarkTheme);
+      await widget.databaseHelper.updatePreferences(_fontSize, _language, _isDarkTheme, _speechRate);
     } catch (e) {
       debugPrint('Error saving preferences: $e');
     }
@@ -95,9 +95,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _language = languageCode;
     });
     _savePreferences();
-    widget.databaseHelper
-        .updateTtsSettings(languageCode, voiceName); // Update the database
+    widget.databaseHelper.updateTtsSettings(languageCode, voiceName); // Update the database
     //_provideFeedback('Language changed');
+  }
+
+  void _changeSpeechRate(double rate) {
+    setState(() {
+      _speechRate = rate;
+    });
+    widget.ttsService.updateSpeechRate(rate/2);
+    widget.ttsServiceGoogle.updateSpeechRate(rate);
+    _savePreferences();
   }
 
   void _changeFontSize(double size) {
@@ -307,6 +315,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 min: 16.0,
                 max: 38.0,
                 onChanged: _changeFontSize,
+              ),
+              Divider(),
+              Text(
+                'Speech Rate',
+                style: TextStyle(
+                  fontSize: _fontSize + 4,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+              ),
+              Slider(
+                value: _speechRate,
+                min: 1,
+                max: 2.7,
+                divisions: 15,
+                label: _speechRate.toStringAsFixed(1),
+                onChanged: _changeSpeechRate,
               ),
             ],
           ),

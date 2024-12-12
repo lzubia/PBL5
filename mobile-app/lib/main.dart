@@ -19,6 +19,8 @@ void main() async {
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
 
+  //databaseHelper.resetDatabase();
+
   runApp(MyApp(
     pictureService: pictureService,
     ttsServiceGoogle: ttsServiceGoogle,

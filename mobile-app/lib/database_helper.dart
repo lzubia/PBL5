@@ -61,7 +61,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         fontSize REAL,
         language TEXT,
-        isDarkTheme INTEGER
+        isDarkTheme INTEGER,
+        speechRate REAL
       )
     ''');
 
@@ -96,6 +97,7 @@ class DatabaseHelper {
         'fontSize': 20.0,
         'language': 'English',
         'isDarkTheme': 0,
+        'speechRate': 1.1,
       });
     }
   }
@@ -126,22 +128,22 @@ class DatabaseHelper {
   // Get preferences
   Future<Map<String, dynamic>> getPreferences() async {
     final db = await database;
-    final List<Map<String, dynamic>> result =
-        await db.query('preferences', limit: 1);
+    final List<Map<String, dynamic>> result = await db.query('preferences');
     if (result.isNotEmpty) {
-      return result[0];
+      return result.first;
     } else {
       return {
         'fontSize': 20.0,
         'language': 'English',
         'isDarkTheme': 0,
+        'speechRate': 1.0, // Default speech rate
       };
     }
   }
 
   // Update preferences
   Future<void> updatePreferences(
-      double fontSize, String language, bool isDarkTheme) async {
+      double fontSize, String language, bool isDarkTheme, double speechRate) async {
     final db = await database;
     await db.update(
       'preferences',
@@ -149,6 +151,7 @@ class DatabaseHelper {
         'fontSize': fontSize,
         'language': language,
         'isDarkTheme': isDarkTheme ? 1 : 0,
+        'speechRate': speechRate,
       },
       where: 'id = ?',
       whereArgs: [1], // Assuming there's only one row for preferences
@@ -188,5 +191,17 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'app_database.db');
     await deleteDatabase(path); // Deletes the database
     _database = null; // Reset the in-memory reference
+  }
+
+  Future<void> _createDb(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE preferences (
+        id INTEGER PRIMARY KEY,
+        fontSize REAL,
+        language TEXT,
+        isDarkTheme INTEGER,
+        speechRate REAL
+      )
+    ''');
   }
 }

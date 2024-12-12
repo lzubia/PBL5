@@ -49,12 +49,21 @@ class TtsService {
   }
 
   /// Updates the language and voice
-  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
+  Future<void> updateLanguage(
+      String newLanguageCode, String newVoiceName) async {
     languageCode = newLanguageCode;
     await _dbHelper.updateTtsSettings('languageCode', newLanguageCode);
     await _dbHelper.updateTtsSettings('voiceName', newVoiceName);
     await setTtsLanguage();
     print("Language updated to $languageCode with voice $newVoiceName");
+  }
+
+  /// Updates the speech rate
+  Future<void> updateSpeechRate(double newSpeechRate) async {
+    speechRate = newSpeechRate;
+    await flutterTts.setSpeechRate(speechRate);
+    await _dbHelper.updateTtsSettings('speechRate', newSpeechRate.toString());
+    print("Speech rate updated to $speechRate");
   }
 
   /// Sets TTS language and other configurations
@@ -70,7 +79,8 @@ class TtsService {
     var languages = await flutterTts.getLanguages;
     print("Available languages: $languages");
 
-    var isLanguageAvailable = await flutterTts.isLanguageAvailable(languageCode);
+    var isLanguageAvailable =
+        await flutterTts.isLanguageAvailable(languageCode);
     print("Is '$languageCode' language available: $isLanguageAvailable");
 
     var engines = await flutterTts.getEngines;
@@ -84,7 +94,8 @@ class TtsService {
       try {
         print("Speaking label: $label");
         await flutterTts.speak(label);
-        await flutterTts.awaitSpeakCompletion(true); // Ensure it finishes speaking
+        await flutterTts
+            .awaitSpeakCompletion(true); // Ensure it finishes speaking
       } catch (e) {
         print("TTS error: $e");
       }

@@ -13,6 +13,7 @@ class TtsServiceGoogle {
   final String _authFilePath = 'assets/tts-english.json';
   String languageCode = 'en-US';
   String voiceName = 'en-US-Wavenet-D';
+  double speechRate = 1.0; // Default speech rate
   final DatabaseHelper _dbHelper;
 
   TtsServiceGoogle(this._dbHelper) {
@@ -39,6 +40,12 @@ class TtsServiceGoogle {
     languageCode = newLanguageCode;
     voiceName = newVoiceName;
     print("Language updated to $languageCode with voice $voiceName");
+  }
+
+  /// Updates the speech rate
+  void updateSpeechRate(double newSpeechRate) {
+    speechRate = newSpeechRate;
+    print("Speech rate updated to $speechRate");
   }
 
   /// Reads the service account JSON file and gets the access token
@@ -99,7 +106,7 @@ class TtsServiceGoogle {
           body: json.encode({
             "input": {"text": label},
             "voice": {"languageCode": languageCode, "name": voiceName},
-            "audioConfig": {"audioEncoding": "MP3"},
+            "audioConfig": {"audioEncoding": "MP3", "speakingRate": speechRate},
           }),
         );
 
