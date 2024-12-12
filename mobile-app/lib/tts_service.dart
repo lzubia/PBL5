@@ -49,11 +49,12 @@ class TtsService {
   }
 
   /// Updates the language and voice
-  Future<void> updateLanguage(String newLanguageCode) async {
+  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
     languageCode = newLanguageCode;
     await _dbHelper.updateTtsSettings('languageCode', newLanguageCode);
+    await _dbHelper.updateTtsSettings('voiceName', newVoiceName);
     await setTtsLanguage();
-    print("Language updated to $languageCode");
+    print("Language updated to $languageCode with voice $newVoiceName");
   }
 
   /// Sets TTS language and other configurations

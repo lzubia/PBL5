@@ -1,18 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pbl5_menu/tts_service_google.dart';
 import 'picture_service.dart';
-import 'tts_service.dart';
 
 class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
-  final TtsServiceGoogle ttsServiceGoogle;
-  final TtsService ttsService;
+  final dynamic ttsService; // Accepts either TtsService or TtsServiceGoogle
 
   const RiskDetection({
     super.key,
     required this.pictureService,
-    required this.ttsServiceGoogle,
     required this.ttsService,
   });
 
@@ -35,9 +31,7 @@ class _RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture() async {
     await widget.pictureService.takePicture(
-      onLabelsDetected: (labels) => widget.ttsServiceGoogle.speakLabels(
-        labels,
-      ),
+      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
       onResponseTimeUpdated: (duration) {
         setState(() {
           responseTime = duration;
@@ -59,7 +53,7 @@ class _RiskDetectionState extends State<RiskDetection> {
               padding: const EdgeInsets.all(8.0),
               child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
             ),
-          Row(
+       Row(
             children: [
               Expanded(
                 child: Container(
@@ -82,7 +76,7 @@ class _RiskDetectionState extends State<RiskDetection> {
                                   _timer = Timer.periodic(
                                     Duration(milliseconds: 1500),
                                     (timer) {
-                                      widget.ttsServiceGoogle.speakLabels(
+                                      widget.ttsService.speakLabels(
                                         ['Risk Detected'],
                                       );
                                       //_takePicture();

@@ -58,7 +58,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 class MyHomePage extends StatefulWidget {
   final PictureService pictureService;
   final TtsServiceGoogle ttsServiceGoogle;
@@ -84,13 +83,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'CIEGOTRON 3000',
-          style: TextStyle(fontSize: 24.0), // Increase font size
-        ),
+        title: Text('CIEGOTRON 3000', style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, size: 50.0),
+            icon: Icon(Icons.settings, size: 50),
             onPressed: () {
               Navigator.push(
                 context,
@@ -112,8 +108,9 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.all(8.0),
             child: RiskDetection(
               pictureService: widget.pictureService,
-              ttsServiceGoogle: widget.ttsServiceGoogle,
-              ttsService: widget.ttsService,
+              ttsService: useGoogleTts
+                  ? widget.ttsServiceGoogle
+                  : widget.ttsService,
             ),
           ),
           Expanded(

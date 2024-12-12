@@ -89,6 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
+    widget.ttsService.updateLanguage(languageCode, voiceName);
     widget.ttsServiceGoogle.updateLanguage(languageCode, voiceName);
     setState(() {
       _language = languageCode;
