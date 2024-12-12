@@ -35,6 +35,9 @@ linux/flutter/
 macos/Flutter/
 windows/flutter/
 
+# Ignore sensitive credentials files
+/mobile-app/assets/tts-english.json
+
 # Symbolication related
 app.*.symbols
 
