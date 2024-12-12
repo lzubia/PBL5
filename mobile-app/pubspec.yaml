@@ -46,6 +46,8 @@ dependencies:
   mockito: ^5.4.4
   http_parser: ^4.0.2
   camera_platform_interface: ^2.8.0
+  flutter_native_contact_picker: ^0.0.9
+  sqflite: ^2.4.1
   #dcdg: ^4.1.0
 
 dev_dependencies:

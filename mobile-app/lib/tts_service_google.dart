@@ -6,19 +6,39 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'database_helper.dart';
 
-class TtsService {
+class TtsServiceGoogle {
   late AudioPlayer audioPlayer;
   final String _authFilePath = 'assets/tts-english.json';
+  String languageCode = 'en-US';
+  String voiceName = 'en-US-Wavenet-D';
+  final DatabaseHelper _dbHelper;
 
-  TtsService() {
+  TtsServiceGoogle(this._dbHelper) {
     WidgetsFlutterBinding.ensureInitialized();
     audioPlayer = AudioPlayer();
+    _loadSettings();
   }
 
   /// Initializes the service (if needed for additional setup)
   void initializeTts() {
     print("Google TTS Service Initialized");
+  }
+
+  /// Loads the language and voice settings from the database
+  Future<void> _loadSettings() async {
+    final settings = await _dbHelper.getTtsSettings();
+    languageCode = settings['languageCode']!;
+    voiceName = settings['voiceName']!;
+    print("Loaded settings: languageCode=$languageCode, voiceName=$voiceName");
+  }
+
+  /// Updates the language and voice
+  void updateLanguage(String newLanguageCode, String newVoiceName) {
+    languageCode = newLanguageCode;
+    voiceName = newVoiceName;
+    print("Language updated to $languageCode with voice $voiceName");
   }
 
   /// Reads the service account JSON file and gets the access token
@@ -78,7 +98,7 @@ class TtsService {
           },
           body: json.encode({
             "input": {"text": label},
-            "voice": {"languageCode": "en-US", "name": "en-US-Wavenet-D"},
+            "voice": {"languageCode": languageCode, "name": voiceName},
             "audioConfig": {"audioEncoding": "MP3"},
           }),
         );
