@@ -53,7 +53,7 @@ class _RiskDetectionState extends State<RiskDetection> {
               padding: const EdgeInsets.all(8.0),
               child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
             ),
-       Row(
+          Row(
             children: [
               Expanded(
                 child: Container(
@@ -76,10 +76,10 @@ class _RiskDetectionState extends State<RiskDetection> {
                                   _timer = Timer.periodic(
                                     Duration(milliseconds: 1500),
                                     (timer) {
-                                      widget.ttsService.speakLabels(
-                                        ['Risk Detected'],
-                                      );
-                                      //_takePicture();
+                                      // widget.ttsService.speakLabels(
+                                      //   ['Risk Detected'],
+                                      // );
+                                      _takePicture();
                                     },
                                   );
                                 } else {
@@ -90,40 +90,6 @@ class _RiskDetectionState extends State<RiskDetection> {
                           ),
                         ],
                       ),
-                      // SizedBox(height: 16.0),
-                      // Text('Select Language:', style: TextStyle(fontSize: 16)),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //   children: [
-                      //     ElevatedButton(
-                      //       onPressed: () {
-                      //         setState(() {
-                      //           selectedLanguageCode = 'en-US';
-                      //           selectedVoiceName = 'en-US-Wavenet-D';
-                      //         });
-                      //       },
-                      //       child: Text('English'),
-                      //     ),
-                      //     ElevatedButton(
-                      //       onPressed: () {
-                      //         setState(() {
-                      //           selectedLanguageCode = 'es-ES';
-                      //           selectedVoiceName = 'es-ES-Wavenet-B';
-                      //         });
-                      //       },
-                      //       child: Text('Spanish'),
-                      //     ),
-                      //     ElevatedButton(
-                      //       onPressed: () {
-                      //         setState(() {
-                      //           selectedLanguageCode = 'eu-ES';
-                      //           selectedVoiceName = 'eu-ES-Wavenet-A';
-                      //         });
-                      //       },
-                      //       child: Text('Basque'),
-                      //     ),
-                      //   ],
-                      // ),
                     ],
                   ),
                 ),

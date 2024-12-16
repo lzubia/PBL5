@@ -13,7 +13,10 @@ class TtsService {
   TtsService(this._dbHelper) {
     WidgetsFlutterBinding.ensureInitialized();
     flutterTts = FlutterTts();
-    _loadSettings();
+  }
+
+  Future<void> initialize() async {
+    await _loadSettings();
   }
 
   /// Initialize TTS with default or loaded settings
@@ -37,10 +40,10 @@ class TtsService {
   /// Loads the language and TTS settings from the database
   Future<void> _loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
-    languageCode = settings['languageCode'] ?? 'en-US';
-    speechRate = (settings['speechRate'] as double?) ?? 1.0;
-    pitch = (settings['pitch'] as double?) ?? 1.0;
-    volume = (settings['volume'] as double?) ?? 1.0;
+    languageCode = (settings['languageCode']?.isNotEmpty ?? false) ? settings['languageCode']! : 'en-US';
+    speechRate = (settings['speechRate']?.isNotEmpty ?? false) ? double.tryParse(settings['speechRate']!) ?? 1.0 : 1.0;
+    pitch = (settings['pitch']?.isNotEmpty ?? false) ? double.tryParse(settings['pitch']!) ?? 1.0 : 1.0;
+    volume = (settings['volume']?.isNotEmpty ?? false) ? double.tryParse(settings['volume']!) ?? 1.0 : 1.0;
 
     print(
         "Loaded settings: languageCode=$languageCode, speechRate=$speechRate, pitch=$pitch, volume=$volume");
@@ -51,11 +54,16 @@ class TtsService {
   /// Updates the language and voice
   Future<void> updateLanguage(
       String newLanguageCode, String newVoiceName) async {
-    languageCode = newLanguageCode;
-    await _dbHelper.updateTtsSettings('languageCode', newLanguageCode);
-    await _dbHelper.updateTtsSettings('voiceName', newVoiceName);
-    await setTtsLanguage();
-    print("Language updated to $languageCode with voice $newVoiceName");
+    bool isAvailable = await flutterTts.isLanguageAvailable(newLanguageCode);
+    if (isAvailable) {
+      languageCode = newLanguageCode;
+      await _dbHelper.updateTtsSettings('languageCode', newLanguageCode);
+      await _dbHelper.updateTtsSettings('voiceName', newVoiceName);
+      await setTtsLanguage();
+      print("Language updated to $languageCode with voice $newVoiceName");
+    } else {
+      print("Language $newLanguageCode is not available");
+    }
   }
 
   /// Updates the speech rate
