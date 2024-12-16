@@ -85,6 +85,7 @@ class _RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture() async {
     await widget.pictureService.takePicture(
+      endpoint: 'http://192.168.1.2:1880/process', // Add the required endpoint parameter
       onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
       onResponseTimeUpdated: (duration) {
         setState(() {

@@ -81,13 +81,14 @@ class PictureService {
   }
 
   Future<void> takePicture({
+    required String endpoint,
     required Function(List<dynamic>) onLabelsDetected,
     required Function(Duration) onResponseTimeUpdated,
   }) async {
     try {
       final imagePath = await captureAndProcessImage();
       await sendImageAndHandleResponse(
-          imagePath, onLabelsDetected, onResponseTimeUpdated);
+          imagePath, endpoint, onLabelsDetected, onResponseTimeUpdated);
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -121,11 +122,12 @@ class PictureService {
 
   Future<void> sendImageAndHandleResponse(
       String filePath,
+      String endpoint,
       Function(List<String>) onDetectedObjects,
       Function(Duration) onResponseTime) async {
     print("sendImageAndHandleResponse called"); // Debug print
     final request = multipartRequestFactory(
-        'POST', Uri.parse('http://192.168.1.2:1880/process'));
+        'POST', Uri.parse(endpoint));
 
     // Add the image file to the request
     final file = await multipartFileWrapper.fromPath('file', filePath);
