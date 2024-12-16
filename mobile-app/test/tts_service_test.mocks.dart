@@ -3,12 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
-import 'dart:ui' as _i3;
+import 'dart:async' as _i5;
+import 'dart:ui' as _i4;
 
-import 'package:flutter/services.dart' as _i5;
+import 'package:flutter/services.dart' as _i6;
 import 'package:flutter_tts/flutter_tts.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:pbl5_menu/database_helper.dart' as _i7;
+import 'package:sqflite/sqflite.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -34,6 +36,16 @@ class _FakeSpeechRateValidRange_0 extends _i1.SmartFake
         );
 }
 
+class _FakeDatabase_1 extends _i1.SmartFake implements _i3.Database {
+  _FakeDatabase_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [FlutterTts].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -43,7 +55,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
   }
 
   @override
-  set startHandler(_i3.VoidCallback? _startHandler) => super.noSuchMethod(
+  set startHandler(_i4.VoidCallback? _startHandler) => super.noSuchMethod(
         Invocation.setter(
           #startHandler,
           _startHandler,
@@ -52,7 +64,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  set completionHandler(_i3.VoidCallback? _completionHandler) =>
+  set completionHandler(_i4.VoidCallback? _completionHandler) =>
       super.noSuchMethod(
         Invocation.setter(
           #completionHandler,
@@ -62,7 +74,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  set pauseHandler(_i3.VoidCallback? _pauseHandler) => super.noSuchMethod(
+  set pauseHandler(_i4.VoidCallback? _pauseHandler) => super.noSuchMethod(
         Invocation.setter(
           #pauseHandler,
           _pauseHandler,
@@ -71,7 +83,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  set continueHandler(_i3.VoidCallback? _continueHandler) => super.noSuchMethod(
+  set continueHandler(_i4.VoidCallback? _continueHandler) => super.noSuchMethod(
         Invocation.setter(
           #continueHandler,
           _continueHandler,
@@ -80,7 +92,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  set cancelHandler(_i3.VoidCallback? _cancelHandler) => super.noSuchMethod(
+  set cancelHandler(_i4.VoidCallback? _cancelHandler) => super.noSuchMethod(
         Invocation.setter(
           #cancelHandler,
           _cancelHandler,
@@ -108,74 +120,74 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  _i4.Future<int?> get getMaxSpeechInputLength => (super.noSuchMethod(
+  _i5.Future<int?> get getMaxSpeechInputLength => (super.noSuchMethod(
         Invocation.getter(#getMaxSpeechInputLength),
-        returnValue: _i4.Future<int?>.value(),
-      ) as _i4.Future<int?>);
+        returnValue: _i5.Future<int?>.value(),
+      ) as _i5.Future<int?>);
 
   @override
-  _i4.Future<dynamic> get getLanguages => (super.noSuchMethod(
+  _i5.Future<dynamic> get getLanguages => (super.noSuchMethod(
         Invocation.getter(#getLanguages),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> get getEngines => (super.noSuchMethod(
+  _i5.Future<dynamic> get getEngines => (super.noSuchMethod(
         Invocation.getter(#getEngines),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> get getDefaultEngine => (super.noSuchMethod(
+  _i5.Future<dynamic> get getDefaultEngine => (super.noSuchMethod(
         Invocation.getter(#getDefaultEngine),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> get getDefaultVoice => (super.noSuchMethod(
+  _i5.Future<dynamic> get getDefaultVoice => (super.noSuchMethod(
         Invocation.getter(#getDefaultVoice),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> get getVoices => (super.noSuchMethod(
+  _i5.Future<dynamic> get getVoices => (super.noSuchMethod(
         Invocation.getter(#getVoices),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<_i2.SpeechRateValidRange> get getSpeechRateValidRange =>
+  _i5.Future<_i2.SpeechRateValidRange> get getSpeechRateValidRange =>
       (super.noSuchMethod(
         Invocation.getter(#getSpeechRateValidRange),
-        returnValue: _i4.Future<_i2.SpeechRateValidRange>.value(
+        returnValue: _i5.Future<_i2.SpeechRateValidRange>.value(
             _FakeSpeechRateValidRange_0(
           this,
           Invocation.getter(#getSpeechRateValidRange),
         )),
-      ) as _i4.Future<_i2.SpeechRateValidRange>);
+      ) as _i5.Future<_i2.SpeechRateValidRange>);
 
   @override
-  _i4.Future<dynamic> awaitSpeakCompletion(bool? awaitCompletion) =>
+  _i5.Future<dynamic> awaitSpeakCompletion(bool? awaitCompletion) =>
       (super.noSuchMethod(
         Invocation.method(
           #awaitSpeakCompletion,
           [awaitCompletion],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> awaitSynthCompletion(bool? awaitCompletion) =>
+  _i5.Future<dynamic> awaitSynthCompletion(bool? awaitCompletion) =>
       (super.noSuchMethod(
         Invocation.method(
           #awaitSynthCompletion,
           [awaitCompletion],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> speak(
+  _i5.Future<dynamic> speak(
     String? text, {
     bool? focus = false,
   }) =>
@@ -185,20 +197,20 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
           [text],
           {#focus: focus},
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> pause() => (super.noSuchMethod(
+  _i5.Future<dynamic> pause() => (super.noSuchMethod(
         Invocation.method(
           #pause,
           [],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> synthesizeToFile(
+  _i5.Future<dynamic> synthesizeToFile(
     String? text,
     String? fileName, [
     bool? isFullPath = false,
@@ -212,58 +224,58 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
             isFullPath,
           ],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setLanguage(String? language) => (super.noSuchMethod(
+  _i5.Future<dynamic> setLanguage(String? language) => (super.noSuchMethod(
         Invocation.method(
           #setLanguage,
           [language],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setSpeechRate(double? rate) => (super.noSuchMethod(
+  _i5.Future<dynamic> setSpeechRate(double? rate) => (super.noSuchMethod(
         Invocation.method(
           #setSpeechRate,
           [rate],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setVolume(double? volume) => (super.noSuchMethod(
+  _i5.Future<dynamic> setVolume(double? volume) => (super.noSuchMethod(
         Invocation.method(
           #setVolume,
           [volume],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setSharedInstance(bool? sharedSession) =>
+  _i5.Future<dynamic> setSharedInstance(bool? sharedSession) =>
       (super.noSuchMethod(
         Invocation.method(
           #setSharedInstance,
           [sharedSession],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> autoStopSharedSession(bool? autoStop) =>
+  _i5.Future<dynamic> autoStopSharedSession(bool? autoStop) =>
       (super.noSuchMethod(
         Invocation.method(
           #autoStopSharedSession,
           [autoStop],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setIosAudioCategory(
+  _i5.Future<dynamic> setIosAudioCategory(
     _i2.IosTextToSpeechAudioCategory? category,
     List<_i2.IosTextToSpeechAudioCategoryOptions>? options, [
     _i2.IosTextToSpeechAudioMode? mode =
@@ -278,105 +290,105 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
             mode,
           ],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setEngine(String? engine) => (super.noSuchMethod(
+  _i5.Future<dynamic> setEngine(String? engine) => (super.noSuchMethod(
         Invocation.method(
           #setEngine,
           [engine],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setPitch(double? pitch) => (super.noSuchMethod(
+  _i5.Future<dynamic> setPitch(double? pitch) => (super.noSuchMethod(
         Invocation.method(
           #setPitch,
           [pitch],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setVoice(Map<String, String>? voice) =>
+  _i5.Future<dynamic> setVoice(Map<String, String>? voice) =>
       (super.noSuchMethod(
         Invocation.method(
           #setVoice,
           [voice],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> clearVoice() => (super.noSuchMethod(
+  _i5.Future<dynamic> clearVoice() => (super.noSuchMethod(
         Invocation.method(
           #clearVoice,
           [],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> stop() => (super.noSuchMethod(
+  _i5.Future<dynamic> stop() => (super.noSuchMethod(
         Invocation.method(
           #stop,
           [],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> isLanguageAvailable(String? language) =>
+  _i5.Future<dynamic> isLanguageAvailable(String? language) =>
       (super.noSuchMethod(
         Invocation.method(
           #isLanguageAvailable,
           [language],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> isLanguageInstalled(String? language) =>
+  _i5.Future<dynamic> isLanguageInstalled(String? language) =>
       (super.noSuchMethod(
         Invocation.method(
           #isLanguageInstalled,
           [language],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> areLanguagesInstalled(List<String>? languages) =>
+  _i5.Future<dynamic> areLanguagesInstalled(List<String>? languages) =>
       (super.noSuchMethod(
         Invocation.method(
           #areLanguagesInstalled,
           [languages],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setSilence(int? timems) => (super.noSuchMethod(
+  _i5.Future<dynamic> setSilence(int? timems) => (super.noSuchMethod(
         Invocation.method(
           #setSilence,
           [timems],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<dynamic> setQueueMode(int? queueMode) => (super.noSuchMethod(
+  _i5.Future<dynamic> setQueueMode(int? queueMode) => (super.noSuchMethod(
         Invocation.method(
           #setQueueMode,
           [queueMode],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  void setStartHandler(_i3.VoidCallback? callback) => super.noSuchMethod(
+  void setStartHandler(_i4.VoidCallback? callback) => super.noSuchMethod(
         Invocation.method(
           #setStartHandler,
           [callback],
@@ -385,7 +397,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  void setCompletionHandler(_i3.VoidCallback? callback) => super.noSuchMethod(
+  void setCompletionHandler(_i4.VoidCallback? callback) => super.noSuchMethod(
         Invocation.method(
           #setCompletionHandler,
           [callback],
@@ -394,7 +406,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  void setContinueHandler(_i3.VoidCallback? callback) => super.noSuchMethod(
+  void setContinueHandler(_i4.VoidCallback? callback) => super.noSuchMethod(
         Invocation.method(
           #setContinueHandler,
           [callback],
@@ -403,7 +415,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  void setPauseHandler(_i3.VoidCallback? callback) => super.noSuchMethod(
+  void setPauseHandler(_i4.VoidCallback? callback) => super.noSuchMethod(
         Invocation.method(
           #setPauseHandler,
           [callback],
@@ -412,7 +424,7 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  void setCancelHandler(_i3.VoidCallback? callback) => super.noSuchMethod(
+  void setCancelHandler(_i4.VoidCallback? callback) => super.noSuchMethod(
         Invocation.method(
           #setCancelHandler,
           [callback],
@@ -439,22 +451,136 @@ class MockFlutterTts extends _i1.Mock implements _i2.FlutterTts {
       );
 
   @override
-  _i4.Future<dynamic> platformCallHandler(_i5.MethodCall? call) =>
+  _i5.Future<dynamic> platformCallHandler(_i6.MethodCall? call) =>
       (super.noSuchMethod(
         Invocation.method(
           #platformCallHandler,
           [call],
         ),
-        returnValue: _i4.Future<dynamic>.value(),
-      ) as _i4.Future<dynamic>);
+        returnValue: _i5.Future<dynamic>.value(),
+      ) as _i5.Future<dynamic>);
 
   @override
-  _i4.Future<void> setAudioAttributesForNavigation() => (super.noSuchMethod(
+  _i5.Future<void> setAudioAttributesForNavigation() => (super.noSuchMethod(
         Invocation.method(
           #setAudioAttributesForNavigation,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+}
+
+/// A class which mocks [DatabaseHelper].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockDatabaseHelper extends _i1.Mock implements _i7.DatabaseHelper {
+  MockDatabaseHelper() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Future<_i3.Database> get database => (super.noSuchMethod(
+        Invocation.getter(#database),
+        returnValue: _i5.Future<_i3.Database>.value(_FakeDatabase_1(
+          this,
+          Invocation.getter(#database),
+        )),
+      ) as _i5.Future<_i3.Database>);
+
+  @override
+  _i5.Future<void> insertContact(String? name) => (super.noSuchMethod(
+        Invocation.method(
+          #insertContact,
+          [name],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<String>> getContacts() => (super.noSuchMethod(
+        Invocation.method(
+          #getContacts,
+          [],
+        ),
+        returnValue: _i5.Future<List<String>>.value(<String>[]),
+      ) as _i5.Future<List<String>>);
+
+  @override
+  _i5.Future<void> deleteContact(String? name) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteContact,
+          [name],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<Map<String, dynamic>> getPreferences() => (super.noSuchMethod(
+        Invocation.method(
+          #getPreferences,
+          [],
+        ),
+        returnValue:
+            _i5.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i5.Future<Map<String, dynamic>>);
+
+  @override
+  _i5.Future<void> updatePreferences(
+    double? fontSize,
+    String? language,
+    bool? isDarkTheme,
+    double? speechRate,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updatePreferences,
+          [
+            fontSize,
+            language,
+            isDarkTheme,
+            speechRate,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<Map<String, String>> getTtsSettings() => (super.noSuchMethod(
+        Invocation.method(
+          #getTtsSettings,
+          [],
+        ),
+        returnValue: _i5.Future<Map<String, String>>.value(<String, String>{}),
+      ) as _i5.Future<Map<String, String>>);
+
+  @override
+  _i5.Future<void> updateTtsSettings(
+    String? languageCode,
+    String? voiceName,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #updateTtsSettings,
+          [
+            languageCode,
+            voiceName,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> resetDatabase() => (super.noSuchMethod(
+        Invocation.method(
+          #resetDatabase,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
