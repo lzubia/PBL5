@@ -104,7 +104,7 @@ class _RiskDetectionState extends State<RiskDetection> {
         },
       );
     });
-    widget.ttsService.speak("Risk detection enabled");
+    widget.ttsService.speakLabels(["Risk detection on"]);
   }
 
   void _disableRiskDetection() {
@@ -112,7 +112,7 @@ class _RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    widget.ttsService.speak("Risk detection disabled");
+    widget.ttsService.speakLabels(["Risk detection off"]);
   }
 
   @override
