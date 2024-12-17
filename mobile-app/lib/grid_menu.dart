@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/map_widget.dart';
 import 'describe_environment.dart';
 import 'picture_service.dart';
 
@@ -63,7 +64,7 @@ class _GridMenuState extends State<GridMenu> {
                   if (title == 'GPS (Map)')
                     Container(
                       height: 550,
-                      //child: MapWidget(),
+                      child: MapWidget(),
                     ),
                   if (title != 'Describe Environment' && title != 'GPS (Map)')
                     Text('Content for $title goes here.'),
