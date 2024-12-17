@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:pbl5_menu/map_widget.dart';
 import 'describe_environment.dart';
 import 'picture_service.dart';
+import 'package:pbl5_menu/money_identifier.dart';
 
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
 
-  const GridMenu({super.key, required this.pictureService, required this.ttsService});
+  const GridMenu(
+      {super.key, required this.pictureService, required this.ttsService});
 
   @override
   _GridMenuState createState() => _GridMenuState();
@@ -57,7 +59,9 @@ class _GridMenuState extends State<GridMenu> {
                     Container(
                       height: 550,
                       child: DescribeEnvironment(
-                          pictureService: widget.pictureService, ttsService: widget.ttsService,),
+                        pictureService: widget.pictureService,
+                        ttsService: widget.ttsService,
+                      ),
                     )
                   else if (title == 'Describe Environment' &&
                       !isCameraInitialized)
@@ -67,7 +71,14 @@ class _GridMenuState extends State<GridMenu> {
                       height: 550,
                       child: MapWidget(),
                     ),
-                  if (title != 'Describe Environment' && title != 'GPS (Map)')
+                  if (title == 'Money Identifier')
+                    Container(
+                      height: 550,
+                      child: MoneyIdentifier(pictureService: widget.pictureService, ttsService: widget.ttsService,),
+                    ),
+                  if (title != 'Describe Environment' &&
+                      title != 'GPS (Map)' &&
+                      title != 'Money Identifier')
                     Text('Content for $title goes here.'),
                 ],
               ),
