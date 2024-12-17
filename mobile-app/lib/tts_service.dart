@@ -1,8 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'database_helper.dart';
+import 'i_tts_service.dart';
 
-class TtsService {
+class TtsService implements ITtsService {
   late FlutterTts flutterTts;
   String languageCode = 'en-US';
   double speechRate = 1.0;
@@ -19,7 +20,7 @@ class TtsService {
     await _loadSettings();
   }
 
-  /// Initialize TTS with default or loaded settings
+  @override
   void initializeTts() {
     flutterTts.setStartHandler(() {
       print("TTS started");
@@ -37,7 +38,6 @@ class TtsService {
     checkTtsAvailability();
   }
 
-  /// Loads the language and TTS settings from the database
   Future<void> _loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
     languageCode = (settings['languageCode']?.isNotEmpty ?? false) ? settings['languageCode']! : 'en-US';
@@ -51,9 +51,8 @@ class TtsService {
     await setTtsLanguage();
   }
 
-  /// Updates the language and voice
-  Future<void> updateLanguage(
-      String newLanguageCode, String newVoiceName) async {
+  @override
+  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
     bool isAvailable = await flutterTts.isLanguageAvailable(newLanguageCode);
     if (isAvailable) {
       languageCode = newLanguageCode;
@@ -66,7 +65,7 @@ class TtsService {
     }
   }
 
-  /// Updates the speech rate
+  @override
   Future<void> updateSpeechRate(double newSpeechRate) async {
     speechRate = newSpeechRate;
     await flutterTts.setSpeechRate(speechRate);
@@ -74,7 +73,6 @@ class TtsService {
     print("Speech rate updated to $speechRate");
   }
 
-  /// Sets TTS language and other configurations
   Future<void> setTtsLanguage() async {
     await flutterTts.setLanguage(languageCode);
     await flutterTts.setSpeechRate(speechRate);
@@ -82,7 +80,6 @@ class TtsService {
     await flutterTts.setPitch(pitch);
   }
 
-  /// Checks TTS availability
   Future<void> checkTtsAvailability() async {
     var languages = await flutterTts.getLanguages;
     print("Available languages: $languages");
@@ -95,7 +92,7 @@ class TtsService {
     print("Available TTS engines: $engines");
   }
 
-  /// Speaks out detected labels
+  @override
   Future<void> speakLabels(List<dynamic> detectedObjects) async {
     for (var obj in detectedObjects) {
       String label = obj; // Assuming obj is a string representing the label

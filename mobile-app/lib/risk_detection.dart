@@ -1,38 +1,29 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pbl5_menu/stt_service_google.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:pbl5_menu/i_stt_service.dart';
+import 'package:pbl5_menu/i_tts_service.dart';
 import 'picture_service.dart';
 
 class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
-  final dynamic ttsService; // Accepts either TtsService or TtsServiceGoogle
-  final SttServiceGoogle sttServiceGoogle; // Add STT service as a parameter
+  final ITtsService ttsService; // Accepts either TtsService or TtsServiceGoogle
+  final ISttService sttService; // Accepts either SttService or SttServiceGoogle
 
   const RiskDetection({
     super.key,
     required this.pictureService,
     required this.ttsService,
-    required this.sttServiceGoogle,
+    required this.sttService,
   });
 
   @override
-  _RiskDetectionState createState() => _RiskDetectionState();
+  RiskDetectionState createState() => RiskDetectionState();
 }
 
-class _RiskDetectionState extends State<RiskDetection> {
-  late stt.SpeechToText _speech; // Speech-to-text instance
-  bool _isListening = false; // Indicates if speech recognition is active
-  String detectedCommand = "";
+class RiskDetectionState extends State<RiskDetection> {
   bool isRiskDetectionEnabled = false;
   Duration responseTime = Duration.zero;
   Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _speech = stt.SpeechToText();
-  }
 
   @override
   void dispose() {
@@ -41,61 +32,7 @@ class _RiskDetectionState extends State<RiskDetection> {
     super.dispose();
   }
 
-  Future<void> _startListening() async {
-    bool available = await _speech.initialize(
-      onStatus: (status) => print('Speech status: $status'),
-      onError: (error) => print('Speech error: $error'),
-    );
-
-    if (available) {
-      setState(() {
-        _isListening = true;
-      });
-
-      _speech.listen(
-        onResult: (result) {
-          final transcript = result.recognizedWords.toLowerCase();
-
-          setState(() {
-            detectedCommand = transcript;
-          });
-
-          // Process the command
-          if (transcript.contains('risk detection on')) {
-            _enableRiskDetection();
-          } else if (transcript.contains('risk detection off')) {
-            _disableRiskDetection();
-          } else {
-            widget.ttsService.speak(["Command not recognized"]);
-          }
-        },
-        localeId: 'en_US', // Change locale if necessary
-      );
-    } else {
-      widget.ttsService.speak(["Speech recognition is not available."]);
-    }
-  }
-
-  void _stopListening() {
-    _speech.stop();
-    setState(() {
-      _isListening = false;
-    });
-  }
-
-  Future<void> _takePicture() async {
-    await widget.pictureService.takePicture(
-      endpoint: 'http://192.168.1.2:1880/detect', // Add the required endpoint parameter
-      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
-      onResponseTimeUpdated: (duration) {
-        setState(() {
-          responseTime = duration;
-        });
-      },
-    );
-  }
-
-  void _enableRiskDetection() {
+  void enableRiskDetection() {
     setState(() {
       isRiskDetectionEnabled = true;
       _timer = Timer.periodic(
@@ -108,12 +45,25 @@ class _RiskDetectionState extends State<RiskDetection> {
     widget.ttsService.speakLabels(["Risk detection on"]);
   }
 
-  void _disableRiskDetection() {
+  void disableRiskDetection() {
     setState(() {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
     widget.ttsService.speakLabels(["Risk detection off"]);
+  }
+
+  Future<void> _takePicture() async {
+    await widget.pictureService.takePicture(
+      endpoint:
+          'http://192.168.1.2:1880/detect', // Add the required endpoint parameter
+      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
+      onResponseTimeUpdated: (duration) {
+        setState(() {
+          responseTime = duration;
+        });
+      },
+    );
   }
 
   @override
@@ -149,26 +99,14 @@ class _RiskDetectionState extends State<RiskDetection> {
                             value: isRiskDetectionEnabled,
                             onChanged: (value) {
                               if (value) {
-                                _enableRiskDetection();
+                                enableRiskDetection();
                               } else {
-                                _disableRiskDetection();
+                                disableRiskDetection();
                               }
                             },
                           ),
                         ],
                       ),
-                      ElevatedButton(
-                        onPressed: _isListening ? _stopListening : _startListening,
-                        child: Text(_isListening ? 'Stop Listening' : 'Start Listening'),
-                      ),
-                      if (detectedCommand.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Detected Command: $detectedCommand',
-                            style: TextStyle(fontSize: 16, color: Colors.green),
-                          ),
-                        ),
                     ],
                   ),
                 ),

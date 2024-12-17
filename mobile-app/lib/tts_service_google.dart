@@ -7,8 +7,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'database_helper.dart';
+import 'i_tts_service.dart';
 
-class TtsServiceGoogle {
+class TtsServiceGoogle implements ITtsService {
   late AudioPlayer audioPlayer;
   final String _authFilePath = 'assets/tts-english.json';
   String languageCode = 'en-US';
@@ -22,12 +23,11 @@ class TtsServiceGoogle {
     _loadSettings();
   }
 
-  /// Initializes the service (if needed for additional setup)
+  @override
   void initializeTts() {
     print("Google TTS Service Initialized");
   }
 
-  /// Loads the language and voice settings from the database
   Future<void> _loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
     languageCode = settings['languageCode']!;
@@ -35,27 +35,25 @@ class TtsServiceGoogle {
     print("Loaded settings: languageCode=$languageCode, voiceName=$voiceName");
   }
 
-  /// Updates the language and voice
-  void updateLanguage(String newLanguageCode, String newVoiceName) {
+  @override
+  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
     languageCode = newLanguageCode;
     voiceName = newVoiceName;
     print("Language updated to $languageCode with voice $voiceName");
   }
 
-  /// Updates the speech rate
-  void updateSpeechRate(double newSpeechRate) {
+  @override
+  Future<void> updateSpeechRate(double newSpeechRate) async {
     speechRate = newSpeechRate;
     print("Speech rate updated to $speechRate");
   }
 
-  /// Reads the service account JSON file and gets the access token
   Future<String> _getAccessToken() async {
     final serviceAccount =
         json.decode(await rootBundle.loadString(_authFilePath));
     final now = DateTime.now();
     final expiry = now.add(Duration(hours: 1));
 
-    // Create the JWT
     final jwt = JWT(
       {
         "iss": serviceAccount['client_email'],
@@ -66,11 +64,9 @@ class TtsServiceGoogle {
       },
     );
 
-    // Sign the JWT using the service account private key
     final privateKey = RSAPrivateKey(serviceAccount['private_key']);
     final token = jwt.sign(privateKey, algorithm: JWTAlgorithm.RS256);
 
-    // Exchange JWT for Access Token
     final response = await http.post(
       Uri.parse("https://oauth2.googleapis.com/token"),
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
@@ -87,7 +83,7 @@ class TtsServiceGoogle {
     return json.decode(response.body)['access_token'];
   }
 
-  /// Sends text to Google TTS API and plays the generated audio
+  @override
   Future<void> speakLabels(List<dynamic> detectedObjects) async {
     final token = await _getAccessToken();
 
@@ -96,7 +92,6 @@ class TtsServiceGoogle {
       try {
         print("Speaking label: $label");
 
-        // Generate audio using Google TTS API
         final response = await http.post(
           Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
           headers: {
@@ -114,12 +109,10 @@ class TtsServiceGoogle {
           final audioContent = json.decode(response.body)['audioContent'];
           final bytes = base64.decode(audioContent);
 
-          // Save MP3 file locally
           final tempDir = await getTemporaryDirectory();
           final file = File('${tempDir.path}/output.mp3');
           await file.writeAsBytes(bytes);
 
-          // Play the audio
           await audioPlayer.play(DeviceFileSource(file.path));
         } else {
           print("Error from TTS API: ${response.body}");

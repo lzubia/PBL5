@@ -1,63 +1,34 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'i_stt_service.dart';
 
-class SttServiceGoogle {
-  final String _authFilePath = 'assets/tts-english.json';
-  String languageCode = 'en-US';
+class SttServiceGoogle implements ISttService {
+  final String languageCode;
+  late String _accessToken;
 
-  SttServiceGoogle() {
-    WidgetsFlutterBinding.ensureInitialized();
-  }
+  SttServiceGoogle({this.languageCode = 'en-US'});
 
-  /// Initializes the service (if needed for additional setup)
-  void initializeStt() {
-    // print("Google Speech-to-Text Service Initialized");
-  }
-
-  /// Reads the service account JSON file and gets the access token
   Future<String> _getAccessToken() async {
-    final serviceAccount =
-        json.decode(await rootBundle.loadString(_authFilePath));
-    final now = DateTime.now();
-    final expiry = now.add(Duration(hours: 1));
-
-    // Create the JWT
-    final jwt = JWT(
-      {
-        "iss": serviceAccount['client_email'],
-        "scope": "https://www.googleapis.com/auth/cloud-platform",
-        "aud": "https://oauth2.googleapis.com/token",
-        "iat": now.millisecondsSinceEpoch ~/ 1000,
-        "exp": expiry.millisecondsSinceEpoch ~/ 1000,
-      },
-    );
-
-    // Sign the JWT using the service account private key
-    final privateKey = RSAPrivateKey(serviceAccount['private_key']);
-    final token = jwt.sign(privateKey, algorithm: JWTAlgorithm.RS256);
-
-    // Exchange JWT for Access Token
-    final response = await http.post(
-      Uri.parse("https://oauth2.googleapis.com/token"),
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
-      body: {
-        "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "assertion": token,
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception("Failed to fetch access token: ${response.body}");
-    }
-
-    return json.decode(response.body)['access_token'];
+    // Implement your logic to get the access token
+    return _accessToken;
   }
 
-  /// Sends audio to Google Speech-to-Text API and returns the transcribed text
+  @override
+  Future<void> initializeStt() async {
+    // Initialize the service if needed
+  }
+
+  @override
+  Future<void> startListening(Function(String) onResult) async {
+    // Implement your logic to start listening and transcribe audio
+  }
+
+  @override
+  void stopListening() {
+    // Implement your logic to stop listening
+  }
+
   Future<String> transcribeAudio(File audioFile) async {
     final token = await _getAccessToken();
     final bytes = await audioFile.readAsBytes();
@@ -81,11 +52,12 @@ class SttServiceGoogle {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception("Error from Speech-to-Text API: ${response.body}");
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      final transcript = jsonResponse['results'][0]['alternatives'][0]['transcript'];
+      return transcript;
+    } else {
+      throw Exception('Failed to transcribe audio');
     }
-
-    final transcript = json.decode(response.body)['results'][0]['alternatives'][0]['transcript'];
-    return transcript;
   }
 }
