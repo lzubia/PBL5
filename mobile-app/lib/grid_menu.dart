@@ -4,8 +4,9 @@ import 'picture_service.dart';
 
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
+  final dynamic ttsService;
 
-  const GridMenu({super.key, required this.pictureService});
+  const GridMenu({super.key, required this.pictureService, required this.ttsService});
 
   @override
   _GridMenuState createState() => _GridMenuState();
@@ -55,7 +56,7 @@ class _GridMenuState extends State<GridMenu> {
                     Container(
                       height: 550,
                       child: DescribeEnvironment(
-                          pictureService: widget.pictureService),
+                          pictureService: widget.pictureService, ttsService: widget.ttsService,),
                     )
                   else if (title == 'Describe Environment' &&
                       !isCameraInitialized)

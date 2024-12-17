@@ -66,13 +66,13 @@ class _RiskDetectionState extends State<RiskDetection> {
           } else if (transcript.contains('risk detection off')) {
             _disableRiskDetection();
           } else {
-            widget.ttsService.speak("Command not recognized");
+            widget.ttsService.speak(["Command not recognized"]);
           }
         },
         localeId: 'en_US', // Change locale if necessary
       );
     } else {
-      widget.ttsService.speak("Speech recognition is not available.");
+      widget.ttsService.speak(["Speech recognition is not available."]);
     }
   }
 
@@ -85,7 +85,7 @@ class _RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture() async {
     await widget.pictureService.takePicture(
-      endpoint: 'http://192.168.1.2:1880/process', // Add the required endpoint parameter
+      endpoint: 'http://192.168.1.2:1880/detect', // Add the required endpoint parameter
       onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
       onResponseTimeUpdated: (duration) {
         setState(() {

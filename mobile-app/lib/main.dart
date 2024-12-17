@@ -126,7 +126,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           Expanded(
-            child: GridMenu(pictureService: widget.pictureService),
+            child: GridMenu(
+              pictureService: widget.pictureService,
+              ttsService: useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
