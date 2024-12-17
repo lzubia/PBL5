@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'risk_detection.dart';
 import 'grid_menu.dart';
@@ -9,23 +10,25 @@ import 'database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   final pictureService = PictureService();
   await pictureService.setupCamera();
   await pictureService.initializeCamera();
+  
   final databaseHelper = DatabaseHelper();
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
   final ttsService = TtsService(databaseHelper);
+  final sttServiceGoogle = SttServiceGoogle(); // Initialize Speech-to-Text service
   
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
-
-  //databaseHelper.resetDatabase();
 
   runApp(MyApp(
     pictureService: pictureService,
     ttsServiceGoogle: ttsServiceGoogle,
     ttsService: ttsService,
     databaseHelper: databaseHelper,
+    sttServiceGoogle: sttServiceGoogle, // Pass the STT service
   ));
 }
 
@@ -34,6 +37,7 @@ class MyApp extends StatelessWidget {
   final TtsServiceGoogle ttsServiceGoogle;
   final TtsService ttsService;
   final DatabaseHelper databaseHelper;
+  final SttServiceGoogle sttServiceGoogle;
 
   const MyApp({
     super.key,
@@ -41,6 +45,7 @@ class MyApp extends StatelessWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
+    required this.sttServiceGoogle, // Add STT service
   });
 
   @override
@@ -56,15 +61,18 @@ class MyApp extends StatelessWidget {
         ttsServiceGoogle: ttsServiceGoogle,
         ttsService: ttsService,
         databaseHelper: databaseHelper,
+        sttServiceGoogle: sttServiceGoogle, // Pass the STT service to MyHomePage
       ),
     );
   }
 }
+
 class MyHomePage extends StatefulWidget {
   final PictureService pictureService;
   final TtsServiceGoogle ttsServiceGoogle;
   final TtsService ttsService;
   final DatabaseHelper databaseHelper;
+  final SttServiceGoogle sttServiceGoogle;
 
   const MyHomePage({
     super.key,
@@ -72,6 +80,7 @@ class MyHomePage extends StatefulWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
+    required this.sttServiceGoogle, // Add STT service
   });
 
   @override
@@ -113,6 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ttsService: useGoogleTts
                   ? widget.ttsServiceGoogle
                   : widget.ttsService,
+              sttServiceGoogle: widget.sttServiceGoogle, // Pass the STT service
             ),
           ),
           Expanded(
