@@ -25,7 +25,8 @@ class MultipartFileWrapper {
   }
 }
 
-typedef MultipartRequestFactory = http.MultipartRequest Function(String method, Uri url);
+typedef MultipartRequestFactory = http.MultipartRequest Function(
+    String method, Uri url);
 
 class PictureService {
   late CameraController controller;
@@ -43,7 +44,8 @@ class PictureService {
     this.httpClient = httpClient ?? http.Client();
     this.imageDecoder = imageDecoder ?? ImageDecoder();
     this.multipartFileWrapper = multipartFileWrapper ?? MultipartFileWrapper();
-    this.multipartRequestFactory = multipartRequestFactory ?? (method, url) => http.MultipartRequest(method, url);
+    this.multipartRequestFactory = multipartRequestFactory ??
+        (method, url) => http.MultipartRequest(method, url);
   }
 
   Future<void> setupCamera() async {
@@ -81,13 +83,14 @@ class PictureService {
   }
 
   Future<void> takePicture({
+    required String endpoint,
     required Function(List<dynamic>) onLabelsDetected,
     required Function(Duration) onResponseTimeUpdated,
   }) async {
     try {
       final imagePath = await captureAndProcessImage();
       await sendImageAndHandleResponse(
-          imagePath, onLabelsDetected, onResponseTimeUpdated);
+          imagePath, endpoint, onLabelsDetected, onResponseTimeUpdated);
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -121,11 +124,11 @@ class PictureService {
 
   Future<void> sendImageAndHandleResponse(
       String filePath,
+      String endpoint,
       Function(List<String>) onDetectedObjects,
       Function(Duration) onResponseTime) async {
     print("sendImageAndHandleResponse called"); // Debug print
-    final request = multipartRequestFactory(
-        'POST', Uri.parse('http://192.168.1.2:1880/process'));
+    final request = multipartRequestFactory('POST', Uri.parse(endpoint));
 
     // Add the image file to the request
     final file = await multipartFileWrapper.fromPath('file', filePath);
@@ -148,6 +151,16 @@ class PictureService {
   List<String> parseLabelsFromResponse(String responseBody) {
     // Parse the response body to extract labels
     final decodedJson = jsonDecode(responseBody);
-    return List<String>.from(decodedJson['message']);
+    final message = decodedJson['message'];
+
+    if (message is String) {
+      // If the message is a single string, return it as a list with one element
+      return [message];
+    } else if (message is List) {
+      // If the message is a list, return it as a list of strings
+      return List<String>.from(message);
+    } else {
+      throw Exception('Unexpected response format');
+    }
   }
 }

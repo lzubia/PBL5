@@ -2,13 +2,14 @@
 # System Files
 
 # ==== DART/FLUTTER ====
-
-# ==== JAVA ====
-
-# ==== PYTHON ====
-
 mobile-app/linux/flutter/generated_plugin_registrant.cc
 mobile-app/linux/flutter/generated_plugins.cmake
 mobile-app/macos/Flutter/GeneratedPluginRegistrant.swift
 mobile-app/windows/flutter/generated_plugin_registrant.cc
 mobile-app/windows/flutter/generated_plugins.cmake
+mobile-app/assets/tts-english.json
+
+# ==== JAVA ====
+
+# ==== PYTHON ====
+
