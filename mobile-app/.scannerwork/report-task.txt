@@ -1,0 +1,6 @@
+projectKey=pbl5
+serverUrl=http://localhost:9000
+serverVersion=24.12.0.100206
+dashboardUrl=http://localhost:9000/dashboard?id=pbl5
+ceTaskId=886741fc-06df-4964-a6e6-55737e04d0d0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=886741fc-06df-4964-a6e6-55737e04d0d0

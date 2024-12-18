@@ -7,9 +7,8 @@ import 'dart:async' as _i3;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
-import 'package:pbl5_menu/database_helper.dart' as _i6;
-import 'package:sqflite/sqflite.dart' as _i2;
 import 'package:sqflite_common/sql.dart' as _i5;
+import 'package:sqflite_common/sqlite_api.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -518,118 +517,4 @@ class MockDatabase extends _i1.Mock implements _i2.Database {
           ),
         ),
       ) as _i2.Batch);
-}
-
-/// A class which mocks [DatabaseHelper].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockDatabaseHelper extends _i1.Mock implements _i6.DatabaseHelper {
-  MockDatabaseHelper() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i3.Future<_i2.Database> get database => (super.noSuchMethod(
-        Invocation.getter(#database),
-        returnValue: _i3.Future<_i2.Database>.value(_FakeDatabase_0(
-          this,
-          Invocation.getter(#database),
-        )),
-      ) as _i3.Future<_i2.Database>);
-
-  @override
-  _i3.Future<void> insertContact(String? name) => (super.noSuchMethod(
-        Invocation.method(
-          #insertContact,
-          [name],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<List<String>> getContacts() => (super.noSuchMethod(
-        Invocation.method(
-          #getContacts,
-          [],
-        ),
-        returnValue: _i3.Future<List<String>>.value(<String>[]),
-      ) as _i3.Future<List<String>>);
-
-  @override
-  _i3.Future<void> deleteContact(String? name) => (super.noSuchMethod(
-        Invocation.method(
-          #deleteContact,
-          [name],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<Map<String, dynamic>> getPreferences() => (super.noSuchMethod(
-        Invocation.method(
-          #getPreferences,
-          [],
-        ),
-        returnValue:
-            _i3.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i3.Future<Map<String, dynamic>>);
-
-  @override
-  _i3.Future<void> updatePreferences(
-    double? fontSize,
-    String? language,
-    bool? isDarkTheme,
-    double? speechRate,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #updatePreferences,
-          [
-            fontSize,
-            language,
-            isDarkTheme,
-            speechRate,
-          ],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<Map<String, String>> getTtsSettings() => (super.noSuchMethod(
-        Invocation.method(
-          #getTtsSettings,
-          [],
-        ),
-        returnValue: _i3.Future<Map<String, String>>.value(<String, String>{}),
-      ) as _i3.Future<Map<String, String>>);
-
-  @override
-  _i3.Future<void> updateTtsSettings(
-    String? languageCode,
-    String? voiceName,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #updateTtsSettings,
-          [
-            languageCode,
-            voiceName,
-          ],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<void> resetDatabase() => (super.noSuchMethod(
-        Invocation.method(
-          #resetDatabase,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
 }
