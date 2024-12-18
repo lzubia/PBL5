@@ -223,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onPressed: () async {
                   Contact? contact = await _contactPicker.selectContact();
                   if (contact != null) {
-                    _addContact(contact.fullName ?? '');
+                    await _addContact(contact.fullName ?? '');
                   }
                 },
                 style: ElevatedButton.styleFrom(

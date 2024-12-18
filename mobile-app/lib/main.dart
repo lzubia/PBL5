@@ -26,8 +26,8 @@ void main() async {
   
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
-  sttServiceGoogle.initializeStt(); // Initialize STT service
-  sttService.initializeStt(); // Initialize another STT service
+  await sttServiceGoogle.initializeStt(); // Initialize STT service
+  await sttService.initializeStt(); // Initialize another STT service
 
   runApp(MyApp(
     pictureService: pictureService,

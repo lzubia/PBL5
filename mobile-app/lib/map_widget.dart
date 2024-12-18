@@ -35,16 +35,13 @@ class OrderTrackingPageState extends State<MapWidget> {
   void getCurrentLocation() async {
     Location location = Location();
 
-    location.getLocation().then(
-      (location) {
-        if (mounted) {
-          setState(() {
-            currentLocation = location;
-            print('Current location: ${location.latitude}, ${location.longitude}');
-          });
-        }
-      },
-    );
+    var locationData = await location.getLocation();
+    if (mounted) {
+      setState(() {
+        currentLocation = locationData;
+        print('Current location: ${locationData.latitude}, ${locationData.longitude}');
+      });
+    }
 
     GoogleMapController googleMapController = await _controller.future;
 
@@ -83,7 +80,8 @@ class OrderTrackingPageState extends State<MapWidget> {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
       request: PolylineRequest(
-        origin: PointLatLng(currentLocation?.latitude ?? 0.0, currentLocation?.longitude ?? 0.0),
+        origin: PointLatLng(currentLocation?.latitude ?? 0.0,
+            currentLocation?.longitude ?? 0.0),
         destination: PointLatLng(destination.latitude, destination.longitude),
         mode: TravelMode.driving,
       ),
@@ -163,7 +161,8 @@ class OrderTrackingPageState extends State<MapWidget> {
                 Marker(
                   markerId: MarkerId("source"),
                   icon: sourceIcon,
-                  position: LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+                  position: LatLng(
+                      currentLocation!.latitude!, currentLocation!.longitude!),
                 ),
                 Marker(
                   markerId: MarkerId("destination"),
