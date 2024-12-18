@@ -54,6 +54,7 @@ dependencies:
   camera_platform_interface: ^2.8.0
   flutter_native_contact_picker: ^0.0.9
   sqflite: ^2.4.1
+  sqflite_common_ffi: ^2.3.4+4
   #dcdg: ^4.1.0
 
 dev_dependencies:

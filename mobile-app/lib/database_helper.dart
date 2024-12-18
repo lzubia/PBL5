@@ -12,6 +12,13 @@ class DatabaseHelper {
 
   DatabaseHelper._internal();
 
+  // Setter for the database
+  set database(Future<Database> db) {
+    db.then((database) {
+      _database = database;
+    });
+  }
+
   // Lazy-loaded singleton database
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -25,19 +32,19 @@ class DatabaseHelper {
     return await openDatabase(
       path,
       version: 4, // Increment version for migrations
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
     );
   }
 
   // Create tables when the database is created
-  Future<void> _onCreate(Database db, int version) async {
+  Future<void> onCreate(Database db, int version) async {
     await _createTables(db);
-    await _insertDefaultData(db);
+    await insertDefaultData(db);
   }
 
   // Handle schema upgrades (when database version is increased)
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
       // Only call _createTables for versions less than 4
       await _createTables(db);
@@ -76,7 +83,7 @@ class DatabaseHelper {
   }
 
   // Insert default data (if not already present)
-  Future<void> _insertDefaultData(Database db) async {
+  Future<void> insertDefaultData(Database db) async {
     final countSettings = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM settings')) ??
         0;
@@ -142,8 +149,8 @@ class DatabaseHelper {
   }
 
   // Update preferences
-  Future<void> updatePreferences(
-      double fontSize, String language, bool isDarkTheme, double speechRate) async {
+  Future<void> updatePreferences(double fontSize, String language,
+      bool isDarkTheme, double speechRate) async {
     final db = await database;
     await db.update(
       'preferences',
@@ -188,6 +195,9 @@ class DatabaseHelper {
   }
 
   Future<void> resetDatabase() async {
+    if (_database != null) {
+      await _database!.close(); // Explicitly close the database
+    }
     String path = join(await getDatabasesPath(), 'app_database.db');
     await deleteDatabase(path); // Deletes the database
     _database = null; // Reset the in-memory reference

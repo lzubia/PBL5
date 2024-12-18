@@ -3,17 +3,17 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i8;
+import 'dart:async' as _i7;
 import 'dart:io' as _i5;
 
 import 'package:camera/camera.dart' as _i2;
 import 'package:flutter/material.dart' as _i6;
-import 'package:flutter_tts/flutter_tts.dart' as _i7;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i9;
+import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:pbl5_menu/i_stt_service.dart' as _i10;
+import 'package:pbl5_menu/i_tts_service.dart' as _i9;
 import 'package:pbl5_menu/picture_service.dart' as _i4;
-import 'package:pbl5_menu/tts_service.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -103,16 +103,6 @@ class _FakeWidget_6 extends _i1.SmartFake implements _i6.Widget {
   @override
   String toString({_i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info}) =>
       super.toString();
-}
-
-class _FakeFlutterTts_7 extends _i1.SmartFake implements _i7.FlutterTts {
-  _FakeFlutterTts_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
 }
 
 /// A class which mocks [PictureService].
@@ -256,24 +246,24 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       );
 
   @override
-  _i8.Future<void> setupCamera() => (super.noSuchMethod(
+  _i7.Future<void> setupCamera() => (super.noSuchMethod(
         Invocation.method(
           #setupCamera,
           [],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i8.Future<void> initializeCamera() => (super.noSuchMethod(
+  _i7.Future<void> initializeCamera() => (super.noSuchMethod(
         Invocation.method(
           #initializeCamera,
           [],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void disposeCamera() => super.noSuchMethod(
@@ -300,7 +290,8 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       ) as _i6.Widget);
 
   @override
-  _i8.Future<void> takePicture({
+  _i7.Future<void> takePicture({
+    required String? endpoint,
     required dynamic Function(List<dynamic>)? onLabelsDetected,
     required dynamic Function(Duration)? onResponseTimeUpdated,
   }) =>
@@ -309,32 +300,34 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
           #takePicture,
           [],
           {
+            #endpoint: endpoint,
             #onLabelsDetected: onLabelsDetected,
             #onResponseTimeUpdated: onResponseTimeUpdated,
           },
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i8.Future<String> captureAndProcessImage() => (super.noSuchMethod(
+  _i7.Future<String> captureAndProcessImage() => (super.noSuchMethod(
         Invocation.method(
           #captureAndProcessImage,
           [],
         ),
-        returnValue: _i8.Future<String>.value(_i9.dummyValue<String>(
+        returnValue: _i7.Future<String>.value(_i8.dummyValue<String>(
           this,
           Invocation.method(
             #captureAndProcessImage,
             [],
           ),
         )),
-      ) as _i8.Future<String>);
+      ) as _i7.Future<String>);
 
   @override
-  _i8.Future<void> sendImageAndHandleResponse(
+  _i7.Future<void> sendImageAndHandleResponse(
     String? filePath,
+    String? endpoint,
     dynamic Function(List<String>)? onDetectedObjects,
     dynamic Function(Duration)? onResponseTime,
   ) =>
@@ -343,13 +336,14 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
           #sendImageAndHandleResponse,
           [
             filePath,
+            endpoint,
             onDetectedObjects,
             onResponseTime,
           ],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   List<String> parseLabelsFromResponse(String? responseBody) =>
@@ -362,94 +356,13 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       ) as List<String>);
 }
 
-/// A class which mocks [TtsService].
+/// A class which mocks [ITtsService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTtsService extends _i1.Mock implements _i10.TtsService {
-  MockTtsService() {
+class MockITtsService extends _i1.Mock implements _i9.ITtsService {
+  MockITtsService() {
     _i1.throwOnMissingStub(this);
   }
-
-  @override
-  _i7.FlutterTts get flutterTts => (super.noSuchMethod(
-        Invocation.getter(#flutterTts),
-        returnValue: _FakeFlutterTts_7(
-          this,
-          Invocation.getter(#flutterTts),
-        ),
-      ) as _i7.FlutterTts);
-
-  @override
-  set flutterTts(_i7.FlutterTts? _flutterTts) => super.noSuchMethod(
-        Invocation.setter(
-          #flutterTts,
-          _flutterTts,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  String get languageCode => (super.noSuchMethod(
-        Invocation.getter(#languageCode),
-        returnValue: _i9.dummyValue<String>(
-          this,
-          Invocation.getter(#languageCode),
-        ),
-      ) as String);
-
-  @override
-  set languageCode(String? _languageCode) => super.noSuchMethod(
-        Invocation.setter(
-          #languageCode,
-          _languageCode,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  double get speechRate => (super.noSuchMethod(
-        Invocation.getter(#speechRate),
-        returnValue: 0.0,
-      ) as double);
-
-  @override
-  set speechRate(double? _speechRate) => super.noSuchMethod(
-        Invocation.setter(
-          #speechRate,
-          _speechRate,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  double get pitch => (super.noSuchMethod(
-        Invocation.getter(#pitch),
-        returnValue: 0.0,
-      ) as double);
-
-  @override
-  set pitch(double? _pitch) => super.noSuchMethod(
-        Invocation.setter(
-          #pitch,
-          _pitch,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  double get volume => (super.noSuchMethod(
-        Invocation.getter(#volume),
-        returnValue: 0.0,
-      ) as double);
-
-  @override
-  set volume(double? _volume) => super.noSuchMethod(
-        Invocation.setter(
-          #volume,
-          _volume,
-        ),
-        returnValueForMissingStub: null,
-      );
 
   @override
   void initializeTts() => super.noSuchMethod(
@@ -461,7 +374,18 @@ class MockTtsService extends _i1.Mock implements _i10.TtsService {
       );
 
   @override
-  _i8.Future<void> updateLanguage(
+  _i7.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #speakLabels,
+          [detectedObjects],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> updateLanguage(
     String? newLanguageCode,
     String? newVoiceName,
   ) =>
@@ -473,49 +397,57 @@ class MockTtsService extends _i1.Mock implements _i10.TtsService {
             newVoiceName,
           ],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i8.Future<void> updateSpeechRate(double? newSpeechRate) =>
+  _i7.Future<void> updateSpeechRate(double? newSpeechRate) =>
       (super.noSuchMethod(
         Invocation.method(
           #updateSpeechRate,
           [newSpeechRate],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [ISttService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockISttService extends _i1.Mock implements _i10.ISttService {
+  MockISttService() {
+    _i1.throwOnMissingStub(this);
+  }
 
   @override
-  _i8.Future<void> setTtsLanguage() => (super.noSuchMethod(
+  _i7.Future<void> initializeStt() => (super.noSuchMethod(
         Invocation.method(
-          #setTtsLanguage,
+          #initializeStt,
           [],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i8.Future<void> checkTtsAvailability() => (super.noSuchMethod(
-        Invocation.method(
-          #checkTtsAvailability,
-          [],
-        ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
-
-  @override
-  _i8.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i7.Future<void> startListening(dynamic Function(String)? onResult) =>
       (super.noSuchMethod(
         Invocation.method(
-          #speakLabels,
-          [detectedObjects],
+          #startListening,
+          [onResult],
         ),
-        returnValue: _i8.Future<void>.value(),
-        returnValueForMissingStub: _i8.Future<void>.value(),
-      ) as _i8.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  void stopListening() => super.noSuchMethod(
+        Invocation.method(
+          #stopListening,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }
