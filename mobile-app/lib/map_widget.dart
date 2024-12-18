@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -80,7 +81,7 @@ class OrderTrackingPageState extends State<MapWidget> {
     PolylinePoints polylinePoints = PolylinePoints();
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleApiKey: 'AIzaSyB40wX7coxDT7_VC-wmCLkqQtq4kx7qMl8',
+      googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
       request: PolylineRequest(
         origin: PointLatLng(currentLocation?.latitude ?? 0.0, currentLocation?.longitude ?? 0.0),
         destination: PointLatLng(destination.latitude, destination.longitude),
@@ -131,12 +132,12 @@ class OrderTrackingPageState extends State<MapWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Track order",
-          style: TextStyle(color: Colors.black, fontSize: 16),
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     "Track order",
+      //     style: TextStyle(color: Colors.black, fontSize: 16),
+      //   ),
+      // ),
       body: currentLocation == null
           ? const Center(child: Text("Loading"))
           : GoogleMap(
