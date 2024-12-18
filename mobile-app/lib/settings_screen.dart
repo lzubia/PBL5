@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter/services.dart'; // For vibration
-import 'package:pbl5_menu/tts_service.dart';
+import 'package:pbl5_menu/i_tts_service.dart';
 import 'database_helper.dart';
-import 'package:pbl5_menu/tts_service_google.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final TtsServiceGoogle ttsServiceGoogle;
-  final TtsService ttsService;
+  final ITtsService ttsServiceGoogle;
+  final ITtsService ttsService;
   final DatabaseHelper databaseHelper;
 
   const SettingsScreen({
@@ -103,7 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _speechRate = rate;
     });
-    widget.ttsService.updateSpeechRate(rate/2);
+    widget.ttsService.updateSpeechRate(rate / 2);
     widget.ttsServiceGoogle.updateSpeechRate(rate);
     _savePreferences();
   }

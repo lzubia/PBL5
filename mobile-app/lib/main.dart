@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
+import 'package:pbl5_menu/stt_service.dart';
+import 'package:pbl5_menu/i_stt_service.dart';
+import 'package:pbl5_menu/i_tts_service.dart';
 import 'risk_detection.dart';
 import 'grid_menu.dart';
 import 'settings_screen.dart';
@@ -19,9 +22,12 @@ void main() async {
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
   final ttsService = TtsService(databaseHelper);
   final sttServiceGoogle = SttServiceGoogle(); // Initialize Speech-to-Text service
+  final sttService = SttService(); // Initialize another Speech-to-Text service
   
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
+  sttServiceGoogle.initializeStt(); // Initialize STT service
+  sttService.initializeStt(); // Initialize another STT service
 
   runApp(MyApp(
     pictureService: pictureService,
@@ -29,15 +35,17 @@ void main() async {
     ttsService: ttsService,
     databaseHelper: databaseHelper,
     sttServiceGoogle: sttServiceGoogle, // Pass the STT service
+    sttService: sttService, // Pass another STT service
   ));
 }
 
 class MyApp extends StatelessWidget {
   final PictureService pictureService;
-  final TtsServiceGoogle ttsServiceGoogle;
-  final TtsService ttsService;
+  final ITtsService ttsServiceGoogle;
+  final ITtsService ttsService;
   final DatabaseHelper databaseHelper;
-  final SttServiceGoogle sttServiceGoogle;
+  final ISttService sttServiceGoogle;
+  final ISttService sttService;
 
   const MyApp({
     super.key,
@@ -46,6 +54,7 @@ class MyApp extends StatelessWidget {
     required this.ttsService,
     required this.databaseHelper,
     required this.sttServiceGoogle, // Add STT service
+    required this.sttService, // Add another STT service
   });
 
   @override
@@ -62,6 +71,7 @@ class MyApp extends StatelessWidget {
         ttsService: ttsService,
         databaseHelper: databaseHelper,
         sttServiceGoogle: sttServiceGoogle, // Pass the STT service to MyHomePage
+        sttService: sttService, // Pass another STT service to MyHomePage
       ),
     );
   }
@@ -69,10 +79,11 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   final PictureService pictureService;
-  final TtsServiceGoogle ttsServiceGoogle;
-  final TtsService ttsService;
+  final ITtsService ttsServiceGoogle;
+  final ITtsService ttsService;
   final DatabaseHelper databaseHelper;
-  final SttServiceGoogle sttServiceGoogle;
+  final ISttService sttServiceGoogle;
+  final ISttService sttService;
 
   const MyHomePage({
     super.key,
@@ -81,6 +92,7 @@ class MyHomePage extends StatefulWidget {
     required this.ttsService,
     required this.databaseHelper,
     required this.sttServiceGoogle, // Add STT service
+    required this.sttService, // Add another STT service
   });
 
   @override
@@ -88,13 +100,60 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool useGoogleTts = true;
+  bool useGoogleTts = false; // Default to false
+  bool useGoogleStt = false; // Default to false
+  bool useVoiceControl = false; // Default to false
+  bool _isListening = false; // Indicates if speech recognition is active
+  String detectedCommand = "";
+  final GlobalKey<RiskDetectionState> _riskDetectionKey = GlobalKey<RiskDetectionState>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (useVoiceControl) {
+      _startListening();
+    }
+  }
+
+  Future<void> _startListening() async {
+    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    await sttService.startListening((transcript) {
+      setState(() {
+        detectedCommand = transcript;
+      });
+      _handleCommand(transcript);
+    });
+
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() {
+    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    sttService.stopListening();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void _handleCommand(String command) {
+    if (command.contains('risk detection on')) {
+      _riskDetectionKey.currentState?.enableRiskDetection();
+    } else if (command.contains('risk detection off') || command.contains('risk detection of')) {
+      _riskDetectionKey.currentState?.disableRiskDetection();
+    } else if (command.contains('another command')) {
+      // Handle another command
+    } else {
+      //widget.ttsService.speakLabels(["Command not recognized"]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('CIEGOTRON 3000', style: TextStyle(fontSize: 24)),
+        title: Text('BEGIA', style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
             icon: Icon(Icons.settings, size: 50),
@@ -118,11 +177,14 @@ class _MyHomePageState extends State<MyHomePage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: RiskDetection(
+              key: _riskDetectionKey,
               pictureService: widget.pictureService,
               ttsService: useGoogleTts
                   ? widget.ttsServiceGoogle
                   : widget.ttsService,
-              sttServiceGoogle: widget.sttServiceGoogle, // Pass the STT service
+              sttService: useGoogleStt
+                  ? widget.sttServiceGoogle
+                  : widget.sttService, // Pass the appropriate STT service
             ),
           ),
           Expanded(
@@ -133,21 +195,68 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
                 Text(
-                  'TTS Service: ${useGoogleTts ? "Google TTS" : "Demo TTS"}',
-                  style: TextStyle(fontSize: 16),
+                  'Command: $detectedCommand',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                Switch(
-                  value: useGoogleTts,
-                  onChanged: (value) {
-                    setState(() {
-                      useGoogleTts = value;
-                    });
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Voice Control: ${useVoiceControl ? "Enabled" : "Disabled"}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    Switch(
+                      value: useVoiceControl,
+                      onChanged: (value) {
+                        setState(() {
+                          useVoiceControl = value;
+                          if (useVoiceControl) {
+                            _startListening();
+                          } else {
+                            _stopListening();
+                          }
+                        });
+                      },
+                    ),
+                  ],
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'TTS Service: ${useGoogleTts ? "Google TTS" : "Demo TTS"}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    Switch(
+                      value: useGoogleTts,
+                      onChanged: (value) {
+                        setState(() {
+                          useGoogleTts = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'STT Service: ${useGoogleStt ? "Google STT" : "Demo STT"}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    Switch(
+                      value: useGoogleStt,
+                      onChanged: (value) {
+                        setState(() {
+                          useGoogleStt = value;
+                        });
+                      },
+                    ),
+                  ],
+                )
               ],
             ),
           ),
