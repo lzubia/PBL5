@@ -6,13 +6,13 @@ class MoneyIdentifier extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
 
-  MoneyIdentifier({required this.pictureService, required this.ttsService});
+  const MoneyIdentifier({Key? key, required this.pictureService, required this.ttsService}) : super(key: key);
 
   @override
-  _MoneyIdentifierState createState() => _MoneyIdentifierState();
+  MoneyIdentifierState createState() => MoneyIdentifierState();
 }
 
-class _MoneyIdentifierState extends State<MoneyIdentifier> {
+class MoneyIdentifierState extends State<MoneyIdentifier> {
   Timer? _timer;
   Duration responseTime = Duration.zero;
 

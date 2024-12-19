@@ -1,6 +1,7 @@
-projectKey=pbl5
-serverUrl=http://localhost:9000
-serverVersion=24.12.0.100206
-dashboardUrl=http://localhost:9000/dashboard?id=pbl5
-ceTaskId=b606a2b9-98a1-49c0-a7e1-1f5f254e38da
-ceTaskUrl=http://localhost:9000/api/ce/task?id=b606a2b9-98a1-49c0-a7e1-1f5f254e38da
+organization=magallastegi
+projectKey=magallastegi_pbl5
+serverUrl=https://sonarcloud.io
+serverVersion=8.0.0.58720
+dashboardUrl=https://sonarcloud.io/dashboard?id=magallastegi_pbl5
+ceTaskId=AZPeRtCuzMQCbMiJu3vc
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZPeRtCuzMQCbMiJu3vc

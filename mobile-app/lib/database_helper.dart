@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+const String defaultLocale = 'en-US';
+const String defaultVoice = 'en-US-Wavenet-D';
+
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
@@ -90,8 +93,8 @@ class DatabaseHelper {
     if (countSettings == 0) {
       await db.insert('settings', {
         'id': 1,
-        'languageCode': 'en-US',
-        'voiceName': 'en-US-Wavenet-D',
+        'languageCode': defaultLocale,
+        'voiceName': defaultVoice,
       });
     }
 
@@ -178,13 +181,13 @@ class DatabaseHelper {
         await db.query('settings', limit: 1);
     if (result.isNotEmpty) {
       return {
-        'languageCode': result[0]['languageCode'] ?? 'en-US',
-        'voiceName': result[0]['voiceName'] ?? 'en-US-Wavenet-D',
+        'languageCode': result[0]['languageCode'] ?? defaultLocale,
+        'voiceName': result[0]['voiceName'] ?? defaultVoice,
       };
     } else {
       return {
-        'languageCode': 'en-US',
-        'voiceName': 'en-US-Wavenet-D',
+        'languageCode': defaultLocale,
+        'voiceName': defaultVoice,
       };
     }
   }

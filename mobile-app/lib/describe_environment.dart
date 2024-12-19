@@ -10,7 +10,7 @@ class DescribeEnvironment extends StatelessWidget with Diagnosticable {
   /// The service used to convert text to speech.
   final ITtsService ttsService;
 
-  DescribeEnvironment({required this.pictureService, required this.ttsService});
+  DescribeEnvironment({Key? key, required this.pictureService, required this.ttsService}) : super(key: key);
 
   Future<void> _takeAndSendImage(BuildContext context) async {
     await pictureService.takePicture(

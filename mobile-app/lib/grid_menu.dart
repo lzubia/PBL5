@@ -4,6 +4,10 @@ import 'describe_environment.dart';
 import 'picture_service.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 
+const String describeEnvironmentTitle = 'Describe Environment';
+const String gpsMapTitle = 'GPS (Map)';
+const String moneyIdentifierTitle = 'Money Identifier';
+
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
@@ -12,10 +16,10 @@ class GridMenu extends StatefulWidget {
       {super.key, required this.pictureService, required this.ttsService});
 
   @override
-  _GridMenuState createState() => _GridMenuState();
+  GridMenuState createState() => GridMenuState();
 }
 
-class _GridMenuState extends State<GridMenu> {
+class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
 
   @override
@@ -55,31 +59,7 @@ class _GridMenuState extends State<GridMenu> {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 20),
-                  if (title == 'Describe Environment' && isCameraInitialized)
-                    Container(
-                      height: 550,
-                      child: DescribeEnvironment(
-                        pictureService: widget.pictureService,
-                        ttsService: widget.ttsService,
-                      ),
-                    )
-                  else if (title == 'Describe Environment' &&
-                      !isCameraInitialized)
-                    Center(child: CircularProgressIndicator()),
-                  if (title == 'GPS (Map)')
-                    Container(
-                      height: 550,
-                      child: MapWidget(),
-                    ),
-                  if (title == 'Money Identifier')
-                    Container(
-                      height: 550,
-                      child: MoneyIdentifier(pictureService: widget.pictureService, ttsService: widget.ttsService,),
-                    ),
-                  if (title != 'Describe Environment' &&
-                      title != 'GPS (Map)' &&
-                      title != 'Money Identifier')
-                    Text('Content for $title goes here.'),
+                  _buildContent(title),
                 ],
               ),
             ),
@@ -89,16 +69,59 @@ class _GridMenuState extends State<GridMenu> {
     });
   }
 
+  Widget _buildContent(String title) {
+    if (title == describeEnvironmentTitle) {
+      return _buildDescribeEnvironmentContent();
+    } else if (title == gpsMapTitle) {
+      return _buildMapContent();
+    } else if (title == moneyIdentifierTitle) {
+      return _buildMoneyIdentifierContent();
+    } else {
+      return Text('Content for $title goes here.');
+    }
+  }
+
+  Widget _buildDescribeEnvironmentContent() {
+    if (isCameraInitialized) {
+      return Container(
+        height: 550,
+        child: DescribeEnvironment(
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+        ),
+      );
+    } else {
+      return Center(child: CircularProgressIndicator());
+    }
+  }
+
+  Widget _buildMapContent() {
+    return Container(
+      height: 550,
+      child: MapWidget(),
+    );
+  }
+
+  Widget _buildMoneyIdentifierContent() {
+    return Container(
+      height: 550,
+      child: MoneyIdentifier(
+        pictureService: widget.pictureService,
+        ttsService: widget.ttsService,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> menuOptions = [
-      {'title': 'Describe Environment', 'icon': Icons.description},
-      {'title': 'GPS (Map)', 'icon': Icons.map},
+      {'title': describeEnvironmentTitle, 'icon': Icons.description},
+      {'title': gpsMapTitle, 'icon': Icons.map},
       {
         'title': 'Scanner (Read Texts, QRs, ...)',
         'icon': Icons.qr_code_scanner
       },
-      {'title': 'Money Identifier', 'icon': Icons.attach_money},
+      {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
     ];
 
     return GridView.count(

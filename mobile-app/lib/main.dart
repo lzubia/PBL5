@@ -96,10 +96,10 @@ class MyHomePage extends StatefulWidget {
   });
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
   bool useGoogleTts = false; // Default to false
   bool useGoogleStt = false; // Default to false
   bool useVoiceControl = false; // Default to false

@@ -18,10 +18,10 @@ class SettingsScreen extends StatefulWidget {
   });
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  SettingsScreenState createState() => SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends State<SettingsScreen> {
   List<String> contacts = [];
   double _fontSize = 20.0; // Larger default font size
   String _language = 'English';
