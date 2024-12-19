@@ -156,9 +156,9 @@ class OrderTrackingPageState extends State<MapWidget> {
                   zoom: 13.5),
               polylines: {
                 Polyline(
-                  polylineId: PolylineId("route"),
+                  polylineId: const PolylineId("route"),
                   points: polylineCoordinates,
-                  color: Color(0xFF7B61FF),
+                  color: const Color(0xFF7B61FF),
                   width: 6,
                 ),
               },
@@ -172,7 +172,7 @@ class OrderTrackingPageState extends State<MapWidget> {
                   ),
                 ),
                 Marker(
-                  markerId: MarkerId("source"),
+                  markerId: const MarkerId("source"),
                   icon: sourceIcon,
                   position: LatLng(
                     currentLocation!.latitude!,
@@ -180,7 +180,7 @@ class OrderTrackingPageState extends State<MapWidget> {
                   ),
                 ),
                 Marker(
-                  markerId: MarkerId("destination"),
+                  markerId: const MarkerId("destination"),
                   icon: destinationIcon,
                   position: destination,
                 ),

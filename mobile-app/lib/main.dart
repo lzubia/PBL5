@@ -153,10 +153,10 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('BEGIA', style: TextStyle(fontSize: 24)),
+        title: const Text('BEGIA', style: const TextStyle(fontSize: 24)),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, size: 50),
+            icon: const Icon(Icons.settings, size: 50),
             onPressed: () {
               Navigator.push(
                 context,
@@ -199,14 +199,14 @@ class MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(
                   'Command: $detectedCommand',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Voice Control: ${useVoiceControl ? "Enabled" : "Disabled"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useVoiceControl,
@@ -228,7 +228,7 @@ class MyHomePageState extends State<MyHomePage> {
                   children: [
                     Text(
                       'TTS Service: ${useGoogleTts ? "Google TTS" : "Demo TTS"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useGoogleTts,

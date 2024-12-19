@@ -50,15 +50,16 @@ class GridMenuState extends State<GridMenu> {
           return SingleChildScrollView(
             child: Container(
               width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   _buildContent(title),
                 ],
               ),
@@ -91,23 +92,35 @@ class GridMenuState extends State<GridMenu> {
         ),
       );
     } else {
-      return Center(child: CircularProgressIndicator());
+      return const Center(
+        child: const SizedBox(
+          width: 50.0, // Adjust the width as needed
+          height: 50.0, // Adjust the height as needed
+          child: const CircularProgressIndicator(),
+        ),
+      );
     }
   }
 
   Widget _buildMapContent() {
-    return Container(
-      height: 550,
-      child: MapWidget(),
+    return SizedBox(
+      height: 600, // Adjust the height as needed to add whitespace
+      child: Container(
+        height: 550,
+        child: const MapWidget(),
+      ),
     );
   }
 
   Widget _buildMoneyIdentifierContent() {
-    return Container(
-      height: 550,
-      child: MoneyIdentifier(
-        pictureService: widget.pictureService,
-        ttsService: widget.ttsService,
+    return SizedBox(
+      height: 600, // Adjust the height as needed to add whitespace
+      child: Container(
+        height: 550,
+        child: MoneyIdentifier(
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+        ),
       ),
     );
   }
@@ -128,25 +141,28 @@ class GridMenuState extends State<GridMenu> {
       crossAxisCount: 2,
       children: List.generate(menuOptions.length, (index) {
         return Card(
-          margin: EdgeInsets.all(8.0),
+          margin: const EdgeInsets.all(8.0),
           child: InkWell(
             onTap: () {
               _showBottomSheet(context, menuOptions[index]['title']);
             },
-            child: Container(
-              height: 150,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(menuOptions[index]['icon'], size: 50),
-                    SizedBox(height: 10),
-                    Text(
-                      menuOptions[index]['title'],
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ],
+            child: SizedBox(
+              height: 160, // Adjust the height as needed to add whitespace
+              child: Container(
+                height: 150,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(menuOptions[index]['icon'], size: 50),
+                      const SizedBox(height: 10),
+                      Text(
+                        menuOptions[index]['title'],
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

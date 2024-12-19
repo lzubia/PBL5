@@ -29,7 +29,7 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   }
 
   void _startPeriodicPictureTaking() {
-    _timer = Timer.periodic(Duration(seconds: 3), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _takeAndSendImage();
     });
   }
@@ -58,7 +58,7 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   @override
   Widget build(BuildContext context) {
     if (!widget.pictureService.isCameraInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: const CircularProgressIndicator());
     }
 
     return Column(
