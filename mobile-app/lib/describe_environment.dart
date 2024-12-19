@@ -1,9 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'picture_service.dart';
+import 'i_tts_service.dart';
 
-class DescribeEnvironment extends StatelessWidget {
+class DescribeEnvironment extends StatelessWidget with Diagnosticable {
+  /// The service used to take pictures.
   final PictureService pictureService;
-  final dynamic ttsService;
+
+  /// The service used to convert text to speech.
+  final ITtsService ttsService;
 
   DescribeEnvironment({required this.pictureService, required this.ttsService});
 
@@ -27,14 +32,25 @@ class DescribeEnvironment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(child: pictureService.getCameraPreview()),
-        ElevatedButton(
-          onPressed: () => _takeAndSendImage(context),
-          child: Text('Take and Send Image'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Describe Environment'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async => _takeAndSendImage(context),
+          child: const Text('Take Picture'),
         ),
-      ],
+      ),
     );
+  }
+
+  @override
+  void debugFillProperties(final DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+          DiagnosticsProperty<PictureService>('pictureService', pictureService))
+      ..add(DiagnosticsProperty<dynamic>('ttsService', ttsService));
   }
 }

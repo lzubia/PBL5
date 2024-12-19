@@ -118,11 +118,17 @@ class DatabaseHelper {
   // Get all contacts
   Future<List<String>> getContacts() async {
     final db = await database;
-    final result = await db.query('contacts');
-    return result.map((e) => e['name'] as String?).where((name) => name != null).cast<String>().toList();
+    final List<Map<String, dynamic>> result = await db.query('contacts');
+    return result
+        .map((final Map<String, dynamic> e) => e["name"] as String?)
+        .where((final String? name) => name != null)
+        .cast<String>()
+        .toList();
   }
 
-  // Delete a contact by name
+  /// Deletes a contact by name from the database.
+  ///
+  /// [name] is the name of the contact to be deleted.
   Future<void> deleteContact(String name) async {
     final db = await database;
     await db.delete(

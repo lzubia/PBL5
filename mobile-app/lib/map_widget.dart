@@ -39,7 +39,6 @@ class OrderTrackingPageState extends State<MapWidget> {
     if (mounted) {
       setState(() {
         currentLocation = locationData;
-        print('Current location: ${locationData.latitude}, ${locationData.longitude}');
       });
     }
 
@@ -50,7 +49,6 @@ class OrderTrackingPageState extends State<MapWidget> {
         if (mounted) {
           setState(() {
             currentLocation = newLoc;
-            print('Location changed: ${newLoc.latitude}, ${newLoc.longitude}');
             googleMapController.animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(
@@ -80,23 +78,34 @@ class OrderTrackingPageState extends State<MapWidget> {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
       request: PolylineRequest(
-        origin: PointLatLng(currentLocation?.latitude ?? 0.0,
-            currentLocation?.longitude ?? 0.0),
-        destination: PointLatLng(destination.latitude, destination.longitude),
+        origin: PointLatLng(
+          currentLocation?.latitude ?? 0.0,
+          currentLocation?.longitude ?? 0.0,
+        ),
+        destination: PointLatLng(
+          destination.latitude,
+          destination.longitude,
+        ),
         mode: TravelMode.driving,
       ),
     );
 
     if (result.points.isNotEmpty) {
       if (mounted) {
-        setState(() {
-          result.points.forEach(
-            (PointLatLng point) {
-              polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-              print('Added point: ${point.latitude}, ${point.longitude}');
-            },
-          );
-        });
+        setState(
+          () {
+            result.points.forEach(
+              (PointLatLng point) {
+                polylineCoordinates.add(
+                  LatLng(
+                    point.latitude,
+                    point.longitude,
+                  ),
+                );
+              },
+            );
+          },
+        );
       }
     } else {
       print('No points found');
@@ -141,7 +150,9 @@ class OrderTrackingPageState extends State<MapWidget> {
           : GoogleMap(
               initialCameraPosition: CameraPosition(
                   target: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                   zoom: 13.5),
               polylines: {
                 Polyline(
@@ -156,13 +167,17 @@ class OrderTrackingPageState extends State<MapWidget> {
                   markerId: const MarkerId("currentLocation"),
                   icon: currentLocationIcon,
                   position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                 ),
                 Marker(
                   markerId: MarkerId("source"),
                   icon: sourceIcon,
                   position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                 ),
                 Marker(
                   markerId: MarkerId("destination"),

@@ -2,5 +2,5 @@ projectKey=pbl5
 serverUrl=http://localhost:9000
 serverVersion=24.12.0.100206
 dashboardUrl=http://localhost:9000/dashboard?id=pbl5
-ceTaskId=f7077ba5-435d-4685-82ee-e611e494c111
-ceTaskUrl=http://localhost:9000/api/ce/task?id=f7077ba5-435d-4685-82ee-e611e494c111
+ceTaskId=b606a2b9-98a1-49c0-a7e1-1f5f254e38da
+ceTaskUrl=http://localhost:9000/api/ce/task?id=b606a2b9-98a1-49c0-a7e1-1f5f254e38da
