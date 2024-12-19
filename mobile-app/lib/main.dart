@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -11,8 +12,12 @@ import 'picture_service.dart';
 import 'tts_service.dart';
 import 'database_helper.dart';
 
+String sessionToken = '';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await startSession();
   
   final pictureService = PictureService();
   await pictureService.setupCamera();
@@ -38,7 +43,20 @@ void main() async {
     sttService: sttService, // Pass another STT service
   ));
 }
-
+Future<void> startSession() async {
+  final url = Uri.parse('https:192.168.1.2:1880/start-session');
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      sessionToken = response.body; // Guarda la respuesta en la variable
+      print('Session started successfully');
+    } else {
+      print('Failed to start session: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error starting session: $e');
+  }
+}
 class MyApp extends StatelessWidget {
   final PictureService pictureService;
   final ITtsService ttsServiceGoogle;
@@ -201,6 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   'Command: $detectedCommand',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                Text(sessionToken),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

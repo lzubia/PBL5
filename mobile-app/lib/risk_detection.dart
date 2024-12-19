@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/i_stt_service.dart';
 import 'package:pbl5_menu/i_tts_service.dart';
+import 'package:pbl5_menu/main.dart';
 import 'picture_service.dart';
 
 class RiskDetection extends StatefulWidget {
@@ -54,17 +55,18 @@ class RiskDetectionState extends State<RiskDetection> {
   }
 
   Future<void> _takePicture() async {
-    await widget.pictureService.takePicture(
-      endpoint:
-          'http://192.168.1.2:1880/detect', // Add the required endpoint parameter
-      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
-      onResponseTimeUpdated: (duration) {
-        setState(() {
-          responseTime = duration;
-        });
-      },
-    );
-  }
+  final endpoint = 'http://192.168.1.2:1880/detect?session_id=7f3a0340-9cfb-4aa4-a03a-1083203d257e'; // Incluye el sessionToken en la URL
+
+  await widget.pictureService.takePicture(
+    endpoint: endpoint, // Usa el endpoint con el sessionToken
+    onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
+    onResponseTimeUpdated: (duration) {
+      setState(() {
+        responseTime = duration;
+      });
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
