@@ -52,7 +52,7 @@ class TtsServiceGoogle implements ITtsService {
     final serviceAccount =
         json.decode(await rootBundle.loadString(_authFilePath));
     final now = DateTime.now();
-    final expiry = now.add(Duration(hours: 1));
+    final expiry = now.add(const Duration(hours: 1));
 
     final jwt = JWT(
       {

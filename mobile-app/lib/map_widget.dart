@@ -7,7 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 class MapWidget extends StatefulWidget {
-  const MapWidget({Key? key}) : super(key: key);
+  const MapWidget({super.key});
 
   @override
   State<MapWidget> createState() => OrderTrackingPageState();
@@ -94,16 +94,14 @@ class OrderTrackingPageState extends State<MapWidget> {
       if (mounted) {
         setState(
           () {
-            result.points.forEach(
-              (PointLatLng point) {
-                polylineCoordinates.add(
-                  LatLng(
-                    point.latitude,
-                    point.longitude,
-                  ),
-                );
-              },
-            );
+            for (PointLatLng point in result.points) {
+              polylineCoordinates.add(
+                LatLng(
+                  point.latitude,
+                  point.longitude,
+                ),
+              );
+            }
           },
         );
       }
@@ -113,21 +111,21 @@ class OrderTrackingPageState extends State<MapWidget> {
   }
 
   void setCustomMarkerIcon() {
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Pin_source.png")
         .then(
       (icon) {
         sourceIcon = icon;
       },
     );
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Pin_destination.png")
         .then(
       (icon) {
         destinationIcon = icon;
       },
     );
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Badge.png")
         .then(
       (icon) {

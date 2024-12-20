@@ -84,7 +84,7 @@ class GridMenuState extends State<GridMenu> {
 
   Widget _buildDescribeEnvironmentContent() {
     if (isCameraInitialized) {
-      return Container(
+      return SizedBox(
         height: 550,
         child: DescribeEnvironment(
           pictureService: widget.pictureService,
@@ -93,34 +93,28 @@ class GridMenuState extends State<GridMenu> {
       );
     } else {
       return const Center(
-        child: const SizedBox(
+        child: SizedBox(
           width: 50.0, // Adjust the width as needed
           height: 50.0, // Adjust the height as needed
-          child: const CircularProgressIndicator(),
+          child: CircularProgressIndicator(),
         ),
       );
     }
   }
 
   Widget _buildMapContent() {
-    return SizedBox(
-      height: 600, // Adjust the height as needed to add whitespace
-      child: Container(
-        height: 550,
-        child: const MapWidget(),
-      ),
+    return const SizedBox(
+      height: 500, // Adjust the height as needed to add whitespace
+      child: MapWidget(),
     );
   }
 
   Widget _buildMoneyIdentifierContent() {
     return SizedBox(
-      height: 600, // Adjust the height as needed to add whitespace
-      child: Container(
-        height: 550,
-        child: MoneyIdentifier(
-          pictureService: widget.pictureService,
-          ttsService: widget.ttsService,
-        ),
+      height: 550,
+      child: MoneyIdentifier(
+        pictureService: widget.pictureService,
+        ttsService: widget.ttsService,
       ),
     );
   }
@@ -147,22 +141,19 @@ class GridMenuState extends State<GridMenu> {
               _showBottomSheet(context, menuOptions[index]['title']);
             },
             child: SizedBox(
-              height: 160, // Adjust the height as needed to add whitespace
-              child: Container(
-                height: 150,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(menuOptions[index]['icon'], size: 50),
-                      const SizedBox(height: 10),
-                      Text(
-                        menuOptions[index]['title'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ],
-                  ),
+              height: 150,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(menuOptions[index]['icon'], size: 50),
+                    const SizedBox(height: 10),
+                    Text(
+                      menuOptions[index]['title'],
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ],
                 ),
               ),
             ),

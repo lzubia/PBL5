@@ -6,8 +6,9 @@ class MoneyIdentifier extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
 
-  const MoneyIdentifier({Key? key, required this.pictureService, required this.ttsService}) : super(key: key);
-
+  const MoneyIdentifier(
+      {super.key, required this.pictureService, required this.ttsService});
+      
   @override
   MoneyIdentifierState createState() => MoneyIdentifierState();
 }
@@ -39,7 +40,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
       endpoint: 'http://192.168.1.2:1880/money', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
-        widget.ttsService.speakLabels(labels); // Use ttsService to speak the labels
+        widget.ttsService
+            .speakLabels(labels); // Use ttsService to speak the labels
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Money Identified: $labels')),
         );
@@ -58,7 +60,7 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   @override
   Widget build(BuildContext context) {
     if (!widget.pictureService.isCameraInitialized) {
-      return const Center(child: const CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Column(

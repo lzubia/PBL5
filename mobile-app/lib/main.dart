@@ -103,7 +103,6 @@ class MyHomePageState extends State<MyHomePage> {
   bool useGoogleTts = false; // Default to false
   bool useGoogleStt = false; // Default to false
   bool useVoiceControl = false; // Default to false
-  bool _isListening = false; // Indicates if speech recognition is active
   String detectedCommand = "";
   final GlobalKey<RiskDetectionState> _riskDetectionKey = GlobalKey<RiskDetectionState>();
 
@@ -123,18 +122,11 @@ class MyHomePageState extends State<MyHomePage> {
       });
       _handleCommand(transcript);
     });
-
-    setState(() {
-      _isListening = true;
-    });
   }
 
   void _stopListening() {
     final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     sttService.stopListening();
-    setState(() {
-      _isListening = false;
-    });
   }
 
   void _handleCommand(String command) {
@@ -153,7 +145,7 @@ class MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BEGIA', style: const TextStyle(fontSize: 24)),
+        title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, size: 50),
@@ -245,7 +237,7 @@ class MyHomePageState extends State<MyHomePage> {
                   children: [
                     Text(
                       'STT Service: ${useGoogleStt ? "Google STT" : "Demo STT"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useGoogleStt,

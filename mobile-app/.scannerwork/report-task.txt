@@ -1,7 +1,7 @@
 organization=magallastegi
-projectKey=magallastegi_pbl5
+projectKey=pbl5
 serverUrl=https://sonarcloud.io
-serverVersion=8.0.0.58720
-dashboardUrl=https://sonarcloud.io/dashboard?id=magallastegi_pbl5
-ceTaskId=AZPeRtCuzMQCbMiJu3vc
-ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZPeRtCuzMQCbMiJu3vc
+serverVersion=8.0.0.58741
+dashboardUrl=https://sonarcloud.io/dashboard?id=pbl5
+ceTaskId=AZPjQWTrVfn3Ih7kQnPo
+ceTaskUrl=https://sonarcloud.io/api/ce/task?id=AZPjQWTrVfn3Ih7kQnPo

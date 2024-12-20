@@ -78,7 +78,7 @@ class PictureService {
     if (isCameraInitialized) {
       return CameraPreview(controller);
     } else {
-      return const Center(child: const CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
   }
 
