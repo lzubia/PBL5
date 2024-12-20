@@ -1,0 +1,14 @@
+numpy==1.23.5
+opencv-python
+ultralytics
+fastapi
+uvicorn
+python-multipart
+lap
+tensorflow-gpu==2.10.0
+keras==2.10.0
+protobuf==3.19.6
+tensorflow-model-optimization==0.8.0
+tensorboard==2.10.1
+gradio==4.29.0
+transformers
