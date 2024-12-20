@@ -480,6 +480,15 @@ class MockDatabaseHelper extends _i1.Mock implements _i7.DatabaseHelper {
   }
 
   @override
+  set database(_i5.Future<_i3.Database>? db) => super.noSuchMethod(
+        Invocation.setter(
+          #database,
+          db,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i5.Future<_i3.Database> get database => (super.noSuchMethod(
         Invocation.getter(#database),
         returnValue: _i5.Future<_i3.Database>.value(_FakeDatabase_1(
@@ -487,6 +496,52 @@ class MockDatabaseHelper extends _i1.Mock implements _i7.DatabaseHelper {
           Invocation.getter(#database),
         )),
       ) as _i5.Future<_i3.Database>);
+
+  @override
+  _i5.Future<void> onCreate(
+    _i3.Database? db,
+    int? version,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #onCreate,
+          [
+            db,
+            version,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> onUpgrade(
+    _i3.Database? db,
+    int? oldVersion,
+    int? newVersion,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #onUpgrade,
+          [
+            db,
+            oldVersion,
+            newVersion,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> insertDefaultData(_i3.Database? db) => (super.noSuchMethod(
+        Invocation.method(
+          #insertDefaultData,
+          [db],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> insertContact(String? name) => (super.noSuchMethod(

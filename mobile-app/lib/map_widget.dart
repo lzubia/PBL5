@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
 class MapWidget extends StatefulWidget {
-  const MapWidget({Key? key}) : super(key: key);
+  const MapWidget({super.key});
 
   @override
   State<MapWidget> createState() => OrderTrackingPageState();
@@ -34,16 +35,12 @@ class OrderTrackingPageState extends State<MapWidget> {
   void getCurrentLocation() async {
     Location location = Location();
 
-    location.getLocation().then(
-      (location) {
-        if (mounted) {
-          setState(() {
-            currentLocation = location;
-            print('Current location: ${location.latitude}, ${location.longitude}');
-          });
-        }
-      },
-    );
+    var locationData = await location.getLocation();
+    if (mounted) {
+      setState(() {
+        currentLocation = locationData;
+      });
+    }
 
     GoogleMapController googleMapController = await _controller.future;
 
@@ -52,7 +49,6 @@ class OrderTrackingPageState extends State<MapWidget> {
         if (mounted) {
           setState(() {
             currentLocation = newLoc;
-            print('Location changed: ${newLoc.latitude}, ${newLoc.longitude}');
             googleMapController.animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(
@@ -80,24 +76,34 @@ class OrderTrackingPageState extends State<MapWidget> {
     PolylinePoints polylinePoints = PolylinePoints();
 
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleApiKey: 'AIzaSyB40wX7coxDT7_VC-wmCLkqQtq4kx7qMl8',
+      googleApiKey: dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
       request: PolylineRequest(
-        origin: PointLatLng(currentLocation?.latitude ?? 0.0, currentLocation?.longitude ?? 0.0),
-        destination: PointLatLng(destination.latitude, destination.longitude),
+        origin: PointLatLng(
+          currentLocation?.latitude ?? 0.0,
+          currentLocation?.longitude ?? 0.0,
+        ),
+        destination: PointLatLng(
+          destination.latitude,
+          destination.longitude,
+        ),
         mode: TravelMode.driving,
       ),
     );
 
     if (result.points.isNotEmpty) {
       if (mounted) {
-        setState(() {
-          result.points.forEach(
-            (PointLatLng point) {
-              polylineCoordinates.add(LatLng(point.latitude, point.longitude));
-              print('Added point: ${point.latitude}, ${point.longitude}');
-            },
-          );
-        });
+        setState(
+          () {
+            for (PointLatLng point in result.points) {
+              polylineCoordinates.add(
+                LatLng(
+                  point.latitude,
+                  point.longitude,
+                ),
+              );
+            }
+          },
+        );
       }
     } else {
       print('No points found');
@@ -105,21 +111,21 @@ class OrderTrackingPageState extends State<MapWidget> {
   }
 
   void setCustomMarkerIcon() {
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Pin_source.png")
         .then(
       (icon) {
         sourceIcon = icon;
       },
     );
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Pin_destination.png")
         .then(
       (icon) {
         destinationIcon = icon;
       },
     );
-    BitmapDescriptor.fromAssetImage(
+    BitmapDescriptor.asset(
             ImageConfiguration.empty, "assets/Badge.png")
         .then(
       (icon) {
@@ -131,24 +137,26 @@ class OrderTrackingPageState extends State<MapWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Track order",
-          style: TextStyle(color: Colors.black, fontSize: 16),
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: const Text(
+      //     "Track order",
+      //     style: TextStyle(color: Colors.black, fontSize: 16),
+      //   ),
+      // ),
       body: currentLocation == null
           ? const Center(child: Text("Loading"))
           : GoogleMap(
               initialCameraPosition: CameraPosition(
                   target: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                   zoom: 13.5),
               polylines: {
                 Polyline(
-                  polylineId: PolylineId("route"),
+                  polylineId: const PolylineId("route"),
                   points: polylineCoordinates,
-                  color: Color(0xFF7B61FF),
+                  color: const Color(0xFF7B61FF),
                   width: 6,
                 ),
               },
@@ -157,15 +165,20 @@ class OrderTrackingPageState extends State<MapWidget> {
                   markerId: const MarkerId("currentLocation"),
                   icon: currentLocationIcon,
                   position: LatLng(
-                      currentLocation!.latitude!, currentLocation!.longitude!),
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                 ),
                 Marker(
-                  markerId: MarkerId("source"),
+                  markerId: const MarkerId("source"),
                   icon: sourceIcon,
-                  position: LatLng(currentLocation!.latitude!, currentLocation!.longitude!),
+                  position: LatLng(
+                    currentLocation!.latitude!,
+                    currentLocation!.longitude!,
+                  ),
                 ),
                 Marker(
-                  markerId: MarkerId("destination"),
+                  markerId: const MarkerId("destination"),
                   icon: destinationIcon,
                   position: destination,
                 ),

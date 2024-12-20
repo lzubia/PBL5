@@ -99,17 +99,21 @@ void main() {
 
     pictureService.controller = mockController;
 
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, (ByteData? message) async {
-      final MethodCall methodCall = StandardMethodCodec().decodeMethodCall(message);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler(channel.name, (ByteData? message) async {
+      final MethodCall methodCall =
+          StandardMethodCodec().decodeMethodCall(message);
       if (methodCall.method == 'getApplicationDocumentsDirectory') {
-        return const StandardMethodCodec().encodeSuccessEnvelope('/mock/directory');
+        return const StandardMethodCodec()
+            .encodeSuccessEnvelope('/mock/directory');
       }
       return null;
     });
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMessageHandler(channel.name, null);
   });
 
   test(
@@ -219,6 +223,7 @@ void main() {
   group('sendImageAndHandleResponse', () {
     test('should handle successful response', () async {
       final mockFilePath = '/mock/directory/image.jpg'; // Mock file path
+      final mockEndpoint = 'http://mock.endpoint'; // Mock endpoint
 
       // Create a mock MultipartFile
       final mockMultipartFile = MockMultipartFile();
@@ -256,6 +261,7 @@ void main() {
       // Call the function
       await pictureService.sendImageAndHandleResponse(
         mockFilePath,
+        mockEndpoint,
         (labels) {
           expect(labels, ['object1', 'object2']);
         },
@@ -315,6 +321,7 @@ void main() {
       // Call the method you're testing
       await pictureService.sendImageAndHandleResponse(
         mockFile.path,
+        'http://mock.endpoint', // Mock endpoint
         (objects) => detectedObjects.addAll(objects),
         (duration) => responseTimes.add(duration),
       );

@@ -18,10 +18,10 @@ class SettingsScreen extends StatefulWidget {
   });
 
   @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+  SettingsScreenState createState() => SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class SettingsScreenState extends State<SettingsScreen> {
   List<String> contacts = [];
   double _fontSize = 20.0; // Larger default font size
   String _language = 'English';
@@ -159,7 +159,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'BEGIA',
             style: TextStyle(fontSize: 24.0), // Increase font size
           ),
@@ -192,11 +192,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       background: Container(
                         color: Colors.red,
                         alignment: Alignment.centerRight,
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Icon(Icons.delete, color: Colors.white),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
                       ),
                       child: Card(
-                        margin: EdgeInsets.symmetric(vertical: 8),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
                         child: ListTile(
                           title: Text(
                             contacts[index],
@@ -223,12 +223,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onPressed: () async {
                   Contact? contact = await _contactPicker.selectContact();
                   if (contact != null) {
-                    _addContact(contact.fullName ?? '');
+                    await _addContact(contact.fullName ?? '');
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                 ),
                 child: Icon(
                   Icons.add,
@@ -236,7 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: Colors.white,
                 ),
               ),
-              Divider(),
+              const Divider(),
               Text(
                 'Theme',
                 style: TextStyle(
@@ -253,7 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _isDarkTheme,
                 onChanged: _changeTheme,
               ),
-              Divider(),
+              const Divider(),
               Text(
                 'Language',
                 style: TextStyle(
@@ -286,7 +286,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 _language == language['languageCode']
                                     ? Colors.blue
                                     : Colors.grey,
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 15),
                           ),
                           child: Text(
@@ -295,12 +295,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 fontSize: _fontSize, color: Colors.white),
                           ),
                         );
-                      }).toList(),
+                      }),
                     ],
                   );
                 },
               ),
-              Divider(),
+              const Divider(),
               Text(
                 'Font Size',
                 style: TextStyle(
@@ -315,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 max: 38.0,
                 onChanged: _changeFontSize,
               ),
-              Divider(),
+              const Divider(),
               Text(
                 'Speech Rate',
                 style: TextStyle(

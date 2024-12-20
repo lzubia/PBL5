@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
+const String defaultLocale = 'en-US';
+const String defaultVoice = 'en-US-Wavenet-D';
+
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
@@ -11,6 +14,13 @@ class DatabaseHelper {
   }
 
   DatabaseHelper._internal();
+
+  // Setter for the database
+  set database(Future<Database> db) {
+    db.then((database) {
+      _database = database;
+    });
+  }
 
   // Lazy-loaded singleton database
   Future<Database> get database async {
@@ -25,19 +35,19 @@ class DatabaseHelper {
     return await openDatabase(
       path,
       version: 4, // Increment version for migrations
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      onCreate: onCreate,
+      onUpgrade: onUpgrade,
     );
   }
 
   // Create tables when the database is created
-  Future<void> _onCreate(Database db, int version) async {
+  Future<void> onCreate(Database db, int version) async {
     await _createTables(db);
-    await _insertDefaultData(db);
+    await insertDefaultData(db);
   }
 
   // Handle schema upgrades (when database version is increased)
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  Future<void> onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 4) {
       // Only call _createTables for versions less than 4
       await _createTables(db);
@@ -76,15 +86,15 @@ class DatabaseHelper {
   }
 
   // Insert default data (if not already present)
-  Future<void> _insertDefaultData(Database db) async {
+  Future<void> insertDefaultData(Database db) async {
     final countSettings = Sqflite.firstIntValue(
             await db.rawQuery('SELECT COUNT(*) FROM settings')) ??
         0;
     if (countSettings == 0) {
       await db.insert('settings', {
         'id': 1,
-        'languageCode': 'en-US',
-        'voiceName': 'en-US-Wavenet-D',
+        'languageCode': defaultLocale,
+        'voiceName': defaultVoice,
       });
     }
 
@@ -111,11 +121,17 @@ class DatabaseHelper {
   // Get all contacts
   Future<List<String>> getContacts() async {
     final db = await database;
-    final result = await db.query('contacts');
-    return result.map((e) => e['name'] as String).toList();
+    final List<Map<String, dynamic>> result = await db.query('contacts');
+    return result
+        .map((final Map<String, dynamic> e) => e["name"] as String?)
+        .where((final String? name) => name != null)
+        .cast<String>()
+        .toList();
   }
 
-  // Delete a contact by name
+  /// Deletes a contact by name from the database.
+  ///
+  /// [name] is the name of the contact to be deleted.
   Future<void> deleteContact(String name) async {
     final db = await database;
     await db.delete(
@@ -142,8 +158,8 @@ class DatabaseHelper {
   }
 
   // Update preferences
-  Future<void> updatePreferences(
-      double fontSize, String language, bool isDarkTheme, double speechRate) async {
+  Future<void> updatePreferences(double fontSize, String language,
+      bool isDarkTheme, double speechRate) async {
     final db = await database;
     await db.update(
       'preferences',
@@ -165,13 +181,13 @@ class DatabaseHelper {
         await db.query('settings', limit: 1);
     if (result.isNotEmpty) {
       return {
-        'languageCode': result[0]['languageCode'] ?? 'en-US',
-        'voiceName': result[0]['voiceName'] ?? 'en-US-Wavenet-D',
+        'languageCode': result[0]['languageCode'] ?? defaultLocale,
+        'voiceName': result[0]['voiceName'] ?? defaultVoice,
       };
     } else {
       return {
-        'languageCode': 'en-US',
-        'voiceName': 'en-US-Wavenet-D',
+        'languageCode': defaultLocale,
+        'voiceName': defaultVoice,
       };
     }
   }
@@ -188,6 +204,9 @@ class DatabaseHelper {
   }
 
   Future<void> resetDatabase() async {
+    if (_database != null) {
+      await _database!.close(); // Explicitly close the database
+    }
     String path = join(await getDatabasesPath(), 'app_database.db');
     await deleteDatabase(path); // Deletes the database
     _database = null; // Reset the in-memory reference
