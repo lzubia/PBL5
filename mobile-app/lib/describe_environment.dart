@@ -33,16 +33,14 @@ class DescribeEnvironment extends StatelessWidget with Diagnosticable {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Describe Environment'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async => _takeAndSendImage(context),
-          child: const Text('Take Picture'),
+    return Column(
+      children: [
+        Expanded(child: pictureService.getCameraPreview()),
+        ElevatedButton(
+          onPressed: () => _takeAndSendImage(context),
+          child: Text('Take and Send Image'),
         ),
-      ),
+      ],
     );
   }
 
