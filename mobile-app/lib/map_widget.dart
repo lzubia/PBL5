@@ -60,7 +60,7 @@ class OrderTrackingPageState extends State<MapWidget> {
             googleMapController.animateCamera(
               CameraUpdate.newCameraPosition(
                 CameraPosition(
-                  zoom: 13.5,
+                  zoom: 17,
                   target: LatLng(
                     newLoc.latitude!,
                     newLoc.longitude!,
