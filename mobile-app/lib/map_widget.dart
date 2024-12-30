@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math'; // Add this import
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -25,7 +26,7 @@ class OrderTrackingPageState extends State<MapWidget> {
   LatLng? destination;
 
   List<LatLng> polylineCoordinates = [];
-  List<String> _instructions = [];
+  List<Map<String, dynamic>> _instructions = [];
   LocationData? currentLocation;
   StreamSubscription<LocationData>? locationSubscription;
 
@@ -67,6 +68,7 @@ class OrderTrackingPageState extends State<MapWidget> {
                 ),
               ),
             );
+            _updateCurrentInstruction();
           });
         }
       },
@@ -153,7 +155,7 @@ class OrderTrackingPageState extends State<MapWidget> {
     }
   }
 
-  Future<List<String>> fetchDirections(
+  Future<List<Map<String, dynamic>>> fetchDirections(
       String origin, String destination, String apiKey) async {
     final response = await http.get(Uri.parse(
         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=walking&key=$apiKey'));
@@ -161,10 +163,49 @@ class OrderTrackingPageState extends State<MapWidget> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final steps = data['routes'][0]['legs'][0]['steps'] as List;
-      return steps.map((step) => step['html_instructions'] as String).toList();
+      return steps.map((step) {
+        final maneuver = step['maneuver'] ?? '';
+        final instruction = step['html_instructions'] as String;
+        final endLocation = step['end_location'];
+        return {
+          'maneuver': maneuver,
+          'instruction': instruction,
+          'location': LatLng(endLocation['lat'], endLocation['lng']),
+        };
+      }).toList();
     } else {
       throw Exception('Failed to load directions');
     }
+  }
+
+  void _updateCurrentInstruction() {
+    if (_instructions.isEmpty || currentLocation == null) return;
+
+    final currentLatLng =
+        LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
+    final nextInstruction = _instructions.firstWhere(
+      (instruction) {
+        final instructionLatLng = instruction['location'] as LatLng;
+        return _calculateDistance(currentLatLng, instructionLatLng) <
+            20; // 20 meters threshold
+      },
+      orElse: () => _instructions.first,
+    );
+
+    setState(() {
+      _instructions = [nextInstruction];
+    });
+  }
+
+  double _calculateDistance(LatLng start, LatLng end) {
+    const double p = 0.017453292519943295; // Pi/180
+    final double a = 0.5 -
+        cos((end.latitude - start.latitude) * p) / 2 +
+        cos(start.latitude * p) *
+            cos(end.latitude * p) *
+            (1 - cos((end.longitude - start.longitude) * p)) /
+            2;
+    return 12742 * asin(sqrt(a)) * 1000; // 2 * R; R = 6371 km
   }
 
   @override
@@ -226,14 +267,16 @@ class OrderTrackingPageState extends State<MapWidget> {
                   ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: _instructions.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_instructions[index]),
-                );
-              },
-            ),
+            child: _instructions.isEmpty
+                ? const Center(child: Text("No instructions available"))
+                : ListView.builder(
+                    itemCount: _instructions.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(_instructions[index]['instruction']),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
