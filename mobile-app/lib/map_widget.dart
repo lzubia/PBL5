@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class MapWidget extends StatefulWidget {
   const MapWidget({super.key});
@@ -15,8 +20,9 @@ class MapWidget extends StatefulWidget {
 
 class OrderTrackingPageState extends State<MapWidget> {
   final Completer<GoogleMapController> _controller = Completer();
+  final TextEditingController _destinationController = TextEditingController();
 
-  static const LatLng destination = LatLng(43.062272, -2.495824);
+  LatLng? destination;
 
   List<LatLng> polylineCoordinates = [];
   LocationData? currentLocation;
@@ -83,10 +89,10 @@ class OrderTrackingPageState extends State<MapWidget> {
           currentLocation?.longitude ?? 0.0,
         ),
         destination: PointLatLng(
-          destination.latitude,
-          destination.longitude,
+          destination!.latitude,
+          destination!.longitude,
         ),
-        mode: TravelMode.driving,
+        mode: TravelMode.walking,
       ),
     );
 
@@ -110,83 +116,85 @@ class OrderTrackingPageState extends State<MapWidget> {
     }
   }
 
-  void setCustomMarkerIcon() {
-    BitmapDescriptor.asset(
-            ImageConfiguration.empty, "assets/Pin_source.png")
-        .then(
-      (icon) {
-        sourceIcon = icon;
-      },
+  Future<void> _searchDestination() async {
+    final apiKey = dotenv.env['GEOCODING_API_KEY'];
+    final response = await http.get(
+      Uri.parse(
+          'https://maps.googleapis.com/maps/api/geocode/json?address=${_destinationController.text}&key=$apiKey'),
     );
-    BitmapDescriptor.asset(
-            ImageConfiguration.empty, "assets/Pin_destination.png")
-        .then(
-      (icon) {
-        destinationIcon = icon;
-      },
-    );
-    BitmapDescriptor.asset(
-            ImageConfiguration.empty, "assets/Badge.png")
-        .then(
-      (icon) {
-        currentLocationIcon = icon;
-      },
-    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final location = data['results'][0]['geometry']['location'];
+      setState(() {
+        destination = LatLng(location['lat'], location['lng']);
+        getPolyPoints();
+      });
+    } else {
+      throw Exception('Failed to load location');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text(
-      //     "Track order",
-      //     style: TextStyle(color: Colors.black, fontSize: 16),
-      //   ),
-      // ),
-      body: currentLocation == null
-          ? const Center(child: Text("Loading"))
-          : GoogleMap(
-              initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                    currentLocation!.latitude!,
-                    currentLocation!.longitude!,
-                  ),
-                  zoom: 13.5),
-              polylines: {
-                Polyline(
-                  polylineId: const PolylineId("route"),
-                  points: polylineCoordinates,
-                  color: const Color(0xFF7B61FF),
-                  width: 6,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _destinationController,
+              decoration: InputDecoration(
+                hintText: 'Enter destination',
+                suffixIcon: IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: _searchDestination,
                 ),
-              },
-              markers: {
-                Marker(
-                  markerId: const MarkerId("currentLocation"),
-                  icon: currentLocationIcon,
-                  position: LatLng(
-                    currentLocation!.latitude!,
-                    currentLocation!.longitude!,
-                  ),
-                ),
-                Marker(
-                  markerId: const MarkerId("source"),
-                  icon: sourceIcon,
-                  position: LatLng(
-                    currentLocation!.latitude!,
-                    currentLocation!.longitude!,
-                  ),
-                ),
-                Marker(
-                  markerId: const MarkerId("destination"),
-                  icon: destinationIcon,
-                  position: destination,
-                ),
-              },
-              onMapCreated: (mapController) {
-                _controller.complete(mapController);
-              },
+              ),
             ),
+          ),
+          Expanded(
+            child: currentLocation == null
+                ? const Center(child: Text("Loading"))
+                : GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        currentLocation!.latitude!,
+                        currentLocation!.longitude!,
+                      ),
+                      zoom: 13.5,
+                    ),
+                    polylines: {
+                      Polyline(
+                        polylineId: const PolylineId("route"),
+                        points: polylineCoordinates,
+                        color: const Color(0xFF7B61FF),
+                        width: 6,
+                      ),
+                    },
+                    markers: {
+                      Marker(
+                        markerId: const MarkerId("currentLocation"),
+                        icon: currentLocationIcon,
+                        position: LatLng(
+                          currentLocation!.latitude!,
+                          currentLocation!.longitude!,
+                        ),
+                      ),
+                      if (destination != null)
+                        Marker(
+                          markerId: const MarkerId("destination"),
+                          icon: destinationIcon,
+                          position: destination!,
+                        ),
+                    },
+                    onMapCreated: (mapController) {
+                      _controller.complete(mapController);
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

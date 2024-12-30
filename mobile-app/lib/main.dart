@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -13,21 +14,23 @@ import 'database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final pictureService = PictureService();
   await pictureService.setupCamera();
   await pictureService.initializeCamera();
-  
+
   final databaseHelper = DatabaseHelper();
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
   final ttsService = TtsService(databaseHelper);
-  final sttServiceGoogle = SttServiceGoogle(); // Initialize Speech-to-Text service
+  final sttServiceGoogle =
+      SttServiceGoogle(); // Initialize Speech-to-Text service
   final sttService = SttService(); // Initialize another Speech-to-Text service
-  
+
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
   await sttServiceGoogle.initializeStt(); // Initialize STT service
   await sttService.initializeStt(); // Initialize another STT service
+  await dotenv.load(fileName: "./.env");
 
   runApp(MyApp(
     pictureService: pictureService,
@@ -70,7 +73,8 @@ class MyApp extends StatelessWidget {
         ttsServiceGoogle: ttsServiceGoogle,
         ttsService: ttsService,
         databaseHelper: databaseHelper,
-        sttServiceGoogle: sttServiceGoogle, // Pass the STT service to MyHomePage
+        sttServiceGoogle:
+            sttServiceGoogle, // Pass the STT service to MyHomePage
         sttService: sttService, // Pass another STT service to MyHomePage
       ),
     );
@@ -104,7 +108,8 @@ class MyHomePageState extends State<MyHomePage> {
   bool useGoogleStt = false; // Default to false
   bool useVoiceControl = false; // Default to false
   String detectedCommand = "";
-  final GlobalKey<RiskDetectionState> _riskDetectionKey = GlobalKey<RiskDetectionState>();
+  final GlobalKey<RiskDetectionState> _riskDetectionKey =
+      GlobalKey<RiskDetectionState>();
 
   @override
   void initState() {
@@ -115,7 +120,8 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _startListening() async {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    final sttService =
+        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     await sttService.startListening((transcript) {
       setState(() {
         detectedCommand = transcript;
@@ -125,14 +131,16 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopListening() {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    final sttService =
+        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     sttService.stopListening();
   }
 
   void _handleCommand(String command) {
     if (command.contains('risk detection on')) {
       _riskDetectionKey.currentState?.enableRiskDetection();
-    } else if (command.contains('risk detection off') || command.contains('risk detection of')) {
+    } else if (command.contains('risk detection off') ||
+        command.contains('risk detection of')) {
       _riskDetectionKey.currentState?.disableRiskDetection();
     } else if (command.contains('another command')) {
       // Handle another command
@@ -171,9 +179,8 @@ class MyHomePageState extends State<MyHomePage> {
             child: RiskDetection(
               key: _riskDetectionKey,
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts
-                  ? widget.ttsServiceGoogle
-                  : widget.ttsService,
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sttService: useGoogleStt
                   ? widget.sttServiceGoogle
                   : widget.sttService, // Pass the appropriate STT service
@@ -182,7 +189,8 @@ class MyHomePageState extends State<MyHomePage> {
           Expanded(
             child: GridMenu(
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
             ),
           ),
           Padding(
@@ -191,7 +199,8 @@ class MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(
                   'Command: $detectedCommand',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
