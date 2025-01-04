@@ -19,15 +19,15 @@ public class AudioOutputProcessor implements Runnable {
                 app.audioLock.lock();
                 AudioCommand command = app.commandQueue.poll(); // Take the first in the queue
                 if (command != null) {
-                    System.out.println("\t\t\t\t\t\t" + command.identifier + ": " + command.message);
+                    System.out.println("\t\t\t\t\t\t📢 " + command.identifier + ": " + command.message);
 
                     int duration = calculateDuration(command.message);
-                    // System.out.println("\t\t\t\t\t\tDuration (ms): " + duration);
                     
                     app.audioLock.unlock(); // Unlock before sleeping to allow other threads to interact
                     Thread.sleep(duration);
                     app.audioLock.lock(); // Re-lock after sleeping
                 }
+                app.cleanExpiredCommands();
 
                 // Timeout to ensure the thread doesn't block indefinitely (max 5 seconds)
                 boolean signaled = app.outputReady.await(5000, TimeUnit.MILLISECONDS);

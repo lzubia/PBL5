@@ -1,3 +1,5 @@
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.*;
@@ -8,11 +10,13 @@ public class BVIApplication {
     static final int PRIORITY_RISK_DETECTION = 2;
     static final int PRIORITY_NAVIGATION_GUIDANCE = 3;
     static final int PRIORITY_ENVIRONMENT_DESCRIPTION = 4;
+    static final int COMMAND_TIME_WAITING = 10; // 10 seconds
 
     // Shared resource: Audio Output
-    ReentrantLock audioLock = new ReentrantLock();  // Lock to protect audio output
+    ReentrantLock audioLock = new ReentrantLock(); // Lock to protect audio output
     Condition outputReady = audioLock.newCondition();
-    PriorityBlockingQueue<AudioCommand> commandQueue = new PriorityBlockingQueue<>(20, Comparator.comparingInt(a -> a.priority));
+    PriorityBlockingQueue<AudioCommand> commandQueue = new PriorityBlockingQueue<>(20,
+            Comparator.comparingInt(a -> a.priority));
 
     public boolean stopSimulation = false;
 
@@ -21,7 +25,32 @@ public class BVIApplication {
         for (AudioCommand command : commandQueue) {
             queueState.append(command.toString()).append(" ; ");
         }
-        System.out.println(queueState);
+        System.out.println("🔜 " + queueState);
+    }
+
+    public void cleanExpiredCommands() {
+        audioLock.lock();
+        try {
+            Instant now = Instant.now();
+            List<AudioCommand> expiredCommands = new ArrayList<>();
+
+            for (AudioCommand command : commandQueue) {
+                if (Duration.between(command.enqueueTime, now).getSeconds() > COMMAND_TIME_WAITING) {
+                    expiredCommands.add(command);
+                }
+            }
+
+            commandQueue.removeAll(expiredCommands);
+
+            if (!expiredCommands.isEmpty()) {
+                System.out.println("Removed expired commands from the queue:");
+                for (AudioCommand cmd : expiredCommands) {
+                    System.out.println("\t✖️ Expired Command: " + cmd.identifier);
+                }
+            }
+        } finally {
+            audioLock.unlock();
+        }
     }
 
     public static void main(String[] args) {
@@ -40,12 +69,12 @@ public class BVIApplication {
         audioProcessorThread.start();
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(40000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        app.stopSimulation = true;  // Stop simulation after 10 seconds
-        
+        app.stopSimulation = true; // Stop simulation after 10 seconds
+
         try {
             emergencyThread.join();
             riskThread.join();
@@ -59,5 +88,4 @@ public class BVIApplication {
         System.out.println("Simulation finished");
     }
 
-    //TODO: When a command has been waitin for x time remove it from the commandQueue
 }
