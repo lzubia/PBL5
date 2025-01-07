@@ -1,29 +1,34 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:googleapis/bigquerydatatransfer/v1.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
 import 'package:pbl5_menu/i_stt_service.dart';
 import 'package:pbl5_menu/i_tts_service.dart';
-import 'risk_detection.dart';
-import 'grid_menu.dart';
-import 'settings_screen.dart';
-import 'picture_service.dart';
-import 'tts_service.dart';
-import 'database_helper.dart';
+import 'package:pbl5_menu/risk_detection.dart';
+import 'package:pbl5_menu/grid_menu.dart';
+import 'package:pbl5_menu/settings_screen.dart';
+import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/tts_service.dart';
+import 'package:pbl5_menu/database_helper.dart';
+import 'package:audioplayers/audioplayers.dart'; // For audio playback
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   final pictureService = PictureService();
   await pictureService.setupCamera();
   await pictureService.initializeCamera();
-  
+
   final databaseHelper = DatabaseHelper();
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
   final ttsService = TtsService(databaseHelper);
-  final sttServiceGoogle = SttServiceGoogle(); // Initialize Speech-to-Text service
+  final sttServiceGoogle =
+      SttServiceGoogle(); // Initialize Speech-to-Text service
   final sttService = SttService(); // Initialize another Speech-to-Text service
-  
+
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
   await sttServiceGoogle.initializeStt(); // Initialize STT service
@@ -53,14 +58,14 @@ class MyApp extends StatelessWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
-    required this.sttServiceGoogle, // Add STT service
-    required this.sttService, // Add another STT service
+    required this.sttServiceGoogle,
+    required this.sttService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Remove debug banner
+      debugShowCheckedModeBanner: false,
       title: 'Risk Detection App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -70,8 +75,8 @@ class MyApp extends StatelessWidget {
         ttsServiceGoogle: ttsServiceGoogle,
         ttsService: ttsService,
         databaseHelper: databaseHelper,
-        sttServiceGoogle: sttServiceGoogle, // Pass the STT service to MyHomePage
-        sttService: sttService, // Pass another STT service to MyHomePage
+        sttServiceGoogle: sttServiceGoogle,
+        sttService: sttService,
       ),
     );
   }
@@ -91,8 +96,8 @@ class MyHomePage extends StatefulWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
-    required this.sttServiceGoogle, // Add STT service
-    required this.sttService, // Add another STT service
+    required this.sttServiceGoogle,
+    required this.sttService,
   });
 
   @override
@@ -100,45 +105,124 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  bool useGoogleTts = false; // Default to false
-  bool useGoogleStt = false; // Default to false
-  bool useVoiceControl = false; // Default to false
-  String detectedCommand = "";
-  final GlobalKey<RiskDetectionState> _riskDetectionKey = GlobalKey<RiskDetectionState>();
+  bool useGoogleStt = false;
+  bool useGoogleTts = false;
+  bool useVoiceControl = false;
+  bool isCommandProcessed =
+      false; // Para verificar si un comando ha sido procesado
+  final GlobalKey<RiskDetectionState> _riskDetectionKey =
+      GlobalKey<RiskDetectionState>();
+  final player = AudioPlayer(); // Para reproducir sonidos de notificación
+  late Timer _commandTimeout; // Temporizador para el timeout de comandos
 
   @override
   void initState() {
     super.initState();
-    if (useVoiceControl) {
-      _startListening();
+    _startActivationListening();
+  }
+
+  Future<void> _startActivationListening() async {
+    await widget.sttService.startListening((transcript) {
+      if (_isActivationCommand(transcript)) {
+        _activateVoiceControl();
+      } else {
+        _keepListeningForActivation();
+      }
+    });
+  }
+
+  bool _isActivationCommand(String transcript) {
+    return transcript.contains("kaixo begia") ||
+        transcript.contains("pazos") ||
+        transcript.contains("kaixobe guía") ||
+        transcript.contains("hola veguia") ||
+        transcript.contains("hola beguia");
+  }
+
+  void _activateVoiceControl() {
+    setState(() {
+      useVoiceControl = true;
+      isCommandProcessed =
+          false; // Se reinicia el estado de los comandos procesados
+    });
+
+    // Reproducir sonido de activación
+    _playActivationSound();
+
+    // Iniciar escucha de comandos generales
+    _stopListening();
+    _startGeneralListening();
+  }
+
+  void _keepListeningForActivation() {
+    if (!useVoiceControl) {
+      _stopListening();
+      _startActivationListening();
+    }
+  }
+
+  Future<void> _startGeneralListening() async {
+    await widget.sttService.startListening((transcript) {
+      if (isCommandProcessed)
+        return; // Si ya se procesó un comando, no seguir escuchando
+
+      _handleCommand(transcript);
+
+      // Si no se procesó ningún comando válido, iniciar temporizador
+      if (!isCommandProcessed) {
+        _startCommandTimeout();
+      }
+    });
+  }
+
+  void _handleCommand(String command) {
+    if (command.contains('risk')) {
+      _riskDetectionKey.currentState?.enableRiskDetection();
+      isCommandProcessed = true;
+    } else if (command.contains('risk detection off')) {
+      _riskDetectionKey.currentState?.disableRiskDetection();
+      isCommandProcessed = true;
+    } else {
+      // Si el comando no es válido, podemos reiniciar la escucha después del tiempo de espera
+      isCommandProcessed = false;
+      _startGeneralListening();
+    }
+  }
+
+  // Temporizador para reiniciar la escucha si no se detecta ningún comando válido
+  void _startCommandTimeout() {
+    if (_commandTimeout.isActive) {
+      _commandTimeout.cancel(); // Cancelar el temporizador anterior si existe
+    }
+
+    _commandTimeout = Timer(const Duration(seconds: 5), () {
+      if (!isCommandProcessed) {
+        useVoiceControl = false;
+        _stopListening();
+        _startActivationListening(); // Reiniciar la escucha si no se procesó ningún comando
+      }
+    });
+  }
+
+  Future<void> _playActivationSound() async {
+    await player.play(AssetSource(
+        'sounds/activation_sound.mp3')); // Reproducir sonido de activación
+  }
+
+  void _stopListening() {
+    if (widget.sttService.isListening()) {
+      widget.sttService.stopListening();
     }
   }
 
   Future<void> _startListening() async {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
-    await sttService.startListening((transcript) {
-      setState(() {
-        detectedCommand = transcript;
-      });
-      _handleCommand(transcript);
+    await widget.sttService.startListening((transcript) {
+      if (_isActivationCommand(transcript)) {
+        _activateVoiceControl();
+      } else {
+        _keepListeningForActivation();
+      }
     });
-  }
-
-  void _stopListening() {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
-    sttService.stopListening();
-  }
-
-  void _handleCommand(String command) {
-    if (command.contains('risk detection on')) {
-      _riskDetectionKey.currentState?.enableRiskDetection();
-    } else if (command.contains('risk detection off') || command.contains('risk detection of')) {
-      _riskDetectionKey.currentState?.disableRiskDetection();
-    } else if (command.contains('another command')) {
-      // Handle another command
-    } else {
-      //widget.ttsService.speakLabels(["Command not recognized"]);
-    }
   }
 
   @override
@@ -171,9 +255,8 @@ class MyHomePageState extends State<MyHomePage> {
             child: RiskDetection(
               key: _riskDetectionKey,
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts
-                  ? widget.ttsServiceGoogle
-                  : widget.ttsService,
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sttService: useGoogleStt
                   ? widget.sttServiceGoogle
                   : widget.sttService, // Pass the appropriate STT service
@@ -182,17 +265,14 @@ class MyHomePageState extends State<MyHomePage> {
           Expanded(
             child: GridMenu(
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Text(
-                  'Command: $detectedCommand',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
