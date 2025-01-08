@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:googleapis/bigquerydatatransfer/v1.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -123,6 +121,7 @@ class MyHomePageState extends State<MyHomePage> {
 
   Future<void> _startActivationListening() async {
     await widget.sttService.startListening((transcript) {
+      print(transcript);
       if (_isActivationCommand(transcript)) {
         _activateVoiceControl();
       } else {
@@ -134,6 +133,8 @@ class MyHomePageState extends State<MyHomePage> {
   bool _isActivationCommand(String transcript) {
     return transcript.contains("kaixo begia") ||
         transcript.contains("pazos") ||
+        transcript.contains("patos") ||
+        transcript.contains("pasos") ||
         transcript.contains("kaixobe guía") ||
         transcript.contains("hola veguia") ||
         transcript.contains("hola beguia");
@@ -146,47 +147,47 @@ class MyHomePageState extends State<MyHomePage> {
           false; // Se reinicia el estado de los comandos procesados
     });
 
-    // Reproducir sonido de activación
-    _playActivationSound();
-
     // Iniciar escucha de comandos generales
-    _stopListening();
     _startGeneralListening();
   }
 
   void _keepListeningForActivation() {
     if (!useVoiceControl) {
       _stopListening();
+      print('INFO: Escuchando para activación');
       _startActivationListening();
     }
   }
 
   Future<void> _startGeneralListening() async {
-    await widget.sttService.startListening((transcript) {
-      if (isCommandProcessed)
-        return; // Si ya se procesó un comando, no seguir escuchando
-
-      _handleCommand(transcript);
-
-      // Si no se procesó ningún comando válido, iniciar temporizador
-      if (!isCommandProcessed) {
-        _startCommandTimeout();
-      }
-    });
+    if (!isCommandProcessed) {
+      _stopListening(); // Asegúrate de detener la escucha activa.
+      await widget.sttService.startListening((transcript) {
+        _handleCommand(transcript);
+      });
+    } else {
+      setState(() {
+        useVoiceControl = false;
+        isCommandProcessed =
+            false; // Se reinicia el estado de los comandos procesados
+      });
+      _keepListeningForActivation(); // Reiniciar la escucha si no se procesó ningún comando
+    }
   }
 
   void _handleCommand(String command) {
+    print(command);
     if (command.contains('risk')) {
-      _riskDetectionKey.currentState?.enableRiskDetection();
-      isCommandProcessed = true;
-    } else if (command.contains('risk detection off')) {
-      _riskDetectionKey.currentState?.disableRiskDetection();
+      _riskDetectionKey.currentState?.toggleRiskDetection();
       isCommandProcessed = true;
     } else {
-      // Si el comando no es válido, podemos reiniciar la escucha después del tiempo de espera
+      // No se reconoce el comando, pero sigue escuchando
       isCommandProcessed = false;
-      _startGeneralListening();
     }
+
+    _playActivationSound();
+    // Reinicia la escucha después de manejar el comando
+    _startGeneralListening();
   }
 
   // Temporizador para reiniciar la escucha si no se detecta ningún comando válido
@@ -210,19 +211,7 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopListening() {
-    if (widget.sttService.isListening()) {
-      widget.sttService.stopListening();
-    }
-  }
-
-  Future<void> _startListening() async {
-    await widget.sttService.startListening((transcript) {
-      if (_isActivationCommand(transcript)) {
-        _activateVoiceControl();
-      } else {
-        _keepListeningForActivation();
-      }
-    });
+    widget.sttService.stopListening();
   }
 
   @override
@@ -286,9 +275,10 @@ class MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           useVoiceControl = value;
                           if (useVoiceControl) {
-                            _startListening();
+                            _startGeneralListening();
                           } else {
                             _stopListening();
+                            _keepListeningForActivation();
                           }
                         });
                       },

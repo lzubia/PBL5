@@ -8,35 +8,35 @@ class SttService implements ISttService {
   @override
   Future<void> initializeStt() async {
     _speech = stt.SpeechToText();
-    await _speech.initialize();
+    bool available = await _speech.initialize();
+    if (!available) {
+      print('ERROR: STT no disponible');
+    }
   }
 
   @override
   Future<void> startListening(Function(String) onResult) async {
-    if (!_isListening) {
-      _isListening = true;
-      await _speech.listen(onResult: (result) {
-        onResult(result.recognizedWords.toLowerCase());
-      });
+    if (!_speech.isListening) {
+      print('INFO: Iniciando STT');
+      try {
+        _isListening = true;
+        await _speech.listen(onResult: (result) {
+          onResult(result.recognizedWords.toLowerCase());
+        });
+      } catch (error) {
+        print('ERROR: Error al iniciar STT: $error');
+      }
+    } else {
+      print('INFO: STT ya está escuchando');
     }
   }
 
   @override
   void stopListening() {
     if (_isListening) {
+      print('INFO: STT detenido');
       _isListening = false;
       _speech.stop();
     }
-  }
-
-  void restartListening() {
-    stopListening();
-    startListening((_) {});
-  }
-
-  /// Método para verificar si el sistema está escuchando actualmente
-  @override
-  bool isListening() {
-    return _isListening;
   }
 }
