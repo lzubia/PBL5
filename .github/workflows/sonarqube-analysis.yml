@@ -15,10 +15,10 @@ jobs:
          working-directory: ./mobile-app  # This will apply to all steps in this job
   
     steps:
-       - name: Show current directory
-         run: pwd 
-       - name: List
-         run: ls la
+
+       - name: List files in mobile-app
+         run: ls -la /home/runner/work/PBL5/mobile-app
+
 
 
     #steps:
