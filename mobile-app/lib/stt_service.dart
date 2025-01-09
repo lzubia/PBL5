@@ -9,6 +9,7 @@ class SttService implements ISttService {
   Future<void> initializeStt() async {
     _speech = stt.SpeechToText();
     bool available = await _speech.initialize();
+    print("INFO: STT disponible: $available");
     if (!available) {
       print('ERROR: STT no disponible');
     }
@@ -16,19 +17,17 @@ class SttService implements ISttService {
 
   @override
   Future<void> startListening(Function(String) onResult) async {
-    if (!_speech.isListening) {
-      print('INFO: Iniciando STT');
-      try {
-        _isListening = true;
-        await _speech.listen(onResult: (result) {
-          onResult(result.recognizedWords.toLowerCase());
-        });
-      } catch (error) {
-        print('ERROR: Error al iniciar STT: $error');
-      }
-    } else {
-      print('INFO: STT ya está escuchando');
-    }
+    stopListening(); // If already listening, stop and toggle
+    print('INFO: Iniciando STT');
+    await _speech.listen(
+      onResult: (result) {
+        onResult(result.recognizedWords.toLowerCase());
+      },
+    );
+  }
+
+  void restartListening() {
+    _speech.cancel();
   }
 
   @override
@@ -37,6 +36,14 @@ class SttService implements ISttService {
       print('INFO: STT detenido');
       _isListening = false;
       _speech.stop();
+    }
+  }
+
+  void _handleStatus(String status) {
+    print('INFO: Estado del STT: $status');
+    if (status == 'notListening' && _isListening) {
+      // print('INFO: STT reiniciando...');
+      startListening((_) {});
     }
   }
 }

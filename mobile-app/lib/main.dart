@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -108,101 +109,166 @@ class MyHomePageState extends State<MyHomePage> {
   bool useVoiceControl = false;
   bool isCommandProcessed =
       false; // Para verificar si un comando ha sido procesado
+  bool _isActivated =
+      false; // Para verificar si el control de voz está activado
+  String _command = ''; // Para almacenar el comando de voz
   final GlobalKey<RiskDetectionState> _riskDetectionKey =
       GlobalKey<RiskDetectionState>();
+  final GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
+  final GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
+      GlobalKey<MoneyIdentifierState>();
+
   final player = AudioPlayer(); // Para reproducir sonidos de notificación
   late Timer _commandTimeout; // Temporizador para el timeout de comandos
 
   @override
   void initState() {
     super.initState();
-    _startActivationListening();
+    _startListening();
   }
 
-  Future<void> _startActivationListening() async {
-    await widget.sttService.startListening((transcript) {
-      print(transcript);
-      if (_isActivationCommand(transcript)) {
+  void _startListening() async {
+    await widget.sttService.startListening(_handleSpeechResult);
+    setState(() {});
+  }
+
+  void _handleSpeechResult(String recognizedText) {
+    print('Texto reconocido: $recognizedText');
+    setState(() {
+      if (_isActivated) {
+        _command = recognizedText;
+        _handleCommand(_command);
+      } else if (_isActivationCommand(recognizedText)) {
+        _isActivated = true;
+        useVoiceControl = true;
         _activateVoiceControl();
       } else {
-        _keepListeningForActivation();
+        _startListening();
       }
     });
   }
 
   bool _isActivationCommand(String transcript) {
-    return transcript.contains("kaixo begia") ||
-        transcript.contains("pazos") ||
-        transcript.contains("patos") ||
-        transcript.contains("pasos") ||
-        transcript.contains("kaixobe guía") ||
-        transcript.contains("hola veguia") ||
-        transcript.contains("hola beguia");
+    return transcript.contains("begia") ||
+        transcript.contains("veguia") ||
+        transcript.contains("veguía") ||
+        transcript.contains("veía") ||
+        transcript.contains("de día") ||
+        transcript.contains("beguía") ||
+        transcript.contains("begía") ||
+        transcript.contains("begia") ||
+        transcript.contains("beguía") ||
+        transcript.contains("beguía") ||
+        transcript.contains("beía") ||
+        transcript.contains("beguia") ||
+        transcript.contains("vía") ||
+        transcript.contains("viego") ||
+        transcript.contains("beja") ||
+        transcript.contains("begía") ||
+        transcript.contains("beía") ||
+        transcript.contains("vegia") ||
+        transcript.contains("de guía") ||
+        transcript.contains("beguía");
   }
 
   void _activateVoiceControl() {
     setState(() {
       useVoiceControl = true;
-      isCommandProcessed =
-          false; // Se reinicia el estado de los comandos procesados
+      isCommandProcessed = false;
     });
 
-    // Iniciar escucha de comandos generales
-    _startGeneralListening();
-  }
+    // Reproducir sonido de activación
+    _playActivationSound();
 
-  void _keepListeningForActivation() {
-    if (!useVoiceControl) {
-      _stopListening();
-      print('INFO: Escuchando para activación');
-      _startActivationListening();
-    }
-  }
-
-  Future<void> _startGeneralListening() async {
-    if (!isCommandProcessed) {
-      _stopListening(); // Asegúrate de detener la escucha activa.
-      await widget.sttService.startListening((transcript) {
-        _handleCommand(transcript);
-      });
-    } else {
-      setState(() {
-        useVoiceControl = false;
-        isCommandProcessed =
-            false; // Se reinicia el estado de los comandos procesados
-      });
-      _keepListeningForActivation(); // Reiniciar la escucha si no se procesó ningún comando
-    }
+    print('INFO: Activating voice control...');
+    // _commandTimeout.cancel();
+    // _commandTimeout = Timer(Duration(seconds: 5), () {
+    //   setState(() {
+    //     _isActivated = false;
+    //     useVoiceControl = false;
+    //   });
+    // });
   }
 
   void _handleCommand(String command) {
-    print(command);
-    if (command.contains('risk')) {
+    print('Activated command: $command');
+    if (command.contains('arrisco') ||
+        command.contains('arrisku') ||
+        command.contains('arisku') ||
+        command.contains('carrisco') ||
+        command.contains('arriscu') ||
+        command.contains('arisco') ||
+        command.contains('carresco') ||
+        command.contains('arrisco') ||
+        command.contains('arresco') ||
+        command.contains('carisco') ||
+        command.contains('ariscó') ||
+        command.contains('arísco') ||
+        command.contains('arricó') ||
+        command.contains('cariscó')) {
       _riskDetectionKey.currentState?.toggleRiskDetection();
       isCommandProcessed = true;
+    } else if (command.contains('dirua') ||
+        command.contains('dirúa') ||
+        command.contains('dírua') ||
+        command.contains('dirúa') ||
+        command.contains('dira') ||
+        command.contains('dírua') ||
+        command.contains('dira') ||
+        command.contains('de ruina') ||
+        command.contains('dilua') ||
+        command.contains('derua') ||
+        command.contains('dirúa') ||
+        command.contains('drua') ||
+        command.contains('di ru a') ||
+        command.contains('de ru')) {
+      // _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
+      // Aseguramos que el estado esté listo
+
+      _gridMenuKey.currentState?.showBottomSheet(context, 'Money Identifier');
+
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => MoneyIdentifier(
+      //       pictureService: widget.pictureService,
+      //       ttsService: widget.ttsService,
+      //     ),
+      //   ),
+      // ).then((_) {
+      //   // Al regresar, asegurarse de que la inicialización ocurra
+      //   Future.delayed(Duration(milliseconds: 200), () {
+      //     if (_moneyIdentifierKey.currentState != null) {
+      //       _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
+      //       isCommandProcessed = true;
+      //     } else {
+      //       print('El widget de MoneyIdentifier aún no está inicializado.');
+      //     }
+      //   });
+      // });
+      isCommandProcessed = true;
+    } else if (command.contains('mapa') ||
+        command.contains('mappa') ||
+        command.contains('mía') ||
+        command.contains('ma\'pa') ||
+        command.contains('ma') ||
+        command.contains('mape') ||
+        command.contains('mápá') ||
+        command.contains('ma') ||
+        command.contains('marpa') ||
+        command.contains('mappa')) {
+      // _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
+      isCommandProcessed = true;
     } else {
-      // No se reconoce el comando, pero sigue escuchando
       isCommandProcessed = false;
+      _startListening();
     }
 
-    _playActivationSound();
-    // Reinicia la escucha después de manejar el comando
-    _startGeneralListening();
-  }
-
-  // Temporizador para reiniciar la escucha si no se detecta ningún comando válido
-  void _startCommandTimeout() {
-    if (_commandTimeout.isActive) {
-      _commandTimeout.cancel(); // Cancelar el temporizador anterior si existe
+    // Desactivar tras procesar un comando válido
+    if (isCommandProcessed) {
+      _isActivated = false;
+      useVoiceControl = false;
     }
-
-    _commandTimeout = Timer(const Duration(seconds: 5), () {
-      if (!isCommandProcessed) {
-        useVoiceControl = false;
-        _stopListening();
-        _startActivationListening(); // Reiniciar la escucha si no se procesó ningún comando
-      }
-    });
   }
 
   Future<void> _playActivationSound() async {
@@ -253,9 +319,11 @@ class MyHomePageState extends State<MyHomePage> {
           ),
           Expanded(
             child: GridMenu(
+              key: _gridMenuKey,
               pictureService: widget.pictureService,
               ttsService:
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              moneyIdentifierKey: _moneyIdentifierKey,
             ),
           ),
           Padding(
@@ -275,10 +343,11 @@ class MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           useVoiceControl = value;
                           if (useVoiceControl) {
-                            _startGeneralListening();
+                            _isActivated = true;
+                            _startListening();
                           } else {
-                            _stopListening();
-                            _keepListeningForActivation();
+                            _isActivated = false;
+                            _startListening();
                           }
                         });
                       },

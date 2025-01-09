@@ -8,7 +8,7 @@ class MoneyIdentifier extends StatefulWidget {
 
   const MoneyIdentifier(
       {super.key, required this.pictureService, required this.ttsService});
-      
+
   @override
   MoneyIdentifierState createState() => MoneyIdentifierState();
 }
