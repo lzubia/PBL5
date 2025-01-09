@@ -19,18 +19,14 @@ public class EnvironmentDescription implements Runnable {
     public void run() {
         while (!app.stopSimulation) {
             try {
-                app.audioLock.lock();
                 String identifier = "ED" + counter++;
                 String message = messagePool.get(new Random().nextInt(messagePool.size()));
-                app.commandQueue.add(new AudioCommand(message, BVIApplication.PRIORITY_ENVIRONMENT_DESCRIPTION,
+                app.commandQueue.put(new AudioCommand(message, BVIApplication.PRIORITY_ENVIRONMENT_DESCRIPTION,
                         Thread.currentThread(), identifier));
                 app.printQueueState();
-                app.outputReady.signal();
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
                 e.printStackTrace();
-            } finally {
-                app.audioLock.unlock();
             }
             try {
                 Thread.sleep(4000);

@@ -13,16 +13,12 @@ public class EmergencyCall implements Runnable {
             boolean emergencyDetected = new Random().nextDouble() < 0.01;
             if (emergencyDetected) {
                 try {
-                    app.audioLock.lock();
                     String identifier = "EC" + counter++;
-                    app.commandQueue.add(new AudioCommand("Emergency call in progress...", BVIApplication.PRIORITY_EMERGENCY_CALL, Thread.currentThread(),identifier));
+                    app.commandQueue.put(new AudioCommand("Emergency call in progress...", BVIApplication.PRIORITY_EMERGENCY_CALL, Thread.currentThread(),identifier));
                     app.printQueueState();
-                    app.outputReady.signalAll();
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
-                } finally {
-                    app.audioLock.unlock();
                 }
             }
             try {

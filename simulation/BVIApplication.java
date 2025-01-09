@@ -2,7 +2,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.locks.*;
 
 public class BVIApplication {
 
@@ -12,9 +11,7 @@ public class BVIApplication {
     static final int PRIORITY_ENVIRONMENT_DESCRIPTION = 4;
     static final int COMMAND_TIME_WAITING = 10; // 10 seconds
 
-    // Shared resource: Audio Output
-    ReentrantLock audioLock = new ReentrantLock(); // Lock to protect audio output
-    Condition outputReady = audioLock.newCondition();
+    // Shared resource: Audio OutputProcessor
     PriorityBlockingQueue<AudioCommand> commandQueue = new PriorityBlockingQueue<>(20,
             Comparator.comparingInt(a -> a.priority));
 
@@ -29,27 +26,22 @@ public class BVIApplication {
     }
 
     public void cleanExpiredCommands() {
-        audioLock.lock();
-        try {
-            Instant now = Instant.now();
-            List<AudioCommand> expiredCommands = new ArrayList<>();
+        Instant now = Instant.now();
+        List<AudioCommand> expiredCommands = new ArrayList<>();
 
-            for (AudioCommand command : commandQueue) {
-                if (Duration.between(command.enqueueTime, now).getSeconds() > COMMAND_TIME_WAITING) {
-                    expiredCommands.add(command);
-                }
+        for (AudioCommand command : commandQueue) {
+            if (Duration.between(command.enqueueTime, now).getSeconds() > COMMAND_TIME_WAITING) {
+                expiredCommands.add(command);
             }
+        }
 
-            commandQueue.removeAll(expiredCommands);
+        commandQueue.removeAll(expiredCommands);
 
-            if (!expiredCommands.isEmpty()) {
-                System.out.println("Removed expired commands from the queue:");
-                for (AudioCommand cmd : expiredCommands) {
-                    System.out.println("\t✖️ Expired Command: " + cmd.identifier);
-                }
+        if (!expiredCommands.isEmpty()) {
+            System.out.println("Removed expired commands from the queue:");
+            for (AudioCommand cmd : expiredCommands) {
+                System.out.println("\t✖️ Expired Command: " + cmd.identifier);
             }
-        } finally {
-            audioLock.unlock();
         }
     }
 

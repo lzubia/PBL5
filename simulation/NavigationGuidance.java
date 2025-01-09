@@ -19,17 +19,13 @@ public class NavigationGuidance implements Runnable {
     public void run() {
         while (!app.stopSimulation) {
             try {
-                app.audioLock.lock();
                 String identifier = "NG" + counter++;
                 String message = messagePool.get(new Random().nextInt(messagePool.size()));
-                app.commandQueue.add(new AudioCommand(message, BVIApplication.PRIORITY_NAVIGATION_GUIDANCE, Thread.currentThread(), identifier));
+                app.commandQueue.put(new AudioCommand(message, BVIApplication.PRIORITY_NAVIGATION_GUIDANCE, Thread.currentThread(), identifier));
                 app.printQueueState();
-                app.outputReady.signal();
             } catch (Exception e) {
                 Thread.currentThread().interrupt();
                 e.printStackTrace();
-            } finally {
-                app.audioLock.unlock();
             }
             try {
                 Thread.sleep(3000);

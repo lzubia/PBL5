@@ -21,17 +21,13 @@ public class RiskDetection implements Runnable {
             boolean riskDetected = new Random().nextDouble() < 0.2;
             if (riskDetected) {
                 try {
-                    app.audioLock.lock();
                     String identifier = "RD" + counter++;
                     String message = messagePool.get(new Random().nextInt(messagePool.size()));
-                    app.commandQueue.add(new AudioCommand(message, BVIApplication.PRIORITY_RISK_DETECTION, Thread.currentThread(), identifier));
+                    app.commandQueue.put(new AudioCommand(message, BVIApplication.PRIORITY_RISK_DETECTION, Thread.currentThread(), identifier));
                     app.printQueueState();
-                    app.outputReady.signal();
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
-                } finally {
-                    app.audioLock.unlock();
                 }
             }
             try {
