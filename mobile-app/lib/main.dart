@@ -227,6 +227,20 @@ class MyHomePageState extends State<MyHomePage> {
         command.contains('mappa')) {
       // _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
       isCommandProcessed = true;
+    } else if (command.contains('etxera') ||
+        command.contains('etxéra') ||
+        command.contains('echeira') ||
+        command.contains('echera') ||
+        command.contains('echerá') ||
+        command.contains('eteira') ||
+        command.contains('echeira') ||
+        command.contains('echela') ||
+        command.contains('etxéra') ||
+        command.contains('etsera') ||
+        command.contains('e chera')) {
+      Navigator.popUntil(context, (route) => route.isFirst);
+      widget.ttsService.speakLabels(['Going home']);
+      isCommandProcessed = true;
     } else {
       isCommandProcessed = false;
       _startListening();
@@ -242,10 +256,6 @@ class MyHomePageState extends State<MyHomePage> {
   Future<void> _playActivationSound() async {
     await player.play(AssetSource(
         'sounds/activation_sound.mp3')); // Reproducir sonido de activación
-  }
-
-  void _stopListening() {
-    widget.sttService.stopListening();
   }
 
   @override
