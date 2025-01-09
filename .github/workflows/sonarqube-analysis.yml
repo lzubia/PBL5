@@ -9,13 +9,12 @@ on:
 jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
-    
+
     defaults:
-       run:
-         working-directory: ./mobile-app   #This will apply to all steps in this job
+      run:
+        working-directory: ./mobile-app   # This will apply to all steps in this job
 
     steps:
-    
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -42,29 +41,15 @@ jobs:
       - name: List contents of mobile-app directory
         run: pwd
 
-      - name: Check Coverage File
-        run: ls -la
+      - name: Clean .scannerwork directory
+        run: rm -rf ./mobile-app/.scannerwork
 
-      - name: Install SonarScanner
+      - name: Run SonarQube analysis using Docker
         run: |
-          # Add SonarSource repo and install SonarScanner
-          sudo apt update
-          sudo apt install -y gnupg curl
-
-          # Download and add SonarSource repository
-          echo "deb https://deb.sonarsource.com/sonar-scanner-debian/ stable main" | sudo tee /etc/apt/sources.list.d/sonar-scanner.list
-          curl -sS https://sonarsource.bintray.com/sonarscanner/debian/sonar-scanner.asc | sudo tee /etc/apt/trusted.gpg.d/sonar-scanner.asc
-          sudo apt update
-          sudo apt install -y sonar-scanner
-          
-      - name: Set up SonarQube scanner
-        uses: sonarsource/sonarcloud-github-action@v2   #Updated to v2
-        with:
-          args: |
-            -Dsonar.projectBaseDir=./mobile-app
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   #Add your SonarQube token as a secret in GitHub
-
-      - name: Run SonarQube analysis
-        run: |
-          sonar-scanner 
+          docker run \
+            -v $(pwd):/usr/src \
+            -e SONAR_TOKEN=${{ secrets.SONAR_TOKEN }} \
+            sonarsource/sonar-scanner-cli:latest \
+            -Dsonar.projectBaseDir=/usr/src/mobile-app \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io
