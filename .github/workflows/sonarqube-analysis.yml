@@ -48,3 +48,4 @@ jobs:
 
       - name: Run SonarQube analysis
         run: sonar-scanner
+        working-directory: ./mobile-app
