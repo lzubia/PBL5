@@ -38,14 +38,13 @@ jobs:
       - name: Check Coverage File
         run: ls -la coverage/lcov.info
 
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v2
+      - name: Set up SonarQube scanner
+        uses: sonarsource/sonarcloud-github-action@v1
         with:
-          args: >
-            -Dsonar.projectKey=pbl5
-            -Dsonar.organization=oier-22
-            -Dsonar.projectBaseDir=mobile-app
-            -Dsonar.dart.sdkPath=/opt/hostedtoolcache/flutter/3.24.5-stable/x64/bin/cache/dart-sdk
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: "https://sonarcloud.io"
+          sonar-project-key: 'your-project-key'
+          sonar-host-url: 'https://sonarcloud.io'
+
+      - name: Run SonarQube analysis
+        run: |
+          sonar-scanner
+        working-directory: ./mobile-app
