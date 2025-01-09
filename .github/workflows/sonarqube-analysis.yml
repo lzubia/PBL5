@@ -38,6 +38,10 @@ jobs:
       - name: Check Coverage File
         run: ls -la coverage/lcov.info
 
+      - name: List contents of mobile-app directory
+        run: ls -la ./mobile-app
+
+
       - name: Set up SonarQube scanner
         uses: sonarsource/sonarcloud-github-action@v2  # Updated to v2
         with:
