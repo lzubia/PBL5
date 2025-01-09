@@ -19,9 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Verify SonarScanner Installation
-        run: sonar-scanner --version
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2.7.0
         with:
