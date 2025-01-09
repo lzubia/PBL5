@@ -39,11 +39,12 @@ jobs:
         run: ls -la coverage/lcov.info
 
       - name: Set up SonarQube scanner
-        uses: sonarsource/sonarcloud-github-action@v1
+        uses: sonarsource/sonarcloud-github-action@v2  # Updated to v2
         with:
-          sonar-project-key: 'your-project-key'
-          sonar-host-url: 'https://sonarcloud.io'
+          sonar-project-key: 'pbl5'  # Sonar project key
+          sonar-host-url: 'https://sonarcloud.io'  # URL to SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Add your SonarQube token as a secret in GitHub
 
       - name: Run SonarQube analysis
         run: sonar-scanner
-        # No need for working-directory here because it's already set globally in defaults
