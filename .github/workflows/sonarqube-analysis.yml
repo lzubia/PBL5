@@ -47,8 +47,8 @@ jobs:
       - name: Set up SonarQube scanner
         uses: sonarsource/sonarcloud-github-action@v2   #Updated to v2
         with:
-          sonar-project-key: 'pbl5'   #Sonar project key
-          sonar-host-url: 'https://sonarcloud.io'   #URL to SonarCloud
+          args: |
+            -Dsonar.projectBaseDir=./mobile-app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   #Add your SonarQube token as a secret in GitHub
 
