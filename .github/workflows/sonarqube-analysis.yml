@@ -9,62 +9,49 @@ on:
 jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
+    
+    defaults:
+       run:
+         working-directory: ./mobile-app   #This will apply to all steps in this job
+
 
     steps:
-       # Checkout the code
-       - name: Checkout code
-         uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-       # Print the current directory to debug
-       - name: Print current working directory
-         run: pwd
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.7.0
+        with:
+          flutter-version: '3.24.5'
 
-       # List files in the mobile-app folder
-       - name: List files in mobile-app
-         run: ls -la ./mobile-app
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics
 
+      - name: Install Flutter dependencies
+        run: flutter pub get
 
-    #defaults:
-     #  run:
-      #   working-directory: ./mobile-app  # This will apply to all steps in this job
+      - name: Generate Coverage Report
+        run: flutter test --coverage
 
+      - name: Verify Dart Installation
+        run: dart --version
 
-    #steps:
-    #  - name: Checkout code
-     #   uses: actions/checkout@v3
+      - name: Check Coverage File
+        run: ls -la coverage/lcov.info
 
-#      - name: Set up Flutter
- #       uses: subosito/flutter-action@v2.7.0
-  #      with:
-   #       flutter-version: '3.24.5'
-#
- #     - name: Disable Flutter analytics
-  #      run: flutter config --no-analytics
+      - name: List contents of mobile-app directory
+        run: pwd
 
-   #   - name: Install Flutter dependencies
-    #    run: flutter pub get
-#
- #     - name: Generate Coverage Report
-  #      run: flutter test --coverage
-#
- #     - name: Verify Dart Installation
-  ##      run: dart --version
-#
- #     - name: Check Coverage File
-  #      run: ls -la coverage/lcov.info
-#
- #     - name: List contents of mobile-app directory
-  #      run: pwd
-#
-#
- #     - name: Set up SonarQube scanner
-  #      uses: sonarsource/sonarcloud-github-action@v2  # Updated to v2
-   #     with:
-    #      sonar-project-key: 'pbl5'  # Sonar project key
-     #     sonar-host-url: 'https://sonarcloud.io'  # URL to SonarCloud
-      #  env:
-       #   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Add your SonarQube token as a secret in GitHub
+      - name: Check Coverage File
+        run: ls -la
 
-   #   - name: Run SonarQube analysis
-   #     run: sonar-scanner
-   #     working-directory: ./mobile-app
+      - name: Set up SonarQube scanner
+        uses: sonarsource/sonarcloud-github-action@v2   Updated to v2
+        with:
+          sonar-project-key: 'pbl5'   #Sonar project key
+          sonar-host-url: 'https://sonarcloud.io'   #URL to SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   #Add your SonarQube token as a secret in GitHub
+
+      - name: Run SonarQube analysis
+        run: sonar-scanner
