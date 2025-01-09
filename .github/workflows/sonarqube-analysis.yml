@@ -15,8 +15,12 @@ jobs:
          working-directory: ./mobile-app   #This will apply to all steps in this job
 
     steps:
+    
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Verify SonarScanner Installation
+        run: sonar-scanner --version
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2.7.0
@@ -44,9 +48,12 @@ jobs:
       - name: Check Coverage File
         run: ls -la
 
-      - name: Clean .scannerwork directory
-        run: rm -rf ./mobile-app/.scannerwork
-
+      - name: Install SonarScanner
+        run: |
+          # Install SonarScanner CLI
+          sudo apt-get update
+          sudo apt-get install -y sonar-scanner
+          
       - name: Set up SonarQube scanner
         uses: sonarsource/sonarcloud-github-action@v2   #Updated to v2
         with:
@@ -57,6 +64,4 @@ jobs:
 
       - name: Run SonarQube analysis
         run: |
-          # Force the SonarScanner to use the correct Linux binary path
-          export PATH=/opt/sonar-scanner/bin:$PATH
-          sonar-scanner -X  # Run with debug output to get full error details
+          sonar-scanner 
