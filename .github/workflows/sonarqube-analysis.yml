@@ -32,9 +32,13 @@ jobs:
 
       - name: Install SonarScanner
         run: |
+          # Download SonarScanner
           curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner.zip -d $HOME
-          export PATH="$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH"
+          # Set SONAR_SCANNER_HOME and update PATH
+          echo "SONAR_SCANNER_HOME=$HOME/sonar-scanner-5.0.1.3006-linux" >> $GITHUB_ENV
+          echo "PATH=$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH" >> $GITHUB_ENV
+
 
       - name: Run SonarQube Analysis
         working-directory: mobile-app
