@@ -10,9 +10,9 @@ jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
 
-    defaults:
-       run:
-         working-directory: ./mobile-app  # This will apply to all steps in this job
+    #defaults:
+     #  run:
+      #   working-directory: ./mobile-app  # This will apply to all steps in this job
   
     steps:
 
