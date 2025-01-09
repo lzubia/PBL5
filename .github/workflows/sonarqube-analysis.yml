@@ -12,7 +12,7 @@ jobs:
 
     defaults:
        run:
-         working-directory: mobile-app  # This will apply to all steps in this job
+         working-directory: ./mobile-app  # This will apply to all steps in this job
   
     steps:
        - name: Show current directory
