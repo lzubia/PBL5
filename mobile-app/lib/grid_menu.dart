@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/map_widget.dart';
 import 'describe_environment.dart';
 import 'picture_service.dart';
@@ -7,9 +8,13 @@ import 'package:pbl5_menu/money_identifier.dart';
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
+  final String sessionToken;
 
   const GridMenu(
-      {super.key, required this.pictureService, required this.ttsService});
+      {super.key,
+      required this.pictureService,
+      required this.ttsService,
+      required this.sessionToken});
 
   @override
   _GridMenuState createState() => _GridMenuState();
@@ -61,6 +66,7 @@ class _GridMenuState extends State<GridMenu> {
                       child: DescribeEnvironment(
                         pictureService: widget.pictureService,
                         ttsService: widget.ttsService,
+                        sessionToken: widget.sessionToken,
                       ),
                     )
                   else if (title == 'Describe Environment' &&
@@ -74,7 +80,11 @@ class _GridMenuState extends State<GridMenu> {
                   if (title == 'Money Identifier')
                     Container(
                       height: 550,
-                      child: MoneyIdentifier(pictureService: widget.pictureService, ttsService: widget.ttsService,),
+                      child: MoneyIdentifier(
+                        pictureService: widget.pictureService,
+                        ttsService: widget.ttsService,
+                        sessionToken: sessionToken,
+                      ),
                     ),
                   if (title != 'Describe Environment' &&
                       title != 'GPS (Map)' &&

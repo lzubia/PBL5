@@ -5,8 +5,9 @@ import 'picture_service.dart';
 class MoneyIdentifier extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
+  final String sessionToken;
 
-  MoneyIdentifier({required this.pictureService, required this.ttsService});
+  MoneyIdentifier({required this.pictureService, required this.ttsService, required this.sessionToken});
 
   @override
   _MoneyIdentifierState createState() => _MoneyIdentifierState();
@@ -36,7 +37,7 @@ class _MoneyIdentifierState extends State<MoneyIdentifier> {
 
   Future<void> _takeAndSendImage() async {
     await widget.pictureService.takePicture(
-      endpoint: 'http://192.168.1.2:1880/money', // Pass the endpoint here
+      endpoint: 'https://192.168.1.5:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
         widget.ttsService.speakLabels(labels); // Use ttsService to speak the labels

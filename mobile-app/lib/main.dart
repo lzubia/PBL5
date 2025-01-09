@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
@@ -17,18 +21,31 @@ String sessionToken = '';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await startSession();
-  
+  //txapar
+  HttpOverrides.global = MyHttpOverrides();
+
+  const platform = MethodChannel('com.example.pbl5_menu/endSession');
+  platform.setMethodCallHandler((call) async {
+    if (call.method == 'endSession') {
+      await endSession(sessionToken);
+    } else if (call.method == 'startSession') {
+      await startSession();
+    }
+  });
+
+  //await startSession();
+
   final pictureService = PictureService();
   await pictureService.setupCamera();
   await pictureService.initializeCamera();
-  
+
   final databaseHelper = DatabaseHelper();
   final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
   final ttsService = TtsService(databaseHelper);
-  final sttServiceGoogle = SttServiceGoogle(); // Initialize Speech-to-Text service
+  final sttServiceGoogle =
+      SttServiceGoogle(); // Initialize Speech-to-Text service
   final sttService = SttService(); // Initialize another Speech-to-Text service
-  
+
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
   sttServiceGoogle.initializeStt(); // Initialize STT service
@@ -43,12 +60,23 @@ void main() async {
     sttService: sttService, // Pass another STT service
   ));
 }
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 Future<void> startSession() async {
-  final url = Uri.parse('https:192.168.1.2:1880/start-session');
+  final url = Uri.parse('https://192.168.1.5:1880/start-session');
   try {
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      sessionToken = response.body; // Guarda la respuesta en la variable
+      sessionToken = jsonDecode(
+          response.body)['session_id']; // Guarda la respuesta en la variable
       print('Session started successfully');
     } else {
       print('Failed to start session: ${response.statusCode}');
@@ -57,6 +85,25 @@ Future<void> startSession() async {
     print('Error starting session: $e');
   }
 }
+
+Future<void> endSession(String sessionId) async {
+  final url =
+      Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
+  try {
+    final response = await http.delete(url);
+    if (response.statusCode == 200) {
+      print('Session ended successfully');
+      print('Response: ${response.body}');
+    } else if (response.statusCode == 404) {
+      print('Session ID not found');
+    } else {
+      print('Failed to end session: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error ending session: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
   final PictureService pictureService;
   final ITtsService ttsServiceGoogle;
@@ -88,7 +135,8 @@ class MyApp extends StatelessWidget {
         ttsServiceGoogle: ttsServiceGoogle,
         ttsService: ttsService,
         databaseHelper: databaseHelper,
-        sttServiceGoogle: sttServiceGoogle, // Pass the STT service to MyHomePage
+        sttServiceGoogle:
+            sttServiceGoogle, // Pass the STT service to MyHomePage
         sttService: sttService, // Pass another STT service to MyHomePage
       ),
     );
@@ -117,24 +165,34 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  bool useGoogleTts = false; // Default to false
-  bool useGoogleStt = false; // Default to false
-  bool useVoiceControl = false; // Default to false
-  bool _isListening = false; // Indicates if speech recognition is active
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  bool useGoogleTts = false;
+  bool useGoogleStt = false;
+  bool useVoiceControl = false;
+  bool _isListening = false;
   String detectedCommand = "";
-  final GlobalKey<RiskDetectionState> _riskDetectionKey = GlobalKey<RiskDetectionState>();
+  final GlobalKey<RiskDetectionState> _riskDetectionKey =
+      GlobalKey<RiskDetectionState>();
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance
+        .addObserver(this); // Add observer for lifecycle events
     if (useVoiceControl) {
       _startListening();
     }
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove observer
+    super.dispose();
+  }
+
   Future<void> _startListening() async {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    final sttService =
+        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     await sttService.startListening((transcript) {
       setState(() {
         detectedCommand = transcript;
@@ -148,7 +206,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _stopListening() {
-    final sttService = useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
+    final sttService =
+        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     sttService.stopListening();
     setState(() {
       _isListening = false;
@@ -158,10 +217,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void _handleCommand(String command) {
     if (command.contains('risk detection on')) {
       _riskDetectionKey.currentState?.enableRiskDetection();
-    } else if (command.contains('risk detection off') || command.contains('risk detection of')) {
+    } else if (command.contains('risk detection off') ||
+        command.contains('risk detection of')) {
       _riskDetectionKey.currentState?.disableRiskDetection();
-    } else if (command.contains('another command')) {
-      // Handle another command
     } else {
       //widget.ttsService.speakLabels(["Command not recognized"]);
     }
@@ -197,18 +255,19 @@ class _MyHomePageState extends State<MyHomePage> {
             child: RiskDetection(
               key: _riskDetectionKey,
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts
-                  ? widget.ttsServiceGoogle
-                  : widget.ttsService,
-              sttService: useGoogleStt
-                  ? widget.sttServiceGoogle
-                  : widget.sttService, // Pass the appropriate STT service
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              sttService:
+                  useGoogleStt ? widget.sttServiceGoogle : widget.sttService,
+              sessionToken: sessionToken, // Pass sessionToken to RiskDetection
             ),
           ),
           Expanded(
             child: GridMenu(
               pictureService: widget.pictureService,
-              ttsService: useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              ttsService:
+                  useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              sessionToken: sessionToken, // Pass sessionToken to GridMenu
             ),
           ),
           Padding(
