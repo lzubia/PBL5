@@ -12,7 +12,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: mobile-app
+        working-directory: mobile-app  # This will apply to all steps in this job
 
     steps:
       - name: Checkout code
@@ -45,6 +45,5 @@ jobs:
           sonar-host-url: 'https://sonarcloud.io'
 
       - name: Run SonarQube analysis
-        run: |
-          sonar-scanner
-        working-directory: ./mobile-app
+        run: sonar-scanner
+        # No need for working-directory here because it's already set globally in defaults
