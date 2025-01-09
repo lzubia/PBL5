@@ -56,4 +56,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   #Add your SonarQube token as a secret in GitHub
 
       - name: Run SonarQube analysis
-        run: sonar-scanner -X
+        run: |
+          # Force the SonarScanner to use the correct Linux binary path
+          export PATH=/opt/sonar-scanner/bin:$PATH
+          sonar-scanner -X  # Run with debug output to get full error details
