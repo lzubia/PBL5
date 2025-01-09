@@ -32,6 +32,7 @@ jobs:
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
+        working-directory: mobile-app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
           SONAR_HOST_URL: "https://sonarcloud.io"
