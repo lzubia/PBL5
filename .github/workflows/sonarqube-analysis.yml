@@ -35,13 +35,12 @@ jobs:
       - name: Verify Dart Installation
         run: dart --version
 
-      - name: Run SonarQube analysis using Docker
+      - name: tp
         run: |
           docker run \
-            -v $(pwd)/mobile-app:/usr/src \
+            -v ${{ github.workspace }}/mobile-app:/usr/src/mobile-app \
             -e SONAR_TOKEN=${{ secrets.SONAR_TOKEN }} \
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.projectBaseDir=/usr/src/mobile-app \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.host.url=https://sonarcloud.io
-
