@@ -46,7 +46,6 @@ jobs:
             -Dsonar.organization=oier-22
             -Dsonar.projectBaseDir=mobile-app
             -Dsonar.dart.sdkPath=/opt/hostedtoolcache/flutter/3.24.5-stable/x64/bin/cache/dart-sdk
-            -Dsonar.dart.analyzer=flutter analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
