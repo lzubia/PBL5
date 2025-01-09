@@ -47,11 +47,13 @@ jobs:
 
       - name: Install SonarScanner
         run: |
-          # Add SonarScanner repo and install it
+          # Add SonarSource repo and install SonarScanner
           sudo apt update
           sudo apt install -y gnupg curl
-          curl -sS https://deb.sonarsource.com/sonarsource-archive.key | sudo apt-key add -
-          echo "deb https://deb.sonarsource.com/sonar-scanner-debian/ stable main" | sudo tee -a /etc/apt/sources.list.d/sonar-scanner.list
+
+          # Download and add SonarSource repository
+          echo "deb https://deb.sonarsource.com/sonar-scanner-debian/ stable main" | sudo tee /etc/apt/sources.list.d/sonar-scanner.list
+          curl -sS https://sonarsource.bintray.com/sonarscanner/debian/sonar-scanner.asc | sudo tee /etc/apt/trusted.gpg.d/sonar-scanner.asc
           sudo apt update
           sudo apt install -y sonar-scanner
           
