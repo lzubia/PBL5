@@ -10,13 +10,16 @@ jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
 
+    defaults:
+       run:
+         working-directory: ./PBL5/mobile-app  # This will apply to all steps in this job
+  
     steps:
-      - name: Show current directory
-        run: pwd 
+       - name: Show current directory
+         run: pwd 
+       - name: List
+         run: ls la
 
-    #defaults:
-    #  run:
-    #    working-directory: mobile-app  # This will apply to all steps in this job
 
     #steps:
     #  - name: Checkout code
