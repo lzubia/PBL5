@@ -10,6 +10,10 @@ jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: mobile-app  # Establece el directorio de trabajo predeterminado para todos los pasos
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -23,16 +27,13 @@ jobs:
         run: flutter config --no-analytics
 
       - name: Install Flutter dependencies
-        working-directory: mobile-app
         run: flutter pub get
 
       - name: Generate Coverage Report
-        working-directory: mobile-app
         run: flutter test --coverage
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
-        working-directory: mobile-app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
           SONAR_HOST_URL: "https://sonarcloud.io"
