@@ -35,7 +35,7 @@ jobs:
       - name: Verify Dart Installation
         run: dart --version
 
-      - name: tp
+      - name: Run SonarQube analysis using Docker
         run: |
           docker run \
             -v ${{ github.workspace }}/mobile-app:/usr/src/mobile-app \
