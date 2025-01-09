@@ -35,15 +35,6 @@ jobs:
       - name: Verify Dart Installation
         run: dart --version
 
-      - name: Check Coverage File
-        run: ls -la coverage/lcov.info
-
-      - name: List contents of mobile-app directory
-        run: ls -la ./mobile-app  # Make sure the sonar-project.properties file exists here
-
-      - name: Clean .scannerwork directory
-        run: rm -rf ./mobile-app/.scannerwork
-
       - name: Run SonarQube analysis using Docker
         run: |
           docker run \
