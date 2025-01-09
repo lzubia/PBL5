@@ -47,9 +47,13 @@ jobs:
 
       - name: Install SonarScanner
         run: |
-          # Install SonarScanner CLI
-          sudo apt-get update
-          sudo apt-get install -y sonar-scanner
+          # Add SonarScanner repo and install it
+          sudo apt update
+          sudo apt install -y gnupg curl
+          curl -sS https://deb.sonarsource.com/sonarsource-archive.key | sudo apt-key add -
+          echo "deb https://deb.sonarsource.com/sonar-scanner-debian/ stable main" | sudo tee -a /etc/apt/sources.list.d/sonar-scanner.list
+          sudo apt update
+          sudo apt install -y sonar-scanner
           
       - name: Set up SonarQube scanner
         uses: sonarsource/sonarcloud-github-action@v2   #Updated to v2
