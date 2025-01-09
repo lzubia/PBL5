@@ -38,6 +38,7 @@ jobs:
           args: >
             -Dsonar.projectKey=pbl5
             -Dsonar.organization=oier-22
+            -Dproject.settings=mobile-app/sonar-project.properties
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
           SONAR_HOST_URL: "https://sonarcloud.io"
