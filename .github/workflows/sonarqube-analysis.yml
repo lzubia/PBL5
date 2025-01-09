@@ -12,7 +12,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: mobile-app  # Establece el directorio de trabajo predeterminado para todos los pasos
+        working-directory: mobile-app
 
     steps:
       - name: Checkout code
@@ -22,7 +22,7 @@ jobs:
         uses: subosito/flutter-action@v2.7.0
         with:
           flutter-version: '3.24.5'
-          
+
       - name: Disable Flutter analytics
         run: flutter config --no-analytics
 
@@ -32,6 +32,12 @@ jobs:
       - name: Generate Coverage Report
         run: flutter test --coverage
 
+      - name: Verify Dart Installation
+        run: dart --version
+
+      - name: Check Coverage File
+        run: ls -la coverage/lcov.info
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         with:
@@ -39,6 +45,8 @@ jobs:
             -Dsonar.projectKey=pbl5
             -Dsonar.organization=oier-22
             -Dsonar.projectBaseDir=mobile-app
+            -Dsonar.dart.sdkPath=/opt/hostedtoolcache/flutter/3.24.5-stable/x64/bin/cache/dart-sdk
+            -Dsonar.dart.analyzer=flutter analyze
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "https://sonarcloud.io"
