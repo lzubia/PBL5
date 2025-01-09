@@ -44,6 +44,9 @@ jobs:
       - name: Check Coverage File
         run: ls -la
 
+      - name: Clean .scannerwork directory
+        run: rm -rf ./mobile-app/.scannerwork
+
       - name: Set up SonarQube scanner
         uses: sonarsource/sonarcloud-github-action@v2   #Updated to v2
         with:
