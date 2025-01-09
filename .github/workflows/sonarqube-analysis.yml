@@ -30,6 +30,12 @@ jobs:
         working-directory: mobile-app
         run: flutter test --coverage
 
+      - name: Install SonarScanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip -d $HOME
+          export PATH="$HOME/sonar-scanner-5.0.1.3006-linux/bin:$PATH"
+
       - name: Run SonarQube Analysis
         working-directory: mobile-app
         env:
