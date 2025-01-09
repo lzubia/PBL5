@@ -18,14 +18,20 @@ jobs:
         uses: subosito/flutter-action@v2.7.0
         with:
           flutter-version: '3.13.0'
+          
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics
 
       - name: Install Flutter dependencies
+        working-directory: mobile-app
         run: flutter pub get
 
       - name: Generate Coverage Report
+        working-directory: mobile-app
         run: flutter test --coverage
 
       - name: Run SonarQube Analysis
+        working-directory: mobile-app
         env:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
