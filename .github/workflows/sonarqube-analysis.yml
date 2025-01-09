@@ -53,4 +53,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}   #Add your SonarQube token as a secret in GitHub
 
       - name: Run SonarQube analysis
-        run: sonar-scanner
+        run: sonar-scanner -X
