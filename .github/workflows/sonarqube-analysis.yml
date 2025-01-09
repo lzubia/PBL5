@@ -39,7 +39,7 @@ jobs:
         run: ls -la coverage/lcov.info
 
       - name: List contents of mobile-app directory
-        run: ls -la ./mobile-app
+        run: ls -la 
 
 
       - name: Set up SonarQube scanner
