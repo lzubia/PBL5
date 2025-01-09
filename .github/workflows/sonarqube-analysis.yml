@@ -17,7 +17,7 @@ jobs:
     steps:
 
        - name: List files in mobile-app
-         run: ls -la /home/runner/work/PBL5/mobile-app
+         run: ls -la ./mobile-app
 
 
 
