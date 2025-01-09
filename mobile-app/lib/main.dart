@@ -179,15 +179,6 @@ class MyHomePageState extends State<MyHomePage> {
 
     // Reproducir sonido de activación
     _playActivationSound();
-
-    print('INFO: Activating voice control...');
-    // _commandTimeout.cancel();
-    // _commandTimeout = Timer(Duration(seconds: 5), () {
-    //   setState(() {
-    //     _isActivated = false;
-    //     useVoiceControl = false;
-    //   });
-    // });
   }
 
   void _handleCommand(String command) {
@@ -222,30 +213,7 @@ class MyHomePageState extends State<MyHomePage> {
         command.contains('drua') ||
         command.contains('di ru a') ||
         command.contains('de ru')) {
-      // _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
-      // Aseguramos que el estado esté listo
-
       _gridMenuKey.currentState?.showBottomSheet(context, 'Money Identifier');
-
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => MoneyIdentifier(
-      //       pictureService: widget.pictureService,
-      //       ttsService: widget.ttsService,
-      //     ),
-      //   ),
-      // ).then((_) {
-      //   // Al regresar, asegurarse de que la inicialización ocurra
-      //   Future.delayed(Duration(milliseconds: 200), () {
-      //     if (_moneyIdentifierKey.currentState != null) {
-      //       _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
-      //       isCommandProcessed = true;
-      //     } else {
-      //       print('El widget de MoneyIdentifier aún no está inicializado.');
-      //     }
-      //   });
-      // });
       isCommandProcessed = true;
     } else if (command.contains('mapa') ||
         command.contains('mappa') ||
