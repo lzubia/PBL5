@@ -3,7 +3,8 @@ name: SonarQube Analysis
 on:
   push:
     branches:
-      - mobile-CI
+      - mobile-develop
+      - mobile-tests
   pull_request:
 
 jobs:
@@ -31,9 +32,6 @@ jobs:
 
       - name: Generate Coverage Report
         run: flutter test --coverage
-
-      - name: Verify Dart Installation
-        run: dart --version
 
       - name: Run SonarQube analysis using Docker
         run: |
