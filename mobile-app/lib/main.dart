@@ -70,27 +70,30 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-Future<void> startSession() async {
+Future<void> startSession({http.Client? client}) async {
   final url = Uri.parse('https://192.168.1.5:1880/start-session');
+  client ??= http.Client();
   try {
-    final response = await http.get(url);
+    final response = await client.get(url);
     if (response.statusCode == 200) {
-      sessionToken = jsonDecode(
-          response.body)['session_id']; // Guarda la respuesta en la variable
+      sessionToken = jsonDecode(response.body)['session_id'];
       print('Session started successfully');
     } else {
+      sessionToken = ''; // Reset sessionToken on failure
       print('Failed to start session: ${response.statusCode}');
     }
   } catch (e) {
+    sessionToken = ''; // Reset sessionToken on error
     print('Error starting session: $e');
   }
 }
 
-Future<void> endSession(String sessionId) async {
+Future<void> endSession(String sessionId, {http.Client? client}) async {
   final url =
       Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
+  client ??= http.Client();
   try {
-    final response = await http.delete(url);
+    final response = await client.delete(url);
     if (response.statusCode == 200) {
       print('Session ended successfully');
       print('Response: ${response.body}');
@@ -265,7 +268,8 @@ class MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(
                   'Command: $detectedCommand',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(sessionToken),
                 Row(
@@ -276,6 +280,7 @@ class MyHomePageState extends State<MyHomePage> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
+                      key: const Key('voiceControlSwitch'), // Add a unique Key
                       value: useVoiceControl,
                       onChanged: (value) {
                         setState(() {
