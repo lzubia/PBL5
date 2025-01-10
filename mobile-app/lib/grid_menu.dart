@@ -5,6 +5,10 @@ import 'describe_environment.dart';
 import 'picture_service.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 
+const String describeEnvironmentTitle = 'Describe Environment';
+const String gpsMapTitle = 'GPS (Map)';
+const String moneyIdentifierTitle = 'Money Identifier';
+
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
@@ -17,10 +21,10 @@ class GridMenu extends StatefulWidget {
       required this.sessionToken});
 
   @override
-  _GridMenuState createState() => _GridMenuState();
+  GridMenuState createState() => GridMenuState();
 }
 
-class _GridMenuState extends State<GridMenu> {
+class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
 
   @override
@@ -51,45 +55,17 @@ class _GridMenuState extends State<GridMenu> {
           return SingleChildScrollView(
             child: Container(
               width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 20),
-                  if (title == 'Describe Environment' && isCameraInitialized)
-                    Container(
-                      height: 550,
-                      child: DescribeEnvironment(
-                        pictureService: widget.pictureService,
-                        ttsService: widget.ttsService,
-                        sessionToken: widget.sessionToken,
-                      ),
-                    )
-                  else if (title == 'Describe Environment' &&
-                      !isCameraInitialized)
-                    Center(child: CircularProgressIndicator()),
-                  if (title == 'GPS (Map)')
-                    Container(
-                      height: 550,
-                      child: MapWidget(),
-                    ),
-                  if (title == 'Money Identifier')
-                    Container(
-                      height: 550,
-                      child: MoneyIdentifier(
-                        pictureService: widget.pictureService,
-                        ttsService: widget.ttsService,
-                        sessionToken: sessionToken,
-                      ),
-                    ),
-                  if (title != 'Describe Environment' &&
-                      title != 'GPS (Map)' &&
-                      title != 'Money Identifier')
-                    Text('Content for $title goes here.'),
+                  const SizedBox(height: 20),
+                  _buildContent(title),
                 ],
               ),
             ),
@@ -99,39 +75,90 @@ class _GridMenuState extends State<GridMenu> {
     });
   }
 
+  Widget _buildContent(String title) {
+    if (title == describeEnvironmentTitle) {
+      return _buildDescribeEnvironmentContent();
+    } else if (title == gpsMapTitle) {
+      return _buildMapContent();
+    } else if (title == moneyIdentifierTitle) {
+      return _buildMoneyIdentifierContent();
+    } else {
+      return Text('Content for $title goes here.');
+    }
+  }
+
+  Widget _buildDescribeEnvironmentContent() {
+    if (isCameraInitialized) {
+      return SizedBox(
+        height: 550,
+        child: DescribeEnvironment(
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+          sessionToken: sessionToken,
+        ),
+      );
+    } else {
+      return const Center(
+        child: SizedBox(
+          width: 50.0, // Adjust the width as needed
+          height: 50.0, // Adjust the height as needed
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+  }
+
+  Widget _buildMapContent() {
+    return const SizedBox(
+      height: 500, // Adjust the height as needed to add whitespace
+      child: MapWidget(),
+    );
+  }
+
+  Widget _buildMoneyIdentifierContent() {
+    return SizedBox(
+      height: 550,
+      child: MoneyIdentifier(
+        pictureService: widget.pictureService,
+        ttsService: widget.ttsService,
+        sessionToken: sessionToken,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> menuOptions = [
-      {'title': 'Describe Environment', 'icon': Icons.description},
-      {'title': 'GPS (Map)', 'icon': Icons.map},
+      {'title': describeEnvironmentTitle, 'icon': Icons.description},
+      {'title': gpsMapTitle, 'icon': Icons.map},
       {
         'title': 'Scanner (Read Texts, QRs, ...)',
         'icon': Icons.qr_code_scanner
       },
-      {'title': 'Money Identifier', 'icon': Icons.attach_money},
+      {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
     ];
 
     return GridView.count(
       crossAxisCount: 2,
       children: List.generate(menuOptions.length, (index) {
         return Card(
-          margin: EdgeInsets.all(8.0),
+          margin: const EdgeInsets.all(8.0),
           child: InkWell(
             onTap: () {
               _showBottomSheet(context, menuOptions[index]['title']);
             },
-            child: Container(
+            child: SizedBox(
               height: 150,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(menuOptions[index]['icon'], size: 50),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       menuOptions[index]['title'],
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                     ),
                   ],
                 ),

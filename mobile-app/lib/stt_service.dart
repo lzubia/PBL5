@@ -12,7 +12,7 @@ class SttService implements ISttService {
 
   @override
   Future<void> startListening(Function(String) onResult) async {
-    _speech.listen(onResult: (result) {
+    await _speech.listen(onResult: (result) {
       onResult(result.recognizedWords.toLowerCase());
     });
   }

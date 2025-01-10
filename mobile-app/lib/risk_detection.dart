@@ -38,7 +38,7 @@ class RiskDetectionState extends State<RiskDetection> {
     setState(() {
       isRiskDetectionEnabled = true;
       _timer = Timer.periodic(
-        Duration(milliseconds: 1500),
+        const Duration(milliseconds: 1500),
         (timer) {
           _takePicture();
         },
@@ -86,7 +86,7 @@ class RiskDetectionState extends State<RiskDetection> {
             children: [
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.red, width: 2.0),
                     borderRadius: BorderRadius.circular(8.0),
@@ -96,7 +96,7 @@ class RiskDetectionState extends State<RiskDetection> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.warning, color: Colors.red, size: 40.0),
+                          const Icon(Icons.warning, color: Colors.red, size: 40.0),
                           Switch(
                             value: isRiskDetectionEnabled,
                             onChanged: (value) {

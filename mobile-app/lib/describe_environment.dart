@@ -1,12 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'picture_service.dart';
+import 'i_tts_service.dart';
 
-class DescribeEnvironment extends StatelessWidget {
+class DescribeEnvironment extends StatelessWidget with Diagnosticable {
+  /// The service used to take pictures.
   final PictureService pictureService;
-  final dynamic ttsService;
+
+  /// The service used to convert text to speech.
+  final ITtsService ttsService;
   final String sessionToken;
 
-  DescribeEnvironment({required this.pictureService, required this.ttsService, required this.sessionToken});
+  DescribeEnvironment(
+      {super.key, required this.pictureService, required this.ttsService, required this.sessionToken});
 
   Future<void> _takeAndSendImage(BuildContext context) async {
     await pictureService.takePicture(
@@ -37,5 +43,14 @@ class DescribeEnvironment extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(final DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+          DiagnosticsProperty<PictureService>('pictureService', pictureService))
+      ..add(DiagnosticsProperty<dynamic>('ttsService', ttsService));
   }
 }

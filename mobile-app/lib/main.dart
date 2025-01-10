@@ -48,8 +48,8 @@ void main() async {
 
   ttsServiceGoogle.initializeTts();
   ttsService.initializeTts();
-  sttServiceGoogle.initializeStt(); // Initialize STT service
-  sttService.initializeStt(); // Initialize another STT service
+  await sttServiceGoogle.initializeStt(); // Initialize STT service
+  await sttService.initializeStt(); // Initialize another STT service
 
   runApp(MyApp(
     pictureService: pictureService,
@@ -162,14 +162,13 @@ class MyHomePage extends StatefulWidget {
   });
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  bool useGoogleTts = false;
-  bool useGoogleStt = false;
-  bool useVoiceControl = false;
-  bool _isListening = false;
+class MyHomePageState extends State<MyHomePage> {
+  bool useGoogleTts = false; // Default to false
+  bool useGoogleStt = false; // Default to false
+  bool useVoiceControl = false; // Default to false
   String detectedCommand = "";
   final GlobalKey<RiskDetectionState> _riskDetectionKey =
       GlobalKey<RiskDetectionState>();
@@ -177,8 +176,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addObserver(this); // Add observer for lifecycle events
     if (useVoiceControl) {
       _startListening();
     }
@@ -186,7 +183,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Remove observer
     super.dispose();
   }
 
@@ -199,19 +195,12 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       });
       _handleCommand(transcript);
     });
-
-    setState(() {
-      _isListening = true;
-    });
   }
 
   void _stopListening() {
     final sttService =
         useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
     sttService.stopListening();
-    setState(() {
-      _isListening = false;
-    });
   }
 
   void _handleCommand(String command) {
@@ -229,10 +218,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('BEGIA', style: TextStyle(fontSize: 24)),
+        title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
-            icon: Icon(Icons.settings, size: 50),
+            icon: const Icon(Icons.settings, size: 50),
             onPressed: () {
               Navigator.push(
                 context,
@@ -276,7 +265,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               children: [
                 Text(
                   'Command: $detectedCommand',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(sessionToken),
                 Row(
@@ -284,7 +273,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   children: [
                     Text(
                       'Voice Control: ${useVoiceControl ? "Enabled" : "Disabled"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useVoiceControl,
@@ -306,7 +295,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   children: [
                     Text(
                       'TTS Service: ${useGoogleTts ? "Google TTS" : "Demo TTS"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useGoogleTts,
@@ -323,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   children: [
                     Text(
                       'STT Service: ${useGoogleStt ? "Google STT" : "Demo STT"}',
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
                       value: useGoogleStt,

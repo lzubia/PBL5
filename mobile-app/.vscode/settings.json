@@ -2,5 +2,9 @@
     "cmake.sourceDirectory": "D:/Oier/MU/3. maila/1. seihilekoa/PBL/PBL5/mobile-app/linux",
     "conventionalCommits.scopes": [
         "mobile"
-    ]
+    ],
+    "sonarlint.connectedMode.project": {
+        "connectionId": "http-localhost-9000",
+        "projectKey": "pbl5"
+    }
 }
