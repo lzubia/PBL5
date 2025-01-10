@@ -26,6 +26,7 @@ void main() {
       describeEnvironment = DescribeEnvironment(
         ttsService: mockTtsService,
         pictureService: mockPictureService,
+        sessionToken: 'testSessionToken',
       );
     });
 

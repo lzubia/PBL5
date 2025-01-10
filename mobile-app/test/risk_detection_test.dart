@@ -30,6 +30,7 @@ void main() {
         pictureService: mockPictureService,
         ttsService: mockTtsService,
         sttService: mockSttService,
+        sessionToken: 'testSessionToken',
       ),
     ));
 
@@ -46,6 +47,7 @@ void main() {
         pictureService: mockPictureService,
         ttsService: mockTtsService,
         sttService: mockSttService,
+        sessionToken: 'testSessionToken',
       ),
     ));
 
@@ -65,6 +67,7 @@ void main() {
         pictureService: mockPictureService,
         ttsService: mockTtsService,
         sttService: mockSttService,
+        sessionToken: 'testSessionToken',
       ),
     ));
 
