@@ -114,7 +114,8 @@ void main() {
 
       // Verify picture service is called
       verify(mockPictureService.takePicture(
-        endpoint: 'http://192.168.1.2:1880/describe',
+        endpoint:
+            'https://192.168.1.5:1880/describe?session_id=testSessionToken', // Updated endpoint
         onLabelsDetected: anyNamed('onLabelsDetected'),
         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
       )).called(1);
