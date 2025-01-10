@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:googleapis/androidmanagement/v1.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
@@ -12,6 +13,7 @@ import 'package:pbl5_menu/settings_screen.dart';
 import 'package:pbl5_menu/picture_service.dart';
 import 'package:pbl5_menu/tts_service.dart';
 import 'package:pbl5_menu/database_helper.dart';
+import 'package:flutter/services.dart'; // Para cargar archivos desde assets
 import 'package:audioplayers/audioplayers.dart'; // For audio playback
 
 void main() async {
@@ -107,8 +109,7 @@ class MyHomePageState extends State<MyHomePage> {
   bool useGoogleStt = false;
   bool useGoogleTts = false;
   bool useVoiceControl = false;
-  bool isCommandProcessed =
-      false; // Para verificar si un comando ha sido procesado
+  List<List<String>> voiceCommands = []; // Comandos cargados del archivo
   bool _isActivated =
       false; // Para verificar si el control de voz está activado
   String _command = ''; // Para almacenar el comando de voz
@@ -124,7 +125,21 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    _loadVoiceCommands();
     _startListening();
+  }
+
+  Future<void> _loadVoiceCommands() async {
+    final String fileContent =
+        await rootBundle.loadString('assets/voice_commands.txt');
+    setState(() {
+      // Cada línea representa un grupo de sinónimos separados por comas
+      voiceCommands = fileContent
+          .split('\n') // Dividir por líneas
+          .map((line) =>
+              line.split(',').map((cmd) => cmd.trim().toLowerCase()).toList())
+          .toList();
+    });
   }
 
   void _startListening() async {
@@ -174,83 +189,98 @@ class MyHomePageState extends State<MyHomePage> {
   void _activateVoiceControl() {
     setState(() {
       useVoiceControl = true;
-      isCommandProcessed = false;
     });
-
     // Reproducir sonido de activación
     _playActivationSound();
   }
 
   void _handleCommand(String command) {
     print('Activated command: $command');
-    if (command.contains('arrisco') ||
-        command.contains('arrisku') ||
-        command.contains('arisku') ||
-        command.contains('carrisco') ||
-        command.contains('arriscu') ||
-        command.contains('arisco') ||
-        command.contains('carresco') ||
-        command.contains('arrisco') ||
-        command.contains('arresco') ||
-        command.contains('carisco') ||
-        command.contains('ariscó') ||
-        command.contains('arísco') ||
-        command.contains('arricó') ||
-        command.contains('cariscó')) {
-      _riskDetectionKey.currentState?.toggleRiskDetection();
-      isCommandProcessed = true;
-    } else if (command.contains('dirua') ||
-        command.contains('dirúa') ||
-        command.contains('dírua') ||
-        command.contains('dirúa') ||
-        command.contains('dira') ||
-        command.contains('dírua') ||
-        command.contains('dira') ||
-        command.contains('de ruina') ||
-        command.contains('dilua') ||
-        command.contains('derua') ||
-        command.contains('dirúa') ||
-        command.contains('drua') ||
-        command.contains('di ru a') ||
-        command.contains('de ru')) {
-      _gridMenuKey.currentState?.showBottomSheet(context, 'Money Identifier');
-      isCommandProcessed = true;
-    } else if (command.contains('mapa') ||
-        command.contains('mappa') ||
-        command.contains('mía') ||
-        command.contains('ma\'pa') ||
-        command.contains('ma') ||
-        command.contains('mape') ||
-        command.contains('mápá') ||
-        command.contains('ma') ||
-        command.contains('marpa') ||
-        command.contains('mappa')) {
-      // _moneyIdentifierKey.currentState?.initializeMoneyIdentifier();
-      isCommandProcessed = true;
-    } else if (command.contains('etxera') ||
-        command.contains('etxéra') ||
-        command.contains('echeira') ||
-        command.contains('echera') ||
-        command.contains('echerá') ||
-        command.contains('eteira') ||
-        command.contains('echeira') ||
-        command.contains('echela') ||
-        command.contains('etxéra') ||
-        command.contains('etsera') ||
-        command.contains('e chera')) {
-      Navigator.popUntil(context, (route) => route.isFirst);
-      widget.ttsService.speakLabels(['Going home']);
-      isCommandProcessed = true;
-    } else {
-      isCommandProcessed = false;
-      _startListening();
+
+    bool matched = false;
+    const double similarityThreshold = 80.0;
+
+    for (var commandGroup in voiceCommands) {
+      final similarity = calculateSimilarity(command, commandGroup.first);
+
+      for (var synonym in commandGroup) {
+        // Calculamos la similitud usando la distancia de Levenshtein
+        if (similarity >= similarityThreshold || command == synonym) {
+          final primaryCommand = commandGroup.first;
+
+          switch (primaryCommand) {
+            case 'arrisku': // Comando principal del grupo de riesgo
+              _riskDetectionKey.currentState?.toggleRiskDetection();
+              matched = true;
+              break;
+
+            case 'dirua': // Comando principal del grupo de identificador de dinero
+              _gridMenuKey.currentState
+                  ?.showBottomSheet(context, 'Money Identifier');
+              matched = true;
+              break;
+
+            case 'mapa': // Comando principal del grupo de mapas
+              matched = true;
+              break;
+
+            case 'menua': // Comando principal del grupo de navegación a casa
+              Navigator.popUntil(context, (route) => route.isFirst);
+              widget.ttsService.speakLabels(['Going home']);
+              matched = true;
+              break;
+
+            default:
+              break;
+          }
+
+          if (matched)
+            break; // Detenemos el bucle si encontramos un comando válido
+        }
+      }
+      if (matched)
+        break; // Salimos del bucle principal si ya hemos procesado el comando
     }
 
-    // Desactivar tras procesar un comando válido
-    if (isCommandProcessed) {
+    if (!matched) {
+      _startListening();
+    } else {
       _isActivated = false;
       useVoiceControl = false;
     }
+  }
+
+  int levenshteinDistance(String s1, String s2) {
+    final len1 = s1.length;
+    final len2 = s2.length;
+    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+
+    for (var i = 0; i <= len1; i++) {
+      for (var j = 0; j <= len2; j++) {
+        if (i == 0) {
+          dp[i][j] = j;
+        } else if (j == 0) {
+          dp[i][j] = i;
+        } else if (s1[i - 1] == s2[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 +
+              [
+                dp[i - 1][j], // Eliminación
+                dp[i][j - 1], // Inserción
+                dp[i - 1][j - 1] // Sustitución
+              ].reduce((a, b) => a < b ? a : b);
+        }
+      }
+    }
+
+    return dp[len1][len2];
+  }
+
+  double calculateSimilarity(String s1, String s2) {
+    final distance = levenshteinDistance(s1, s2);
+    final maxLength = s1.length > s2.length ? s1.length : s2.length;
+    return 100.0 * (1 - distance / maxLength);
   }
 
   Future<void> _playActivationSound() async {

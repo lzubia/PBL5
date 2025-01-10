@@ -8,7 +8,7 @@ class SttService implements ISttService {
   @override
   Future<void> initializeStt() async {
     _speech = stt.SpeechToText();
-    bool available = await _speech.initialize();
+    bool available = await _speech.initialize(onStatus: _handleStatus);
     print("INFO: STT disponible: $available");
     if (!available) {
       print('ERROR: STT no disponible');
@@ -17,17 +17,15 @@ class SttService implements ISttService {
 
   @override
   Future<void> startListening(Function(String) onResult) async {
-    stopListening(); // If already listening, stop and toggle
+    if (_isListening) return; // Evita que se inicie si ya está escuchando.
+    // stopListening(); // If already listening, stop and toggle
     print('INFO: Iniciando STT');
     await _speech.listen(
       onResult: (result) {
         onResult(result.recognizedWords.toLowerCase());
       },
     );
-  }
-
-  void restartListening() {
-    _speech.cancel();
+    _isListening = true; // Marca como escuchando.
   }
 
   @override
@@ -39,11 +37,37 @@ class SttService implements ISttService {
     }
   }
 
+  // void restartListening() {
+  //   _speech.cancel();
+  // }
+
+  void restartListening(Function(String) onResult) async {
+    if (_isListening) {
+      print('INFO: Deteniendo la escucha para reiniciar...');
+      _speech.stop(); // Detén la escucha actual
+      _isListening = false; // Marca como no escuchando
+    }
+
+    // Esperamos un breve momento para asegurarnos de que la escucha se ha detenido
+    await Future.delayed(Duration(milliseconds: 200));
+
+    print('INFO: Reiniciando STT...');
+    await startListening(onResult); // Reinicia la escucha
+  }
+
+  // void _handleStatus(String status) {
+  //   print('INFO: Estado del STT: $status');
+  //   // Si STT está en 'notListening', reiniciamos la escucha.
+  //   if (status == 'notListening' && _isListening) {
+  //     print('INFO: Reiniciando STT...');
+  //     startListening((_) {});
+  //   }
+  // }
+
   void _handleStatus(String status) {
-    print('INFO: Estado del STT: $status');
-    if (status == 'notListening' && _isListening) {
-      // print('INFO: STT reiniciando...');
-      startListening((_) {});
+    // Si STT está en 'done' o 'notListening', reiniciamos la escucha
+    if (status == 'done' || status == 'notListening') {
+      restartListening((text) {});
     }
   }
 }
