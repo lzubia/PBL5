@@ -8,6 +8,7 @@ public class EmergencyCall implements Runnable {
         this.app = app;
     }
 
+    @Override
     public void run() {
         while (!app.stopSimulation) { 
             boolean emergencyDetected = new Random().nextDouble() < 0.01;

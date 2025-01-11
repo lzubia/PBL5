@@ -21,7 +21,6 @@ public class AudioOutputProcessor implements Runnable {
                     int duration = calculateDuration(command.message);
                     Thread.sleep(duration);
                 }
-                app.cleanExpiredCommands();
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

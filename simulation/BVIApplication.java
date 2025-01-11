@@ -1,7 +1,4 @@
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.PriorityBlockingQueue;
 
 public class BVIApplication {
 
@@ -12,37 +9,17 @@ public class BVIApplication {
     static final int COMMAND_TIME_WAITING = 10; // 10 seconds
 
     // Shared resource: Audio OutputProcessor
-    PriorityBlockingQueue<AudioCommand> commandQueue = new PriorityBlockingQueue<>(20,
+    CustomPriorityBlockingQueue<AudioCommand> commandQueue = new CustomPriorityBlockingQueue<>(20,
             Comparator.comparingInt(a -> a.priority));
 
     public boolean stopSimulation = false;
 
     public void printQueueState() {
         StringBuilder queueState = new StringBuilder();
-        for (AudioCommand command : commandQueue) {
+        for (AudioCommand command : commandQueue.getAll()) {
             queueState.append(command.toString()).append(" ; ");
         }
         System.out.println("🔜 " + queueState);
-    }
-
-    public void cleanExpiredCommands() {
-        Instant now = Instant.now();
-        List<AudioCommand> expiredCommands = new ArrayList<>();
-
-        for (AudioCommand command : commandQueue) {
-            if (Duration.between(command.enqueueTime, now).getSeconds() > COMMAND_TIME_WAITING) {
-                expiredCommands.add(command);
-            }
-        }
-
-        commandQueue.removeAll(expiredCommands);
-
-        if (!expiredCommands.isEmpty()) {
-            System.out.println("Removed expired commands from the queue:");
-            for (AudioCommand cmd : expiredCommands) {
-                System.out.println("\t✖️ Expired Command: " + cmd.identifier);
-            }
-        }
     }
 
     public static void main(String[] args) {
@@ -53,19 +30,21 @@ public class BVIApplication {
         Thread navigationThread = new Thread(new NavigationGuidance(app));
         Thread environmentThread = new Thread(new EnvironmentDescription(app));
         Thread audioProcessorThread = new Thread(new AudioOutputProcessor(app));
+        Thread garbageCollectorThread = new Thread(new GarbageCollector(app));
 
         emergencyThread.start();
         riskThread.start();
         navigationThread.start();
         environmentThread.start();
         audioProcessorThread.start();
+        garbageCollectorThread.start();
 
         try {
             Thread.sleep(40000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        app.stopSimulation = true; // Stop simulation after 10 seconds
+        app.stopSimulation = true; // Stop simulation
 
         try {
             emergencyThread.join();
@@ -73,6 +52,8 @@ public class BVIApplication {
             navigationThread.join();
             environmentThread.join();
             audioProcessorThread.join();
+            garbageCollectorThread.join();
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

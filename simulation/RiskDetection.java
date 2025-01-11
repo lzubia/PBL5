@@ -16,6 +16,7 @@ public class RiskDetection implements Runnable {
         this.app = app;
     }
 
+    @Override
     public void run() {
         while (!app.stopSimulation) {
             boolean riskDetected = new Random().nextDouble() < 0.2;

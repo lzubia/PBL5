@@ -15,7 +15,8 @@ public class NavigationGuidance implements Runnable {
     public NavigationGuidance(BVIApplication app) {
         this.app = app;
     }
-
+    
+    @Override
     public void run() {
         while (!app.stopSimulation) {
             try {
