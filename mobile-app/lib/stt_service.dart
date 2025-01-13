@@ -10,7 +10,6 @@ class SttService implements ISttService {
   Future<void> initializeStt() async {
     _speech = stt.SpeechToText();
     bool available = await _speech.initialize(onStatus: _handleStatus);
-    print("INFO: STT disponible: $available");
     if (!available) {
       print('ERROR: STT no disponible');
     }
@@ -21,7 +20,6 @@ class SttService implements ISttService {
     if (_isListening) return; // Evita que se inicie si ya está escuchando.
     _onResultCallback =
         onResult; // Guarda la referencia de la función de callback
-    print('INFO: Iniciando STT');
     await _speech.listen(
       onResult: (result) {
         onResult(result.recognizedWords.toLowerCase());
@@ -33,7 +31,6 @@ class SttService implements ISttService {
   @override
   void stopListening() {
     if (_isListening) {
-      print('INFO: STT detenido');
       _isListening = false;
       _speech.stop();
     }
@@ -49,7 +46,6 @@ class SttService implements ISttService {
     // Esperamos un breve momento para asegurarnos de que la escucha se ha detenido
     await Future.delayed(Duration(milliseconds: 200));
 
-    print('INFO: Reiniciando STT...');
     if (_onResultCallback != null) {
       await startListening(
           _onResultCallback!); // Reinicia la escucha con la función de callback guardada

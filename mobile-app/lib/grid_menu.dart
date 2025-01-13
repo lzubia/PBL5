@@ -14,6 +14,7 @@ class GridMenu extends StatefulWidget {
   final dynamic ttsService;
   final String sessionToken;
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
+  final GlobalKey<MapWidgetState> mapKey;
 
   const GridMenu({
     super.key,
@@ -21,6 +22,7 @@ class GridMenu extends StatefulWidget {
     required this.ttsService,
     required this.sessionToken,
     required this.moneyIdentifierKey,
+    required this.mapKey,
   });
 
   @override
@@ -109,10 +111,9 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildMapContent() {
-    return const SizedBox(
-      height: 500, // Adjust the height as needed to add whitespace
-      child: MapWidget(),
-    );
+    return SizedBox(
+        height: 500, // Adjust the height as needed to add whitespace
+        child: MapWidget(key: widget.mapKey, ttsService: widget.ttsService));
   }
 
   Widget _buildMoneyIdentifierContent() {

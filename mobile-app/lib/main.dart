@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:googleapis/androidmanagement/v1.dart';
+import 'package:pbl5_menu/map_widget.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
@@ -187,6 +188,7 @@ class MyHomePageState extends State<MyHomePage> {
   final GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
   final GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
       GlobalKey<MoneyIdentifierState>();
+  final GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
 
   final player = AudioPlayer(); // Para reproducir sonidos de notificación
   late Timer _commandTimeout; // Temporizador para el timeout de comandos
@@ -295,6 +297,7 @@ class MyHomePageState extends State<MyHomePage> {
               break;
 
             case 'mapa': // Comando principal del grupo de mapas
+              _gridMenuKey.currentState?.showBottomSheet(context, 'GPS (Map)');
               matched = true;
               break;
 
@@ -421,6 +424,7 @@ class MyHomePageState extends State<MyHomePage> {
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sessionToken: sessionToken, // Pass sessionToken to GridMenu
               moneyIdentifierKey: _moneyIdentifierKey,
+              mapKey: _mapKey,
             ),
           ),
           Padding(

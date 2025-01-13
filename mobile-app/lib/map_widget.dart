@@ -8,19 +8,22 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+import 'package:pbl5_menu/i_tts_service.dart';
 
 class MapWidget extends StatefulWidget {
-  const MapWidget({super.key});
+  final ITtsService ttsService;
+  const MapWidget({super.key, required this.ttsService});
 
   @override
-  State<MapWidget> createState() => OrderTrackingPageState();
+  State<MapWidget> createState() => MapWidgetState();
 }
 
-class OrderTrackingPageState extends State<MapWidget> {
+class MapWidgetState extends State<MapWidget> {
   final Completer<GoogleMapController> _controller = Completer();
   final TextEditingController _destinationController = TextEditingController();
 
   LatLng? destination;
+  String destinationText = '';
 
   List<LatLng> polylineCoordinates = [];
   List<Map<String, dynamic>> _instructions = [];
@@ -38,6 +41,8 @@ class OrderTrackingPageState extends State<MapWidget> {
   }
 
   void getCurrentLocation() async {
+    widget.ttsService.speakLabels(['Mapa abierto']);
+
     Location location = Location();
 
     var locationData = await location.getLocation();
@@ -97,6 +102,33 @@ class OrderTrackingPageState extends State<MapWidget> {
     }
   }
 
+  String removeHtmlTags(String htmlText) {
+    final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
+    return htmlText.replaceAll(exp, '');
+  }
+
+  Future<String> translateText(String text, String targetLanguage) async {
+    final apiKey = dotenv.env['TRANSLATE_API_KEY'];
+    final response = await http.post(
+      Uri.parse(
+          'https://translation.googleapis.com/language/translate/v2?key=$apiKey'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'q': text,
+        'source': 'en',
+        'target': 'es',
+        'format': 'text',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['data']['translations'][0]['translatedText'];
+    } else {
+      throw Exception('Failed to translate text');
+    }
+  }
+
   void getPolyPoints() async {
     PolylinePoints polylinePoints = PolylinePoints();
 
@@ -111,7 +143,7 @@ class OrderTrackingPageState extends State<MapWidget> {
           destination!.latitude,
           destination!.longitude,
         ),
-        mode: TravelMode.walking, // Use walking mode
+        mode: TravelMode.walking,
       ),
     );
 
@@ -124,12 +156,24 @@ class OrderTrackingPageState extends State<MapWidget> {
           }
         });
 
-        // Fetch directions once
         _instructions = await fetchDirections(
           '${currentLocation?.latitude},${currentLocation?.longitude}',
           '${destination?.latitude},${destination?.longitude}',
           dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
         );
+
+        if (_instructions.isNotEmpty) {
+          final firstInstruction =
+              removeHtmlTags(_instructions[0]['instruction']);
+          final translatedInstruction =
+              await translateText(firstInstruction, 'es');
+          widget.ttsService.speakLabels([
+            "Iniciando tu viaje a $destinationText . Primero, $translatedInstruction"
+          ]);
+          setState(() {
+            _instructions = _instructions.sublist(1);
+          });
+        }
       }
     } else {
       print('No points found');
@@ -138,6 +182,9 @@ class OrderTrackingPageState extends State<MapWidget> {
 
   Future<List<Map<String, dynamic>>> fetchDirections(
       String origin, String destination, String apiKey) async {
+    setState(() {
+      destinationText = destination;
+    });
     final response = await http.get(Uri.parse(
         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=walking&key=$apiKey'));
 
@@ -159,7 +206,7 @@ class OrderTrackingPageState extends State<MapWidget> {
     }
   }
 
-  void _updateCurrentInstruction() {
+  void _updateCurrentInstruction() async {
     if (_instructions.isEmpty || currentLocation == null) return;
 
     final currentLatLng = LatLng(
@@ -180,10 +227,11 @@ class OrderTrackingPageState extends State<MapWidget> {
       }
     }
 
-    if (closestDistance < 50) {
-      // Adjust threshold as needed
-      print(
-          'Closest instruction $closestIndex completed: ${_instructions[closestIndex]}');
+    if (closestDistance < 20) {
+      final instruction =
+          removeHtmlTags(_instructions[closestIndex]['instruction']);
+      final translatedInstruction = await translateText(instruction, 'es');
+      widget.ttsService.speakLabels(["Ahora, $translatedInstruction"]);
       setState(() {
         _instructions = _instructions.sublist(closestIndex + 1);
       });
@@ -266,7 +314,8 @@ class OrderTrackingPageState extends State<MapWidget> {
                     itemCount: _instructions.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text(_instructions[index]['instruction']),
+                        title: Text(removeHtmlTags(
+                            _instructions[index]['instruction'])),
                       );
                     },
                   ),
