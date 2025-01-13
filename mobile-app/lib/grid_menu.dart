@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/map_widget.dart';
+import 'package:pbl5_menu/ocr_widget.dart';
 import 'describe_environment.dart';
 import 'picture_service.dart';
 import 'package:pbl5_menu/money_identifier.dart';
@@ -8,6 +9,7 @@ import 'package:pbl5_menu/money_identifier.dart';
 const String describeEnvironmentTitle = 'Describe Environment';
 const String gpsMapTitle = 'GPS (Map)';
 const String moneyIdentifierTitle = 'Money Identifier';
+const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
 
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
@@ -82,6 +84,8 @@ class GridMenuState extends State<GridMenu> {
       return _buildMapContent();
     } else if (title == moneyIdentifierTitle) {
       return _buildMoneyIdentifierContent();
+    } else if (title == scannerTitle) {
+      return _buildScannerContent();
     } else {
       return Text('Content for $title goes here.');
     }
@@ -92,6 +96,27 @@ class GridMenuState extends State<GridMenu> {
       return SizedBox(
         height: 550,
         child: DescribeEnvironment(
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+          sessionToken: sessionToken,
+        ),
+      );
+    } else {
+      return const Center(
+        child: SizedBox(
+          width: 50.0, // Adjust the width as needed
+          height: 50.0, // Adjust the height as needed
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+  }
+
+    Widget _buildScannerContent() {
+    if (isCameraInitialized) {
+      return SizedBox(
+        height: 550,
+        child: OcrWidget(
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
           sessionToken: sessionToken,
