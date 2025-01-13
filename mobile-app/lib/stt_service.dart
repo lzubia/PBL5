@@ -38,7 +38,6 @@ class SttService implements ISttService {
 
   void restartListening() async {
     if (_isListening) {
-      print('INFO: Deteniendo la escucha para reiniciar...');
       _speech.stop(); // Detén la escucha actual
       _isListening = false; // Marca como no escuchando
     }

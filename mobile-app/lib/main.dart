@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:googleapis/androidmanagement/v1.dart';
 import 'package:pbl5_menu/map_widget.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
@@ -20,7 +19,6 @@ import 'package:pbl5_menu/settings_screen.dart';
 import 'package:pbl5_menu/picture_service.dart';
 import 'package:pbl5_menu/tts_service.dart';
 import 'package:pbl5_menu/database_helper.dart';
-import 'package:flutter/services.dart'; // Para cargar archivos desde assets
 import 'package:audioplayers/audioplayers.dart'; // For audio playback
 
 String sessionToken = '';
@@ -191,7 +189,6 @@ class MyHomePageState extends State<MyHomePage> {
   final GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
 
   final player = AudioPlayer(); // Para reproducir sonidos de notificación
-  late Timer _commandTimeout; // Temporizador para el timeout de comandos
 
   @override
   void initState() {
@@ -270,6 +267,85 @@ class MyHomePageState extends State<MyHomePage> {
     _playActivationSound();
   }
 
+  Map<String, bool> widgetStates = {
+    'GPS (Map)': false,
+    'Money Identifier': false,
+    // Add other widgets as needed
+  };
+
+  // void _handleCommand(String command) {
+  //   print('Activated command: $command');
+
+  //   bool matched = false;
+  //   const double similarityThreshold = 80.0;
+
+  //   for (var commandGroup in voiceCommands) {
+  //     final similarity = calculateSimilarity(command, commandGroup.first);
+
+  //     for (var synonym in commandGroup) {
+  //       // Calculamos la similitud usando la distancia de Levenshtein
+  //       if (similarity >= similarityThreshold || command.contains(synonym)) {
+  //         final primaryCommand = commandGroup.first;
+
+  //         try {
+  //           switch (primaryCommand) {
+  //             case 'arrisku': // Comando principal del grupo de riesgo
+  //               _riskDetectionKey.currentState?.toggleRiskDetection();
+  //               matched = true;
+  //               break;
+
+  //             case 'dirua': // Comando principal del grupo de identificador de dinero
+  //               if (!widgetStates['Money Identifier']!) {
+  //                 _gridMenuKey.currentState
+  //                     ?.showBottomSheet(context, 'Money Identifier');
+  //                 widgetStates['Money Identifier'] = true;
+  //               } else {
+  //                 widget.ttsService.speakLabels(
+  //                     ['El identificador de dinero ya está abierto']);
+  //               }
+  //               matched = true;
+  //               break;
+
+  //             case 'mapa': // Comando principal del grupo de mapas
+  //               if (!widgetStates['GPS (Map)']!) {
+  //                 _gridMenuKey.currentState
+  //                     ?.showBottomSheet(context, 'GPS (Map)');
+  //                 widgetStates['GPS (Map)'] = true;
+  //               } else {
+  //                 widget.ttsService.speakLabels(['El mapa ya está abierto']);
+  //               }
+  //               matched = true;
+  //               break;
+
+  //             case 'menua': // Comando principal del grupo de navegación a casa
+  //               Navigator.popUntil(context, (route) => route.isFirst);
+  //               widget.ttsService.speakLabels(['Going to menu']);
+  //               matched = true;
+  //               break;
+
+  //             default:
+  //               break;
+  //           }
+  //         } catch (e) {
+  //           widget.ttsService.speakLabels(['Already opened']);
+  //         }
+
+  //         if (matched)
+  //           break; // Detenemos el bucle si encontramos un comando válido
+  //       }
+  //     }
+  //     if (matched)
+  //       break; // Salimos del bucle principal si ya hemos procesado el comando
+  //   }
+
+  //   if (!matched) {
+  //     _startListening();
+  //   } else {
+  //     _isActivated = false;
+  //     useVoiceControl = false;
+  //   }
+  // }
+
   void _handleCommand(String command) {
     print('Activated command: $command');
 
@@ -284,31 +360,47 @@ class MyHomePageState extends State<MyHomePage> {
         if (similarity >= similarityThreshold || command.contains(synonym)) {
           final primaryCommand = commandGroup.first;
 
-          switch (primaryCommand) {
-            case 'arrisku': // Comando principal del grupo de riesgo
-              _riskDetectionKey.currentState?.toggleRiskDetection();
-              matched = true;
-              break;
+          try {
+            switch (primaryCommand) {
+              case 'arrisku': // Comando principal del grupo de riesgo
+                _riskDetectionKey.currentState?.toggleRiskDetection();
+                matched = true;
+                break;
 
-            case 'dirua': // Comando principal del grupo de identificador de dinero
-              _gridMenuKey.currentState
-                  ?.showBottomSheet(context, 'Money Identifier');
-              matched = true;
-              break;
+              case 'dirua': // Comando principal del grupo de identificador de dinero
+                if (!widgetStates['Money Identifier']!) {
+                  _gridMenuKey.currentState
+                      ?.showBottomSheet(context, 'Money Identifier');
+                  widgetStates['Money Identifier'] = true;
+                } else {
+                  widget.ttsService.speakLabels(
+                      ['El identificador de dinero ya está abierto']);
+                }
+                matched = true;
+                break;
 
-            case 'mapa': // Comando principal del grupo de mapas
-              _gridMenuKey.currentState?.showBottomSheet(context, 'GPS (Map)');
-              matched = true;
-              break;
+              case 'mapa': // Comando principal del grupo de mapas
+                if (!widgetStates['GPS (Map)']!) {
+                  _gridMenuKey.currentState
+                      ?.showBottomSheet(context, 'GPS (Map)');
+                  widgetStates['GPS (Map)'] = true;
+                } else {
+                  widget.ttsService.speakLabels(['El mapa ya está abierto']);
+                }
+                matched = true;
+                break;
 
-            case 'menua': // Comando principal del grupo de navegación a casa
-              Navigator.popUntil(context, (route) => route.isFirst);
-              widget.ttsService.speakLabels(['Going to menu']);
-              matched = true;
-              break;
+              case 'menua': // Comando principal del grupo de navegación a casa
+                Navigator.popUntil(context, (route) => route.isFirst);
+                widget.ttsService.speakLabels(['Going to menu']);
+                matched = true;
+                break;
 
-            default:
-              break;
+              default:
+                break;
+            }
+          } catch (e) {
+            widget.ttsService.speakLabels(['Already opened']);
           }
 
           if (matched)
