@@ -304,6 +304,12 @@ class MyHomePageState extends State<MyHomePage> {
               matched = true;
               break;
 
+            case 'testua': // Comando principal del grupo de identificador de dinero
+              _gridMenuKey.currentState
+                  ?.showBottomSheet(context, 'Scanner (Read Texts, QRs, ...)');
+              matched = true;
+              break;
+
             default:
               break;
           }
