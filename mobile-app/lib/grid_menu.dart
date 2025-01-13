@@ -16,6 +16,8 @@ class GridMenu extends StatefulWidget {
   final dynamic ttsService;
   final String sessionToken;
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
+  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
+  final GlobalKey<OcrWidgetState> ocrWidgetKey;
 
   const GridMenu({
     super.key,
@@ -23,6 +25,8 @@ class GridMenu extends StatefulWidget {
     required this.ttsService,
     required this.sessionToken,
     required this.moneyIdentifierKey,
+    required this.describeEnvironmentKey,
+    required this.ocrWidgetKey,
   });
 
   @override
@@ -31,6 +35,7 @@ class GridMenu extends StatefulWidget {
 
 class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
+  String? currentWidgetTitle;
 
   @override
   void initState() {
@@ -52,6 +57,10 @@ class GridMenuState extends State<GridMenu> {
   }
 
   void showBottomSheet(BuildContext context, String title) {
+    setState(() {
+      currentWidgetTitle = title;
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(
         context: context,
@@ -66,7 +75,6 @@ class GridMenuState extends State<GridMenu> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  //const SizedBox(height: 20),
                   _buildContent(title),
                 ],
               ),
@@ -96,37 +104,39 @@ class GridMenuState extends State<GridMenu> {
       return SizedBox(
         height: 550,
         child: DescribeEnvironment(
+          key: widget.describeEnvironmentKey,
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
-          sessionToken: sessionToken,
+          sessionToken: widget.sessionToken,
         ),
       );
     } else {
       return const Center(
         child: SizedBox(
-          width: 50.0, // Adjust the width as needed
-          height: 50.0, // Adjust the height as needed
+          width: 50.0,
+          height: 50.0,
           child: CircularProgressIndicator(),
         ),
       );
     }
   }
 
-    Widget _buildScannerContent() {
+  Widget _buildScannerContent() {
     if (isCameraInitialized) {
       return SizedBox(
         height: 550,
         child: OcrWidget(
+          key: widget.ocrWidgetKey,
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
-          sessionToken: sessionToken,
+          sessionToken: widget.sessionToken,
         ),
       );
     } else {
       return const Center(
         child: SizedBox(
-          width: 50.0, // Adjust the width as needed
-          height: 50.0, // Adjust the height as needed
+          width: 50.0,
+          height: 50.0,
           child: CircularProgressIndicator(),
         ),
       );
@@ -135,7 +145,7 @@ class GridMenuState extends State<GridMenu> {
 
   Widget _buildMapContent() {
     return const SizedBox(
-      height: 500, // Adjust the height as needed to add whitespace
+      height: 500,
       child: MapWidget(),
     );
   }
@@ -147,7 +157,7 @@ class GridMenuState extends State<GridMenu> {
         key: widget.moneyIdentifierKey,
         pictureService: widget.pictureService,
         ttsService: widget.ttsService,
-        sessionToken: sessionToken,
+        sessionToken: widget.sessionToken,
       ),
     );
   }
@@ -157,10 +167,7 @@ class GridMenuState extends State<GridMenu> {
     final List<Map<String, dynamic>> menuOptions = [
       {'title': describeEnvironmentTitle, 'icon': Icons.description},
       {'title': gpsMapTitle, 'icon': Icons.map},
-      {
-        'title': 'Scanner (Read Texts, QRs, ...)',
-        'icon': Icons.qr_code_scanner
-      },
+      {'title': scannerTitle, 'icon': Icons.qr_code_scanner},
       {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
     ];
 

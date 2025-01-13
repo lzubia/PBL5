@@ -7,7 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:googleapis/androidmanagement/v1.dart';
+import 'package:pbl5_menu/describe_environment.dart';
 import 'package:pbl5_menu/money_identifier.dart';
+import 'package:pbl5_menu/ocr_widget.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -187,6 +189,9 @@ class MyHomePageState extends State<MyHomePage> {
   final GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
   final GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
       GlobalKey<MoneyIdentifierState>();
+  final GlobalKey<DescribeEnvironmentState> _describeEnvironmentKey =
+      GlobalKey<DescribeEnvironmentState>();
+  final GlobalKey<OcrWidgetState> _ocrWidgetKey = GlobalKey<OcrWidgetState>();
 
   final player = AudioPlayer(); // Para reproducir sonidos de notificación
   late Timer _commandTimeout; // Temporizador para el timeout de comandos
@@ -310,6 +315,17 @@ class MyHomePageState extends State<MyHomePage> {
               matched = true;
               break;
 
+            case 'foto': // Handle 'foto' voice command
+              if (_gridMenuKey.currentState?.currentWidgetTitle ==
+                  describeEnvironmentTitle) {
+                _describeEnvironmentKey.currentState?.takeAndSendImage();
+              } else if (_gridMenuKey.currentState?.currentWidgetTitle ==
+                  scannerTitle) {
+                _ocrWidgetKey.currentState?.takeAndSendImage();
+              }
+              matched = true;
+              break;
+
             default:
               break;
           }
@@ -427,6 +443,8 @@ class MyHomePageState extends State<MyHomePage> {
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sessionToken: sessionToken, // Pass sessionToken to GridMenu
               moneyIdentifierKey: _moneyIdentifierKey,
+              describeEnvironmentKey: _describeEnvironmentKey,
+              ocrWidgetKey: _ocrWidgetKey,
             ),
           ),
           Padding(
