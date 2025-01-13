@@ -9,13 +9,14 @@ class DescribeEnvironment extends StatelessWidget with Diagnosticable {
 
   /// The service used to convert text to speech.
   final ITtsService ttsService;
+  final String sessionToken;
 
   DescribeEnvironment(
-      {super.key, required this.pictureService, required this.ttsService});
+      {super.key, required this.pictureService, required this.ttsService, required this.sessionToken});
 
   Future<void> _takeAndSendImage(BuildContext context) async {
     await pictureService.takePicture(
-      endpoint: 'http://192.168.1.2:1880/describe', // Pass the endpoint here
+      endpoint: 'https://192.168.1.5:1880/describe?session_id=$sessionToken', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Description: $labels');
         ttsService.speakLabels(labels); // Use ttsService to speak the labels

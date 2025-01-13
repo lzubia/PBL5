@@ -1,4 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
@@ -12,8 +17,24 @@ import 'picture_service.dart';
 import 'tts_service.dart';
 import 'database_helper.dart';
 
+String sessionToken = '';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  //txapar
+  HttpOverrides.global = MyHttpOverrides();
+
+  const platform = MethodChannel('com.example.pbl5_menu/endSession');
+  platform.setMethodCallHandler((call) async {
+    if (call.method == 'endSession') {
+      await endSession(sessionToken);
+    } else if (call.method == 'startSession') {
+      await startSession();
+    }
+  });
+
+  //await startSession();
 
   final pictureService = PictureService();
   await pictureService.setupCamera();
@@ -40,6 +61,52 @@ void main() async {
     sttServiceGoogle: sttServiceGoogle, // Pass the STT service
     sttService: sttService, // Pass another STT service
   ));
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
+Future<void> startSession({http.Client? client}) async {
+  final url = Uri.parse('https://192.168.1.5:1880/start-session');
+  client ??= http.Client();
+  try {
+    final response = await client.get(url);
+    if (response.statusCode == 200) {
+      sessionToken = jsonDecode(response.body)['session_id'];
+      print('Session started successfully');
+    } else {
+      sessionToken = ''; // Reset sessionToken on failure
+      print('Failed to start session: ${response.statusCode}');
+    }
+  } catch (e) {
+    sessionToken = ''; // Reset sessionToken on error
+    print('Error starting session: $e');
+  }
+}
+
+Future<void> endSession(String sessionId, {http.Client? client}) async {
+  final url =
+      Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
+  client ??= http.Client();
+  try {
+    final response = await client.delete(url);
+    if (response.statusCode == 200) {
+      print('Session ended successfully');
+      print('Response: ${response.body}');
+    } else if (response.statusCode == 404) {
+      print('Session ID not found');
+    } else {
+      print('Failed to end session: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error ending session: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -119,6 +186,11 @@ class MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _startListening() async {
     final sttService =
         useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
@@ -142,8 +214,6 @@ class MyHomePageState extends State<MyHomePage> {
     } else if (command.contains('risk detection off') ||
         command.contains('risk detection of')) {
       _riskDetectionKey.currentState?.disableRiskDetection();
-    } else if (command.contains('another command')) {
-      // Handle another command
     } else {
       //widget.ttsService.speakLabels(["Command not recognized"]);
     }
@@ -181,9 +251,9 @@ class MyHomePageState extends State<MyHomePage> {
               pictureService: widget.pictureService,
               ttsService:
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
-              sttService: useGoogleStt
-                  ? widget.sttServiceGoogle
-                  : widget.sttService, // Pass the appropriate STT service
+              sttService:
+                  useGoogleStt ? widget.sttServiceGoogle : widget.sttService,
+              sessionToken: sessionToken, // Pass sessionToken to RiskDetection
             ),
           ),
           Expanded(
@@ -191,6 +261,7 @@ class MyHomePageState extends State<MyHomePage> {
               pictureService: widget.pictureService,
               ttsService:
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              sessionToken: sessionToken, // Pass sessionToken to GridMenu
             ),
           ),
           Padding(
@@ -202,6 +273,7 @@ class MyHomePageState extends State<MyHomePage> {
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                Text(sessionToken),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -210,6 +282,7 @@ class MyHomePageState extends State<MyHomePage> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
+                      key: const Key('voiceControlSwitch'), // Add a unique Key
                       value: useVoiceControl,
                       onChanged: (value) {
                         setState(() {

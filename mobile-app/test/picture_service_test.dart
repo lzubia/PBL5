@@ -237,7 +237,7 @@ void main() {
 
       // Mock the HTTP client behavior to return a mock response
       final mockResponseStream = Stream<List<int>>.fromIterable(
-          [utf8.encode('{"message": ["object1", "object2"]}')]);
+          [utf8.encode('{"results": {"message": ["object1", "object2"]}}')]);
       final mockResponse = http.StreamedResponse(mockResponseStream, 200);
 
       // Mock sending the request
