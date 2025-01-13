@@ -151,7 +151,14 @@ class PictureService {
   List<String> parseLabelsFromResponse(String responseBody) {
     // Parse the response body to extract labels
     final decodedJson = jsonDecode(responseBody);
-    final message = decodedJson['message'];
+    dynamic message;
+    try {
+      final result = decodedJson['results'];
+      message = result['message'];
+    } catch (e) {
+      message = decodedJson['error'];
+      print(message);
+    }
 
     if (message is String) {
       // If the message is a single string, return it as a list with one element

@@ -88,6 +88,7 @@ flutter:
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
     - assets/tts-english.json
+    - ./.env
     - assets/sounds/activation_sound.mp3
     - assets/voice_commands.txt
 

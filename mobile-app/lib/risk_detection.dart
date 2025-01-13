@@ -8,12 +8,14 @@ class RiskDetection extends StatefulWidget {
   final PictureService pictureService;
   final ITtsService ttsService; // Accepts either TtsService or TtsServiceGoogle
   final ISttService sttService; // Accepts either SttService or SttServiceGoogle
+  final String sessionToken;
 
   const RiskDetection({
     super.key,
     required this.pictureService,
     required this.ttsService,
     required this.sttService,
+    required this.sessionToken,
   });
 
   @override
@@ -62,17 +64,17 @@ class RiskDetectionState extends State<RiskDetection> {
   }
 
   Future<void> _takePicture() async {
-    await widget.pictureService.takePicture(
-      endpoint:
-          'http://192.168.1.2:1880/detect', // Add the required endpoint parameter
-      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
-      onResponseTimeUpdated: (duration) {
-        setState(() {
-          responseTime = duration;
-        });
-      },
-    );
-  }
+  final endpoint = 'https://192.168.1.5:1880/detect?session_id=${widget.sessionToken}';
+  await widget.pictureService.takePicture(
+    endpoint: endpoint, // Usa el endpoint con el sessionToken
+    onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
+    onResponseTimeUpdated: (duration) {
+      setState(() {
+        responseTime = duration;
+      });
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

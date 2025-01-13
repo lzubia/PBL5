@@ -1,5 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:googleapis/androidmanagement/v1.dart';
 import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
@@ -15,9 +21,24 @@ import 'package:pbl5_menu/tts_service.dart';
 import 'package:pbl5_menu/database_helper.dart';
 import 'package:flutter/services.dart'; // Para cargar archivos desde assets
 import 'package:audioplayers/audioplayers.dart'; // For audio playback
+String sessionToken = '';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  //txapar
+  HttpOverrides.global = MyHttpOverrides();
+
+  const platform = MethodChannel('com.example.pbl5_menu/endSession');
+  platform.setMethodCallHandler((call) async {
+    if (call.method == 'endSession') {
+      await endSession(sessionToken);
+    } else if (call.method == 'startSession') {
+      await startSession();
+    }
+  });
+
+  //await startSession();
 
   final pictureService = PictureService();
   await pictureService.setupCamera();
@@ -34,6 +55,7 @@ void main() async {
   ttsService.initializeTts();
   await sttServiceGoogle.initializeStt(); // Initialize STT service
   await sttService.initializeStt(); // Initialize another STT service
+  await dotenv.load(fileName: "./.env");
 
   runApp(MyApp(
     pictureService: pictureService,
@@ -43,6 +65,52 @@ void main() async {
     sttServiceGoogle: sttServiceGoogle, // Pass the STT service
     sttService: sttService, // Pass another STT service
   ));
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
+Future<void> startSession({http.Client? client}) async {
+  final url = Uri.parse('https://192.168.1.5:1880/start-session');
+  client ??= http.Client();
+  try {
+    final response = await client.get(url);
+    if (response.statusCode == 200) {
+      sessionToken = jsonDecode(response.body)['session_id'];
+      print('Session started successfully');
+    } else {
+      sessionToken = ''; // Reset sessionToken on failure
+      print('Failed to start session: ${response.statusCode}');
+    }
+  } catch (e) {
+    sessionToken = ''; // Reset sessionToken on error
+    print('Error starting session: $e');
+  }
+}
+
+Future<void> endSession(String sessionId, {http.Client? client}) async {
+  final url =
+      Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
+  client ??= http.Client();
+  try {
+    final response = await client.delete(url);
+    if (response.statusCode == 200) {
+      print('Session ended successfully');
+      print('Response: ${response.body}');
+    } else if (response.statusCode == 404) {
+      print('Session ID not found');
+    } else {
+      print('Failed to end session: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error ending session: $e');
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -127,6 +195,11 @@ class MyHomePageState extends State<MyHomePage> {
     super.initState();
     _loadVoiceCommands();
     _startListening();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   Future<void> _loadVoiceCommands() async {
@@ -320,9 +393,9 @@ class MyHomePageState extends State<MyHomePage> {
               pictureService: widget.pictureService,
               ttsService:
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
-              sttService: useGoogleStt
-                  ? widget.sttServiceGoogle
-                  : widget.sttService, // Pass the appropriate STT service
+              sttService:
+                  useGoogleStt ? widget.sttServiceGoogle : widget.sttService,
+              sessionToken: sessionToken, // Pass sessionToken to RiskDetection
             ),
           ),
           Expanded(
@@ -330,7 +403,9 @@ class MyHomePageState extends State<MyHomePage> {
               key: _gridMenuKey,
               pictureService: widget.pictureService,
               ttsService:
+                 
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
+              sessionToken: sessionToken, // Pass sessionToken to GridMenu
               moneyIdentifierKey: _moneyIdentifierKey,
             ),
           ),
@@ -346,6 +421,7 @@ class MyHomePageState extends State<MyHomePage> {
                       style: const TextStyle(fontSize: 16),
                     ),
                     Switch(
+                      key: const Key('voiceControlSwitch'), // Add a unique Key
                       value: useVoiceControl,
                       onChanged: (value) {
                         setState(() {

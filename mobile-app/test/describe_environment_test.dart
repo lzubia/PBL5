@@ -26,78 +26,9 @@ void main() {
       describeEnvironment = DescribeEnvironment(
         ttsService: mockTtsService,
         pictureService: mockPictureService,
+        sessionToken: 'testSessionToken',
       );
     });
-
-    // testWidgets('should display description when labels are detected',
-    //     (WidgetTester tester) async {
-    //   const mockLabels = 'Label1, Label2';
-
-    //   // Stub `takePicture` to simulate `onLabelsDetected` callback
-    //   when(mockPictureService.takePicture(
-    //     endpoint: anyNamed('endpoint'),
-    //     onLabelsDetected: anyNamed('onLabelsDetected'),
-    //     onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
-    //   )).thenAnswer((invocation) {
-    //     final onLabelsDetected = invocation.namedArguments[#onLabelsDetected]
-    //         as void Function(String);
-    //     // Pass a String to `onLabelsDetected` callback
-    //     onLabelsDetected(mockLabels);
-    //     return Future.value();
-    //   });
-
-    //   await tester.pumpWidget(MaterialApp(
-    //     home: Scaffold(
-    //       body: describeEnvironment,
-    //     ),
-    //   ));
-
-    //   // Simulate button press
-    //   await tester.tap(find.byType(ElevatedButton));
-    //   await tester.pump(); // Wait for UI updates
-
-    //   // Convert mockLabels into a List<String> for speakLabels
-    //   final expectedLabels =
-    //       mockLabels.split(', ').map((label) => label.trim()).toList();
-
-    //   // Verify TTS service is called with the correct argument
-    //   verify(mockTtsService.speakLabels(expectedLabels)).called(1);
-
-    //   // Verify SnackBar is shown with correct text
-    //   await tester.pump(); // Wait for SnackBar animation
-    //   expect(find.text('Description: $mockLabels'), findsOneWidget);
-    // });
-
-    // testWidgets('should display response time when updated',
-    //     (WidgetTester tester) async {
-    //   const mockDuration = '1.23s';
-
-    //   // Stub `takePicture` to simulate `onResponseTimeUpdated` callback
-    //   when(mockPictureService.takePicture(
-    //     endpoint: anyNamed('endpoint'),
-    //     onLabelsDetected: anyNamed('onLabelsDetected'),
-    //     onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
-    //   )).thenAnswer((invocation) {
-    //     final onResponseTimeUpdated = invocation
-    //         .namedArguments[#onResponseTimeUpdated] as void Function(String);
-    //     onResponseTimeUpdated(mockDuration); // Trigger the callback
-    //     return Future.value();
-    //   });
-
-    //   await tester.pumpWidget(MaterialApp(
-    //     home: Scaffold(
-    //       body: describeEnvironment,
-    //     ),
-    //   ));
-
-    //   // Simulate button press
-    //   await tester.tap(find.byType(ElevatedButton));
-    //   await tester.pump(); // Wait for UI updates
-
-    //   // Verify SnackBar is shown with correct text
-    //   await tester.pump(); // Wait for SnackBar animation
-    //   expect(find.text('Response time: $mockDuration'), findsOneWidget);
-    // });
 
     testWidgets('should take and send image when button is pressed',
         (WidgetTester tester) async {
@@ -113,10 +44,95 @@ void main() {
 
       // Verify picture service is called
       verify(mockPictureService.takePicture(
-        endpoint: 'http://192.168.1.2:1880/describe',
+        endpoint:
+            'https://192.168.1.5:1880/describe?session_id=testSessionToken', // Updated endpoint
         onLabelsDetected: anyNamed('onLabelsDetected'),
         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
       )).called(1);
+    });
+
+    testWidgets('should call ttsService.speakLabels with correct labels',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: describeEnvironment,
+        ),
+      ));
+
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
+
+      // Capture the onLabelsDetected callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: captureAnyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+      )).captured;
+
+      final onLabelsDetected = captured.first as Function(List<String>);
+      onLabelsDetected(['Label1', 'Label2']);
+
+      // Verify ttsService is called with correct labels
+      verify(mockTtsService.speakLabels(['Label1', 'Label2'])).called(1);
+    });
+
+    testWidgets('should show SnackBar with correct description',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: describeEnvironment,
+        ),
+      ));
+
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
+
+      // Capture the onLabelsDetected callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: captureAnyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+      )).captured;
+
+      final onLabelsDetected = captured.first as Function(List<String>);
+      onLabelsDetected(['Label1', 'Label2']);
+
+      // Allow time for SnackBar to appear
+      await tester.pumpAndSettle();
+
+      // Verify SnackBar is shown with correct description
+      expect(find.text('Description: [Label1, Label2]'), findsOneWidget);
+    });
+
+    testWidgets('should show SnackBar with correct response time',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+          body: describeEnvironment,
+        ),
+      ));
+
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
+
+      // Capture the onResponseTimeUpdated callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: anyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: captureAnyNamed('onResponseTimeUpdated'),
+      )).captured;
+
+      final onResponseTimeUpdated = captured.first as Function(Duration);
+      onResponseTimeUpdated(Duration(seconds: 2));
+
+      // Allow time for SnackBar to appear
+      await tester.pumpAndSettle();
+
+      // Verify SnackBar is shown with correct response time
+      expect(find.text('Response time: 0:00:02.000000'), findsOneWidget);
     });
   });
 }
