@@ -21,6 +21,7 @@ import 'package:pbl5_menu/tts_service.dart';
 import 'package:pbl5_menu/database_helper.dart';
 import 'package:flutter/services.dart'; // Para cargar archivos desde assets
 import 'package:audioplayers/audioplayers.dart'; // For audio playback
+
 String sessionToken = '';
 
 void main() async {
@@ -278,7 +279,7 @@ class MyHomePageState extends State<MyHomePage> {
 
       for (var synonym in commandGroup) {
         // Calculamos la similitud usando la distancia de Levenshtein
-        if (similarity >= similarityThreshold || command == synonym) {
+        if (similarity >= similarityThreshold || command.contains(synonym)) {
           final primaryCommand = commandGroup.first;
 
           switch (primaryCommand) {
@@ -299,7 +300,7 @@ class MyHomePageState extends State<MyHomePage> {
 
             case 'menua': // Comando principal del grupo de navegación a casa
               Navigator.popUntil(context, (route) => route.isFirst);
-              widget.ttsService.speakLabels(['Going home']);
+              widget.ttsService.speakLabels(['Going to menu']);
               matched = true;
               break;
 
@@ -351,9 +352,23 @@ class MyHomePageState extends State<MyHomePage> {
   }
 
   double calculateSimilarity(String s1, String s2) {
-    final distance = levenshteinDistance(s1, s2);
-    final maxLength = s1.length > s2.length ? s1.length : s2.length;
-    return 100.0 * (1 - distance / maxLength);
+    final words1 = s1.split(' ');
+    final words2 = s2.split(' ');
+    double highestSimilarity = 0.0;
+
+    for (var word1 in words1) {
+      for (var word2 in words2) {
+        final distance = levenshteinDistance(word1, word2);
+        final maxLength =
+            word1.length > word2.length ? word1.length : word2.length;
+        final similarity = 100.0 * (1 - distance / maxLength);
+        if (similarity > highestSimilarity) {
+          highestSimilarity = similarity;
+        }
+      }
+    }
+
+    return highestSimilarity;
   }
 
   Future<void> _playActivationSound() async {
@@ -403,7 +418,6 @@ class MyHomePageState extends State<MyHomePage> {
               key: _gridMenuKey,
               pictureService: widget.pictureService,
               ttsService:
-                 
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sessionToken: sessionToken, // Pass sessionToken to GridMenu
               moneyIdentifierKey: _moneyIdentifierKey,

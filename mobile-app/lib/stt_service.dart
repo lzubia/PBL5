@@ -4,6 +4,7 @@ import 'i_stt_service.dart';
 class SttService implements ISttService {
   late stt.SpeechToText _speech;
   bool _isListening = false;
+  Function(String)? _onResultCallback;
 
   @override
   Future<void> initializeStt() async {
@@ -18,7 +19,8 @@ class SttService implements ISttService {
   @override
   Future<void> startListening(Function(String) onResult) async {
     if (_isListening) return; // Evita que se inicie si ya está escuchando.
-    // stopListening(); // If already listening, stop and toggle
+    _onResultCallback =
+        onResult; // Guarda la referencia de la función de callback
     print('INFO: Iniciando STT');
     await _speech.listen(
       onResult: (result) {
@@ -37,11 +39,7 @@ class SttService implements ISttService {
     }
   }
 
-  // void restartListening() {
-  //   _speech.cancel();
-  // }
-
-  void restartListening(Function(String) onResult) async {
+  void restartListening() async {
     if (_isListening) {
       print('INFO: Deteniendo la escucha para reiniciar...');
       _speech.stop(); // Detén la escucha actual
@@ -52,22 +50,16 @@ class SttService implements ISttService {
     await Future.delayed(Duration(milliseconds: 200));
 
     print('INFO: Reiniciando STT...');
-    await startListening(onResult); // Reinicia la escucha
+    if (_onResultCallback != null) {
+      await startListening(
+          _onResultCallback!); // Reinicia la escucha con la función de callback guardada
+    }
   }
-
-  // void _handleStatus(String status) {
-  //   print('INFO: Estado del STT: $status');
-  //   // Si STT está en 'notListening', reiniciamos la escucha.
-  //   if (status == 'notListening' && _isListening) {
-  //     print('INFO: Reiniciando STT...');
-  //     startListening((_) {});
-  //   }
-  // }
 
   void _handleStatus(String status) {
     // Si STT está en 'done' o 'notListening', reiniciamos la escucha
     if (status == 'done' || status == 'notListening') {
-      restartListening((text) {});
+      restartListening();
     }
   }
 }

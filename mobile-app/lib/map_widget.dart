@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math'; // Add this import
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -8,9 +8,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
-
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class MapWidget extends StatefulWidget {
   const MapWidget({super.key});
@@ -68,7 +65,7 @@ class OrderTrackingPageState extends State<MapWidget> {
                 ),
               ),
             );
-            _updateCurrentInstruction();
+            _updateCurrentInstruction(); // Update instructions dynamically
           });
         }
       },
@@ -114,44 +111,28 @@ class OrderTrackingPageState extends State<MapWidget> {
           destination!.latitude,
           destination!.longitude,
         ),
-        mode: TravelMode.walking,
+        mode: TravelMode.walking, // Use walking mode
       ),
     );
 
     if (result.points.isNotEmpty) {
       if (mounted) {
-        setState(
-          () {
-            polylineCoordinates.clear();
-            for (PointLatLng point in result.points) {
-              polylineCoordinates.add(
-                LatLng(
-                  point.latitude,
-                  point.longitude,
-                ),
-              );
-            }
-          },
+        setState(() {
+          polylineCoordinates.clear();
+          for (PointLatLng point in result.points) {
+            polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+          }
+        });
+
+        // Fetch directions once
+        _instructions = await fetchDirections(
+          '${currentLocation?.latitude},${currentLocation?.longitude}',
+          '${destination?.latitude},${destination?.longitude}',
+          dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
         );
-        _fetchAndDisplayDirections();
       }
     } else {
       print('No points found');
-    }
-  }
-
-  Future<void> _fetchAndDisplayDirections() async {
-    try {
-      final instructions = await fetchDirections(
-        '${currentLocation?.latitude},${currentLocation?.longitude}',
-        '${destination?.latitude},${destination?.longitude}',
-        dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '',
-      );
-      setState(() {
-        _instructions = instructions;
-      });
-    } catch (e) {
-      print(e);
     }
   }
 
@@ -181,20 +162,32 @@ class OrderTrackingPageState extends State<MapWidget> {
   void _updateCurrentInstruction() {
     if (_instructions.isEmpty || currentLocation == null) return;
 
-    final currentLatLng =
-        LatLng(currentLocation!.latitude!, currentLocation!.longitude!);
-    final nextInstruction = _instructions.firstWhere(
-      (instruction) {
-        final instructionLatLng = instruction['location'] as LatLng;
-        return _calculateDistance(currentLatLng, instructionLatLng) <
-            20; // 20 meters threshold
-      },
-      orElse: () => _instructions.first,
+    final currentLatLng = LatLng(
+      currentLocation!.latitude!,
+      currentLocation!.longitude!,
     );
 
-    setState(() {
-      _instructions = [nextInstruction];
-    });
+    int closestIndex = -1;
+    double closestDistance = double.infinity;
+
+    for (int i = 0; i < _instructions.length; i++) {
+      final instructionLatLng = _instructions[i]['location'] as LatLng;
+      final distance = _calculateDistance(currentLatLng, instructionLatLng);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    if (closestDistance < 50) {
+      // Adjust threshold as needed
+      print(
+          'Closest instruction $closestIndex completed: ${_instructions[closestIndex]}');
+      setState(() {
+        _instructions = _instructions.sublist(closestIndex + 1);
+      });
+    }
   }
 
   double _calculateDistance(LatLng start, LatLng end) {
