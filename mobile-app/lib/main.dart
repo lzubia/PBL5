@@ -1,22 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:googleapis/androidmanagement/v1.dart';
+import 'package:pbl5_menu/money_identifier.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
 import 'package:pbl5_menu/i_stt_service.dart';
 import 'package:pbl5_menu/i_tts_service.dart';
-import 'risk_detection.dart';
-import 'grid_menu.dart';
-import 'settings_screen.dart';
-import 'picture_service.dart';
-import 'tts_service.dart';
-import 'database_helper.dart';
-
+import 'package:pbl5_menu/risk_detection.dart';
+import 'package:pbl5_menu/grid_menu.dart';
+import 'package:pbl5_menu/settings_screen.dart';
+import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/tts_service.dart';
+import 'package:pbl5_menu/database_helper.dart';
+import 'package:flutter/services.dart'; // Para cargar archivos desde assets
+import 'package:audioplayers/audioplayers.dart'; // For audio playback
 String sessionToken = '';
 
 void main() async {
@@ -123,14 +127,14 @@ class MyApp extends StatelessWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
-    required this.sttServiceGoogle, // Add STT service
-    required this.sttService, // Add another STT service
+    required this.sttServiceGoogle,
+    required this.sttService,
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Remove debug banner
+      debugShowCheckedModeBanner: false,
       title: 'Risk Detection App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -140,9 +144,8 @@ class MyApp extends StatelessWidget {
         ttsServiceGoogle: ttsServiceGoogle,
         ttsService: ttsService,
         databaseHelper: databaseHelper,
-        sttServiceGoogle:
-            sttServiceGoogle, // Pass the STT service to MyHomePage
-        sttService: sttService, // Pass another STT service to MyHomePage
+        sttServiceGoogle: sttServiceGoogle,
+        sttService: sttService,
       ),
     );
   }
@@ -162,8 +165,8 @@ class MyHomePage extends StatefulWidget {
     required this.ttsServiceGoogle,
     required this.ttsService,
     required this.databaseHelper,
-    required this.sttServiceGoogle, // Add STT service
-    required this.sttService, // Add another STT service
+    required this.sttServiceGoogle,
+    required this.sttService,
   });
 
   @override
@@ -171,19 +174,27 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyHomePageState extends State<MyHomePage> {
-  bool useGoogleTts = false; // Default to false
-  bool useGoogleStt = false; // Default to false
-  bool useVoiceControl = false; // Default to false
-  String detectedCommand = "";
+  bool useGoogleStt = false;
+  bool useGoogleTts = false;
+  bool useVoiceControl = false;
+  List<List<String>> voiceCommands = []; // Comandos cargados del archivo
+  bool _isActivated =
+      false; // Para verificar si el control de voz está activado
+  String _command = ''; // Para almacenar el comando de voz
   final GlobalKey<RiskDetectionState> _riskDetectionKey =
       GlobalKey<RiskDetectionState>();
+  final GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
+  final GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
+      GlobalKey<MoneyIdentifierState>();
+
+  final player = AudioPlayer(); // Para reproducir sonidos de notificación
+  late Timer _commandTimeout; // Temporizador para el timeout de comandos
 
   @override
   void initState() {
     super.initState();
-    if (useVoiceControl) {
-      _startListening();
-    }
+    _loadVoiceCommands();
+    _startListening();
   }
 
   @override
@@ -191,32 +202,163 @@ class MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  Future<void> _startListening() async {
-    final sttService =
-        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
-    await sttService.startListening((transcript) {
-      setState(() {
-        detectedCommand = transcript;
-      });
-      _handleCommand(transcript);
+  Future<void> _loadVoiceCommands() async {
+    final String fileContent =
+        await rootBundle.loadString('assets/voice_commands.txt');
+    setState(() {
+      // Cada línea representa un grupo de sinónimos separados por comas
+      voiceCommands = fileContent
+          .split('\n') // Dividir por líneas
+          .map((line) =>
+              line.split(',').map((cmd) => cmd.trim().toLowerCase()).toList())
+          .toList();
     });
   }
 
-  void _stopListening() {
-    final sttService =
-        useGoogleStt ? widget.sttServiceGoogle : widget.sttService;
-    sttService.stopListening();
+  void _startListening() async {
+    await widget.sttService.startListening(_handleSpeechResult);
+    setState(() {});
+  }
+
+  void _handleSpeechResult(String recognizedText) {
+    print('Texto reconocido: $recognizedText');
+    setState(() {
+      if (_isActivated) {
+        _command = recognizedText;
+        _handleCommand(_command);
+      } else if (_isActivationCommand(recognizedText)) {
+        _isActivated = true;
+        useVoiceControl = true;
+        _activateVoiceControl();
+      } else {
+        _startListening();
+      }
+    });
+  }
+
+  bool _isActivationCommand(String transcript) {
+    return transcript.contains("begia") ||
+        transcript.contains("veguia") ||
+        transcript.contains("veguía") ||
+        transcript.contains("veía") ||
+        transcript.contains("de día") ||
+        transcript.contains("beguía") ||
+        transcript.contains("begía") ||
+        transcript.contains("begia") ||
+        transcript.contains("beguía") ||
+        transcript.contains("beguía") ||
+        transcript.contains("beía") ||
+        transcript.contains("beguia") ||
+        transcript.contains("vía") ||
+        transcript.contains("viego") ||
+        transcript.contains("beja") ||
+        transcript.contains("begía") ||
+        transcript.contains("beía") ||
+        transcript.contains("vegia") ||
+        transcript.contains("de guía") ||
+        transcript.contains("beguía");
+  }
+
+  void _activateVoiceControl() {
+    setState(() {
+      useVoiceControl = true;
+    });
+    // Reproducir sonido de activación
+    _playActivationSound();
   }
 
   void _handleCommand(String command) {
-    if (command.contains('risk detection on')) {
-      _riskDetectionKey.currentState?.enableRiskDetection();
-    } else if (command.contains('risk detection off') ||
-        command.contains('risk detection of')) {
-      _riskDetectionKey.currentState?.disableRiskDetection();
-    } else {
-      //widget.ttsService.speakLabels(["Command not recognized"]);
+    print('Activated command: $command');
+
+    bool matched = false;
+    const double similarityThreshold = 80.0;
+
+    for (var commandGroup in voiceCommands) {
+      final similarity = calculateSimilarity(command, commandGroup.first);
+
+      for (var synonym in commandGroup) {
+        // Calculamos la similitud usando la distancia de Levenshtein
+        if (similarity >= similarityThreshold || command == synonym) {
+          final primaryCommand = commandGroup.first;
+
+          switch (primaryCommand) {
+            case 'arrisku': // Comando principal del grupo de riesgo
+              _riskDetectionKey.currentState?.toggleRiskDetection();
+              matched = true;
+              break;
+
+            case 'dirua': // Comando principal del grupo de identificador de dinero
+              _gridMenuKey.currentState
+                  ?.showBottomSheet(context, 'Money Identifier');
+              matched = true;
+              break;
+
+            case 'mapa': // Comando principal del grupo de mapas
+              matched = true;
+              break;
+
+            case 'menua': // Comando principal del grupo de navegación a casa
+              Navigator.popUntil(context, (route) => route.isFirst);
+              widget.ttsService.speakLabels(['Going home']);
+              matched = true;
+              break;
+
+            default:
+              break;
+          }
+
+          if (matched)
+            break; // Detenemos el bucle si encontramos un comando válido
+        }
+      }
+      if (matched)
+        break; // Salimos del bucle principal si ya hemos procesado el comando
     }
+
+    if (!matched) {
+      _startListening();
+    } else {
+      _isActivated = false;
+      useVoiceControl = false;
+    }
+  }
+
+  int levenshteinDistance(String s1, String s2) {
+    final len1 = s1.length;
+    final len2 = s2.length;
+    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+
+    for (var i = 0; i <= len1; i++) {
+      for (var j = 0; j <= len2; j++) {
+        if (i == 0) {
+          dp[i][j] = j;
+        } else if (j == 0) {
+          dp[i][j] = i;
+        } else if (s1[i - 1] == s2[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 +
+              [
+                dp[i - 1][j], // Eliminación
+                dp[i][j - 1], // Inserción
+                dp[i - 1][j - 1] // Sustitución
+              ].reduce((a, b) => a < b ? a : b);
+        }
+      }
+    }
+
+    return dp[len1][len2];
+  }
+
+  double calculateSimilarity(String s1, String s2) {
+    final distance = levenshteinDistance(s1, s2);
+    final maxLength = s1.length > s2.length ? s1.length : s2.length;
+    return 100.0 * (1 - distance / maxLength);
+  }
+
+  Future<void> _playActivationSound() async {
+    await player.play(AssetSource(
+        'sounds/activation_sound.mp3')); // Reproducir sonido de activación
   }
 
   @override
@@ -258,22 +400,19 @@ class MyHomePageState extends State<MyHomePage> {
           ),
           Expanded(
             child: GridMenu(
+              key: _gridMenuKey,
               pictureService: widget.pictureService,
               ttsService:
+                 
                   useGoogleTts ? widget.ttsServiceGoogle : widget.ttsService,
               sessionToken: sessionToken, // Pass sessionToken to GridMenu
+              moneyIdentifierKey: _moneyIdentifierKey,
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Text(
-                  'Command: $detectedCommand',
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(sessionToken),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -288,9 +427,11 @@ class MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           useVoiceControl = value;
                           if (useVoiceControl) {
+                            _isActivated = true;
                             _startListening();
                           } else {
-                            _stopListening();
+                            _isActivated = false;
+                            _startListening();
                           }
                         });
                       },

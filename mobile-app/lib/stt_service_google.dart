@@ -29,6 +29,11 @@ class SttServiceGoogle implements ISttService {
     // Implement your logic to stop listening
   }
 
+  @override
+  void restartListening() {
+    // Implement your logic to restart listening
+  }
+
   Future<String> transcribeAudio(File audioFile) async {
     final token = await _getAccessToken();
     final bytes = await audioFile.readAsBytes();
@@ -54,10 +59,17 @@ class SttServiceGoogle implements ISttService {
 
     if (response.statusCode == 200) {
       final jsonResponse = json.decode(response.body);
-      final transcript = jsonResponse['results'][0]['alternatives'][0]['transcript'];
+      final transcript =
+          jsonResponse['results'][0]['alternatives'][0]['transcript'];
       return transcript;
     } else {
       throw Exception('Failed to transcribe audio');
     }
+  }
+
+  @override
+  bool isListening() {
+    // TODO: implement isListening
+    throw UnimplementedError();
   }
 }

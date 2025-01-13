@@ -13,12 +13,15 @@ class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
   final String sessionToken;
+  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
 
-  const GridMenu(
-      {super.key,
-      required this.pictureService,
-      required this.ttsService,
-      required this.sessionToken});
+  const GridMenu({
+    super.key,
+    required this.pictureService,
+    required this.ttsService,
+    required this.sessionToken,
+    required this.moneyIdentifierKey,
+  });
 
   @override
   GridMenuState createState() => GridMenuState();
@@ -46,7 +49,7 @@ class GridMenuState extends State<GridMenu> {
     super.dispose();
   }
 
-  void _showBottomSheet(BuildContext context, String title) {
+  void showBottomSheet(BuildContext context, String title) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(
         context: context,
@@ -116,6 +119,7 @@ class GridMenuState extends State<GridMenu> {
     return SizedBox(
       height: 550,
       child: MoneyIdentifier(
+        key: widget.moneyIdentifierKey,
         pictureService: widget.pictureService,
         ttsService: widget.ttsService,
         sessionToken: sessionToken,
@@ -142,7 +146,7 @@ class GridMenuState extends State<GridMenu> {
           margin: const EdgeInsets.all(8.0),
           child: InkWell(
             onTap: () {
-              _showBottomSheet(context, menuOptions[index]['title']);
+              showBottomSheet(context, menuOptions[index]['title']);
             },
             child: SizedBox(
               height: 150,

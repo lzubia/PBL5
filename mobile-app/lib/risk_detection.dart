@@ -34,6 +34,14 @@ class RiskDetectionState extends State<RiskDetection> {
     super.dispose();
   }
 
+  void toggleRiskDetection() {
+    if (isRiskDetectionEnabled) {
+      disableRiskDetection();
+    } else {
+      enableRiskDetection();
+    }
+  }
+
   void enableRiskDetection() {
     setState(() {
       isRiskDetectionEnabled = true;
@@ -96,7 +104,8 @@ class RiskDetectionState extends State<RiskDetection> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(Icons.warning, color: Colors.red, size: 40.0),
+                          const Icon(Icons.warning,
+                              color: Colors.red, size: 40.0),
                           Switch(
                             value: isRiskDetectionEnabled,
                             onChanged: (value) {
