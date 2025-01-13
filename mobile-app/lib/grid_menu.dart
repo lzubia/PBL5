@@ -51,6 +51,8 @@ class GridMenuState extends State<GridMenu> {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
+        enableDrag: false,
+        showDragHandle: true,
         builder: (BuildContext context) {
           return SingleChildScrollView(
             child: Container(
@@ -59,12 +61,7 @@ class GridMenuState extends State<GridMenu> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
+                  //const SizedBox(height: 20),
                   _buildContent(title),
                 ],
               ),

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/stt_service_google.dart';
 import 'package:pbl5_menu/tts_service_google.dart';
 import 'package:pbl5_menu/stt_service.dart';
@@ -50,6 +51,7 @@ void main() async {
   ttsService.initializeTts();
   await sttServiceGoogle.initializeStt(); // Initialize STT service
   await sttService.initializeStt(); // Initialize another STT service
+  await dotenv.load(fileName: "./.env");
 
   runApp(MyApp(
     pictureService: pictureService,
