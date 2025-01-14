@@ -36,7 +36,8 @@ class TtsServiceGoogle implements ITtsService {
   }
 
   @override
-  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
+  Future<void> updateLanguage(
+      String newLanguageCode, String newVoiceName) async {
     languageCode = newLanguageCode;
     voiceName = newVoiceName;
     print("Language updated to $languageCode with voice $voiceName");

@@ -18,6 +18,7 @@ class GridMenu extends StatefulWidget {
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
   final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
   final GlobalKey<OcrWidgetState> ocrWidgetKey;
+  final GlobalKey<MapWidgetState> mapKey;
 
   const GridMenu({
     super.key,
@@ -27,6 +28,7 @@ class GridMenu extends StatefulWidget {
     required this.moneyIdentifierKey,
     required this.describeEnvironmentKey,
     required this.ocrWidgetKey,
+    required this.mapKey,
   });
 
   @override
@@ -144,10 +146,9 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildMapContent() {
-    return const SizedBox(
-      height: 500,
-      child: MapWidget(),
-    );
+    return SizedBox(
+        height: 500,
+        child: MapWidget(key: widget.mapKey, ttsService: widget.ttsService));
   }
 
   Widget _buildMoneyIdentifierContent() {

@@ -10,8 +10,11 @@ class MoneyIdentifier extends StatefulWidget {
   final String sessionToken;
 
   const MoneyIdentifier(
-      {super.key, required this.pictureService, required this.ttsService, required this.sessionToken});
-      
+      {super.key,
+      required this.pictureService,
+      required this.ttsService,
+      required this.sessionToken});
+
   @override
   MoneyIdentifierState createState() => MoneyIdentifierState();
 }
@@ -41,7 +44,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
 
   Future<void> _takeAndSendImage() async {
     await widget.pictureService.takePicture(
-      endpoint: 'https://192.168.1.5:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
+      endpoint:
+          'https://192.168.1.5:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
         widget.ttsService
