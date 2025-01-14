@@ -8,7 +8,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
-import 'package:pbl5_menu/i_tts_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 
 class MapWidget extends StatefulWidget {
   final ITtsService ttsService;

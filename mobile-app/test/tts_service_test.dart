@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:pbl5_menu/tts_service.dart';
-import 'package:pbl5_menu/database_helper.dart';
+import 'package:pbl5_menu/services/tts/tts_service.dart';
+import 'package:pbl5_menu/shared/database_helper.dart';
 
 import 'tts_service_test.mocks.dart';
 

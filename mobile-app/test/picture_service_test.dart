@@ -10,7 +10,7 @@ import 'package:mockito/mockito.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:camera_platform_interface/camera_platform_interface.dart';
 
 import 'picture_service_test.mocks.dart';

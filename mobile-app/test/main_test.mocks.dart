@@ -15,14 +15,14 @@ import 'package:flutter_tts/flutter_tts.dart' as _i8;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i11;
-import 'package:pbl5_menu/database_helper.dart' as _i16;
-import 'package:pbl5_menu/i_stt_service.dart' as _i17;
-import 'package:pbl5_menu/i_tts_service.dart' as _i18;
-import 'package:pbl5_menu/picture_service.dart' as _i4;
-import 'package:pbl5_menu/stt_service.dart' as _i15;
-import 'package:pbl5_menu/stt_service_google.dart' as _i14;
-import 'package:pbl5_menu/tts_service.dart' as _i13;
-import 'package:pbl5_menu/tts_service_google.dart' as _i12;
+import 'package:pbl5_menu/shared/database_helper.dart' as _i16;
+import 'package:pbl5_menu/services/stt/i_stt_service.dart' as _i17;
+import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i18;
+import 'package:pbl5_menu/services/picture_service.dart' as _i4;
+import 'package:pbl5_menu/services/stt/stt_service.dart' as _i15;
+import 'package:pbl5_menu/services/stt/stt_service_google.dart' as _i14;
+import 'package:pbl5_menu/services/tts/tts_service.dart' as _i13;
+import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i12;
 import 'package:sqflite/sqflite.dart' as _i9;
 
 // ignore_for_file: type=lint

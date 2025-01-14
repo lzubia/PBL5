@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'database_helper.dart';
-import 'i_tts_service.dart';
+import '../../shared/database_helper.dart';
+import '../stt/i_tts_service.dart';
 
 class TtsService implements ITtsService {
   late FlutterTts flutterTts;
@@ -40,10 +40,18 @@ class TtsService implements ITtsService {
 
   Future<void> _loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
-    languageCode = (settings['languageCode']?.isNotEmpty ?? false) ? settings['languageCode']! : 'en-US';
-    speechRate = (settings['speechRate']?.isNotEmpty ?? false) ? double.tryParse(settings['speechRate']!) ?? 1.0 : 1.0;
-    pitch = (settings['pitch']?.isNotEmpty ?? false) ? double.tryParse(settings['pitch']!) ?? 1.0 : 1.0;
-    volume = (settings['volume']?.isNotEmpty ?? false) ? double.tryParse(settings['volume']!) ?? 1.0 : 1.0;
+    languageCode = (settings['languageCode']?.isNotEmpty ?? false)
+        ? settings['languageCode']!
+        : 'en-US';
+    speechRate = (settings['speechRate']?.isNotEmpty ?? false)
+        ? double.tryParse(settings['speechRate']!) ?? 1.0
+        : 1.0;
+    pitch = (settings['pitch']?.isNotEmpty ?? false)
+        ? double.tryParse(settings['pitch']!) ?? 1.0
+        : 1.0;
+    volume = (settings['volume']?.isNotEmpty ?? false)
+        ? double.tryParse(settings['volume']!) ?? 1.0
+        : 1.0;
 
     print(
         "Loaded settings: languageCode=$languageCode, speechRate=$speechRate, pitch=$pitch, volume=$volume");
@@ -52,7 +60,8 @@ class TtsService implements ITtsService {
   }
 
   @override
-  Future<void> updateLanguage(String newLanguageCode, String newVoiceName) async {
+  Future<void> updateLanguage(
+      String newLanguageCode, String newVoiceName) async {
     bool isAvailable = await flutterTts.isLanguageAvailable(newLanguageCode);
     if (isAvailable) {
       languageCode = newLanguageCode;

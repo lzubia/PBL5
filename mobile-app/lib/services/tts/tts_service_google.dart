@@ -6,8 +6,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'database_helper.dart';
-import 'i_tts_service.dart';
+import '../../shared/database_helper.dart';
+import '../stt/i_tts_service.dart';
 
 class TtsServiceGoogle implements ITtsService {
   late AudioPlayer audioPlayer;

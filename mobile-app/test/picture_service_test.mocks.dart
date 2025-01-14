@@ -20,7 +20,7 @@ import 'package:http_parser/http_parser.dart' as _i7;
 import 'package:image/image.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i14;
-import 'package:pbl5_menu/picture_service.dart' as _i16;
+import 'package:pbl5_menu/services/picture_service.dart' as _i16;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

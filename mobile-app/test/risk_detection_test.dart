@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:pbl5_menu/risk_detection.dart';
-import 'package:pbl5_menu/picture_service.dart';
-import 'package:pbl5_menu/i_tts_service.dart';
-import 'package:pbl5_menu/i_stt_service.dart';
+import 'package:pbl5_menu/features/risk_detection.dart';
+import 'package:pbl5_menu/services/picture_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/services/stt/i_stt_service.dart';
 
 import 'risk_detection_test.mocks.dart';
 

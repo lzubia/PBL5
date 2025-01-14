@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pbl5_menu/i_tts_service.dart';
-import 'package:pbl5_menu/tts_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/services/tts/tts_service.dart';
 import 'dart:async';
-import 'picture_service.dart';
+import '../services/picture_service.dart';
 
 class MoneyIdentifier extends StatefulWidget {
   final PictureService pictureService;
