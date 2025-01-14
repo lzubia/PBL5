@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'picture_service.dart';
 import 'i_tts_service.dart';
 
-class DescribeEnvironment extends StatefulWidget {
+class OcrWidget extends StatefulWidget {
   final PictureService pictureService;
   final ITtsService ttsService;
   final String sessionToken;
 
-  const DescribeEnvironment({
+  const OcrWidget({
     super.key,
     required this.pictureService,
     required this.ttsService,
@@ -16,14 +16,14 @@ class DescribeEnvironment extends StatefulWidget {
   });
 
   @override
-  DescribeEnvironmentState createState() => DescribeEnvironmentState();
+  OcrWidgetState createState() => OcrWidgetState();
 }
 
-class DescribeEnvironmentState extends State<DescribeEnvironment> {
+class OcrWidgetState extends State<OcrWidget> {
   Future<void> takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:
-          'https://192.168.1.5:1880/describe?session_id=${widget.sessionToken}',
+          'https://192.168.1.5:1880/ocr?session_id=${widget.sessionToken}',
       onLabelsDetected: (labels) {
         widget.ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(

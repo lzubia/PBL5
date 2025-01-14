@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/map_widget.dart';
+import 'package:pbl5_menu/ocr_widget.dart';
 import 'describe_environment.dart';
 import 'picture_service.dart';
 import 'package:pbl5_menu/money_identifier.dart';
@@ -8,12 +9,15 @@ import 'package:pbl5_menu/money_identifier.dart';
 const String describeEnvironmentTitle = 'Describe Environment';
 const String gpsMapTitle = 'GPS (Map)';
 const String moneyIdentifierTitle = 'Money Identifier';
+const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
 
 class GridMenu extends StatefulWidget {
   final PictureService pictureService;
   final dynamic ttsService;
   final String sessionToken;
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
+  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
+  final GlobalKey<OcrWidgetState> ocrWidgetKey;
   final GlobalKey<MapWidgetState> mapKey;
 
   const GridMenu({
@@ -22,6 +26,8 @@ class GridMenu extends StatefulWidget {
     required this.ttsService,
     required this.sessionToken,
     required this.moneyIdentifierKey,
+    required this.describeEnvironmentKey,
+    required this.ocrWidgetKey,
     required this.mapKey,
   });
 
@@ -31,6 +37,7 @@ class GridMenu extends StatefulWidget {
 
 class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
+  String? currentWidgetTitle;
 
   @override
   void initState() {
@@ -52,6 +59,10 @@ class GridMenuState extends State<GridMenu> {
   }
 
   void showBottomSheet(BuildContext context, String title) {
+    setState(() {
+      currentWidgetTitle = title;
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(
         context: context,
@@ -66,7 +77,6 @@ class GridMenuState extends State<GridMenu> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  //const SizedBox(height: 20),
                   _buildContent(title),
                 ],
               ),
@@ -84,6 +94,8 @@ class GridMenuState extends State<GridMenu> {
       return _buildMapContent();
     } else if (title == moneyIdentifierTitle) {
       return _buildMoneyIdentifierContent();
+    } else if (title == scannerTitle) {
+      return _buildScannerContent();
     } else {
       return Text('Content for $title goes here.');
     }
@@ -94,16 +106,39 @@ class GridMenuState extends State<GridMenu> {
       return SizedBox(
         height: 550,
         child: DescribeEnvironment(
+          key: widget.describeEnvironmentKey,
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
-          sessionToken: sessionToken,
+          sessionToken: widget.sessionToken,
         ),
       );
     } else {
       return const Center(
         child: SizedBox(
-          width: 50.0, // Adjust the width as needed
-          height: 50.0, // Adjust the height as needed
+          width: 50.0,
+          height: 50.0,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+  }
+
+  Widget _buildScannerContent() {
+    if (isCameraInitialized) {
+      return SizedBox(
+        height: 550,
+        child: OcrWidget(
+          key: widget.ocrWidgetKey,
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+          sessionToken: widget.sessionToken,
+        ),
+      );
+    } else {
+      return const Center(
+        child: SizedBox(
+          width: 50.0,
+          height: 50.0,
           child: CircularProgressIndicator(),
         ),
       );
@@ -112,7 +147,7 @@ class GridMenuState extends State<GridMenu> {
 
   Widget _buildMapContent() {
     return SizedBox(
-        height: 500, // Adjust the height as needed to add whitespace
+        height: 500,
         child: MapWidget(key: widget.mapKey, ttsService: widget.ttsService));
   }
 
@@ -123,7 +158,7 @@ class GridMenuState extends State<GridMenu> {
         key: widget.moneyIdentifierKey,
         pictureService: widget.pictureService,
         ttsService: widget.ttsService,
-        sessionToken: sessionToken,
+        sessionToken: widget.sessionToken,
       ),
     );
   }
@@ -133,10 +168,7 @@ class GridMenuState extends State<GridMenu> {
     final List<Map<String, dynamic>> menuOptions = [
       {'title': describeEnvironmentTitle, 'icon': Icons.description},
       {'title': gpsMapTitle, 'icon': Icons.map},
-      {
-        'title': 'Scanner (Read Texts, QRs, ...)',
-        'icon': Icons.qr_code_scanner
-      },
+      {'title': scannerTitle, 'icon': Icons.qr_code_scanner},
       {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
     ];
 
