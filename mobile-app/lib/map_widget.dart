@@ -85,13 +85,19 @@ class MapWidgetState extends State<MapWidget> {
 
   Future<void> _searchDestination() async {
     final apiKey = dotenv.env['GEOCODING_API_KEY'];
+    setState(() {
+      destinationText = _destinationController.text;
+    });
     final response = await http.get(
       Uri.parse(
           'https://maps.googleapis.com/maps/api/geocode/json?address=${_destinationController.text}&key=$apiKey'),
     );
-
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      if (data['status'] == 'ZERO_RESULTS') {
+        widget.ttsService.speakLabels(['Location not found, be more specific']);
+        return;
+      }
       final location = data['results'][0]['geometry']['location'];
       setState(() {
         destination = LatLng(location['lat'], location['lng']);
@@ -170,9 +176,9 @@ class MapWidgetState extends State<MapWidget> {
           widget.ttsService.speakLabels([
             "Iniciando tu viaje a $destinationText . Primero, $translatedInstruction"
           ]);
-          setState(() {
-            _instructions = _instructions.sublist(1);
-          });
+          // setState(() {
+          //   _instructions = _instructions.sublist(0);
+          // });
         }
       }
     } else {
@@ -182,9 +188,6 @@ class MapWidgetState extends State<MapWidget> {
 
   Future<List<Map<String, dynamic>>> fetchDirections(
       String origin, String destination, String apiKey) async {
-    setState(() {
-      destinationText = destination;
-    });
     final response = await http.get(Uri.parse(
         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$destination&mode=walking&key=$apiKey'));
 
@@ -194,11 +197,13 @@ class MapWidgetState extends State<MapWidget> {
       return steps.map((step) {
         final maneuver = step['maneuver'] ?? '';
         final instruction = step['html_instructions'] as String;
+        final startLocation = step['start_location'];
         final endLocation = step['end_location'];
         return {
           'maneuver': maneuver,
           'instruction': instruction,
-          'location': LatLng(endLocation['lat'], endLocation['lng']),
+          'start_location': LatLng(startLocation['lat'], startLocation['lng']),
+          'end_location': LatLng(endLocation['lat'], endLocation['lng']),
         };
       }).toList();
     } else {
@@ -218,7 +223,7 @@ class MapWidgetState extends State<MapWidget> {
     double closestDistance = double.infinity;
 
     for (int i = 0; i < _instructions.length; i++) {
-      final instructionLatLng = _instructions[i]['location'] as LatLng;
+      final instructionLatLng = _instructions[i]['start_location'] as LatLng;
       final distance = _calculateDistance(currentLatLng, instructionLatLng);
 
       if (distance < closestDistance) {
@@ -227,14 +232,17 @@ class MapWidgetState extends State<MapWidget> {
       }
     }
 
-    if (closestDistance < 20) {
+    if (closestDistance < 10) {
       final instruction =
           removeHtmlTags(_instructions[closestIndex]['instruction']);
       final translatedInstruction = await translateText(instruction, 'es');
-      widget.ttsService.speakLabels(["Ahora, $translatedInstruction"]);
+      await widget.ttsService.speakLabels(["Ahora, $translatedInstruction"]);
       setState(() {
         _instructions = _instructions.sublist(closestIndex + 1);
       });
+    }
+    if (_instructions.length == 0) {
+      widget.ttsService.speakLabels([" y Habrás llegado a tu destino"]);
     }
   }
 
@@ -304,19 +312,6 @@ class MapWidgetState extends State<MapWidget> {
                     },
                     onMapCreated: (mapController) {
                       _controller.complete(mapController);
-                    },
-                  ),
-          ),
-          Expanded(
-            child: _instructions.isEmpty
-                ? const Center(child: Text("No instructions available"))
-                : ListView.builder(
-                    itemCount: _instructions.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(removeHtmlTags(
-                            _instructions[index]['instruction'])),
-                      );
                     },
                   ),
           ),
