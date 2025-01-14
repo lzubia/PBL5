@@ -11,9 +11,9 @@ import 'package:flutter/material.dart' as _i6;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
-import 'package:pbl5_menu/i_stt_service.dart' as _i10;
-import 'package:pbl5_menu/i_tts_service.dart' as _i9;
-import 'package:pbl5_menu/picture_service.dart' as _i4;
+import 'package:pbl5_menu/services/stt/i_stt_service.dart' as _i10;
+import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i9;
+import 'package:pbl5_menu/services/picture_service.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

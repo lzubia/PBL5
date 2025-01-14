@@ -3,17 +3,17 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pbl5_menu/stt_service_google.dart';
-import 'package:pbl5_menu/tts_service_google.dart';
-import 'package:pbl5_menu/stt_service.dart';
-import 'package:pbl5_menu/i_stt_service.dart';
-import 'package:pbl5_menu/i_tts_service.dart';
-import 'package:pbl5_menu/risk_detection.dart';
-import 'package:pbl5_menu/grid_menu.dart';
-import 'package:pbl5_menu/settings_screen.dart';
-import 'package:pbl5_menu/picture_service.dart';
-import 'package:pbl5_menu/tts_service.dart';
-import 'package:pbl5_menu/database_helper.dart';
+import 'package:pbl5_menu/services/stt/stt_service_google.dart';
+import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:pbl5_menu/services/stt/stt_service.dart';
+import 'package:pbl5_menu/services/stt/i_stt_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/features/risk_detection.dart';
+import 'package:pbl5_menu/features/grid_menu.dart';
+import 'package:pbl5_menu/features/settings_screen.dart';
+import 'package:pbl5_menu/services/picture_service.dart';
+import 'package:pbl5_menu/services/tts/tts_service.dart';
+import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:pbl5_menu/main.dart';
 
 import 'main_test.mocks.dart';
@@ -178,7 +178,8 @@ void main() {
       expect(state.useVoiceControl, isTrue);
     });
 
-    testWidgets('displays the correct sessionToken', (WidgetTester tester) async {
+    testWidgets('displays the correct sessionToken',
+        (WidgetTester tester) async {
       sessionToken = 'test-token';
       await tester.pumpWidget(MyApp(
         pictureService: mockPictureService,
@@ -195,7 +196,8 @@ void main() {
     testWidgets('displays detected command text', (WidgetTester tester) async {
       final state = MyHomePageState();
       state.detectedCommand = 'risk detection on';
-      await tester.pumpWidget(MaterialApp(home: MyHomePage(
+      await tester.pumpWidget(MaterialApp(
+          home: MyHomePage(
         pictureService: mockPictureService,
         ttsServiceGoogle: mockTtsServiceGoogle,
         ttsService: mockTtsService,
@@ -204,7 +206,8 @@ void main() {
         sttService: mockSttService,
       )));
 
-      expect(find.text('Command: risk detection on'), findsNothing); // State is not built yet
+      expect(find.text('Command: risk detection on'),
+          findsNothing); // State is not built yet
     });
   });
 }

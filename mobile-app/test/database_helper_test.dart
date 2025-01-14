@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:pbl5_menu/database_helper.dart';
+import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'database_helper_test.mocks.dart';

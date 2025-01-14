@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/main.dart';
-import 'package:pbl5_menu/map_widget.dart';
-import 'package:pbl5_menu/ocr_widget.dart';
+import 'package:pbl5_menu/features/map_widget.dart';
+import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'describe_environment.dart';
-import 'picture_service.dart';
-import 'package:pbl5_menu/money_identifier.dart';
+import '../services/picture_service.dart';
+import 'package:pbl5_menu/features/money_identifier.dart';
 
 const String describeEnvironmentTitle = 'Describe Environment';
 const String gpsMapTitle = 'GPS (Map)';

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter/services.dart'; // For vibration
-import 'package:pbl5_menu/i_tts_service.dart';
-import 'database_helper.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import '../shared/database_helper.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ITtsService ttsServiceGoogle;
@@ -28,7 +28,8 @@ class SettingsScreenState extends State<SettingsScreen> {
   bool _isDarkTheme = false;
   double _speechRate = 1.0; // Default speech rate
 
-  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
+  final FlutterNativeContactPicker _contactPicker =
+      FlutterNativeContactPicker();
 
   @override
   void initState() {
@@ -74,7 +75,8 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _savePreferences() async {
     try {
-      await widget.databaseHelper.updatePreferences(_fontSize, _language, _isDarkTheme, _speechRate);
+      await widget.databaseHelper
+          .updatePreferences(_fontSize, _language, _isDarkTheme, _speechRate);
     } catch (e) {
       debugPrint('Error saving preferences: $e');
     }
@@ -94,7 +96,8 @@ class SettingsScreenState extends State<SettingsScreen> {
       _language = languageCode;
     });
     _savePreferences();
-    widget.databaseHelper.updateTtsSettings(languageCode, voiceName); // Update the database
+    widget.databaseHelper
+        .updateTtsSettings(languageCode, voiceName); // Update the database
     //_provideFeedback('Language changed');
   }
 
@@ -228,7 +231,8 @@ class SettingsScreenState extends State<SettingsScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                 ),
                 child: Icon(
                   Icons.add,

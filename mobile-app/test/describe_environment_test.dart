@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:pbl5_menu/i_tts_service.dart';
-import 'package:pbl5_menu/describe_environment.dart';
-import 'package:pbl5_menu/picture_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/features/describe_environment.dart';
+import 'package:pbl5_menu/services/picture_service.dart';
 
 import 'describe_environment_test.mocks.dart';
 

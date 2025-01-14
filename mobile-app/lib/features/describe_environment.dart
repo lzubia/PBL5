@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'picture_service.dart';
-import 'i_tts_service.dart';
+import '../services/picture_service.dart';
+import '../services/stt/i_tts_service.dart';
 
 class DescribeEnvironment extends StatefulWidget {
   final PictureService pictureService;
