@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:googleapis/apigeeregistry/v1.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'dart:async';
@@ -9,19 +10,25 @@ class MoneyIdentifier extends StatefulWidget {
   final ITtsService ttsService;
   final String sessionToken;
 
-  const MoneyIdentifier(
+  BuildContext context;
+
+  MoneyIdentifier(
       {super.key,
       required this.pictureService,
       required this.ttsService,
-      required this.sessionToken});
+      required this.sessionToken,
+      required this.context});
 
   @override
-  MoneyIdentifierState createState() => MoneyIdentifierState();
+  MoneyIdentifierState createState() => MoneyIdentifierState(this.context);
 }
 
 class MoneyIdentifierState extends State<MoneyIdentifier> {
   Timer? _timer;
   Duration responseTime = Duration.zero;
+  BuildContext context;
+
+  MoneyIdentifierState(this.context);
 
   @override
   void initState() {
@@ -33,6 +40,10 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  void setContext(BuildContext context) {
+    this.context = context;
   }
 
   void _startPeriodicPictureTaking() {

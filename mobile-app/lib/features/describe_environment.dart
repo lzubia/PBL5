@@ -20,6 +20,23 @@ class DescribeEnvironment extends StatefulWidget {
 }
 
 class DescribeEnvironmentState extends State<DescribeEnvironment> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeAsync();
+  }
+
+  Future<void> _initializeAsync() async {
+    await widget.pictureService.initializeCamera();
+    setState(() {}); // Actualiza la interfaz si es necesario
+  }
+
+  @override
+  void dispose() {
+    widget.pictureService.disposeCamera();
+    super.dispose();
+  }
+
   Future<void> takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:

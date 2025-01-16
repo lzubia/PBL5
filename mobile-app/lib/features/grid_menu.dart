@@ -131,11 +131,11 @@ class GridMenuState extends State<GridMenu> {
       AppLocalizations.of(context).translate("money_identifier"):
           _buildDynamicWidget(
         MoneyIdentifier(
-          key: widget.moneyIdentifierKey,
-          pictureService: widget.pictureService,
-          ttsService: widget.ttsService,
-          sessionToken: widget.sessionToken,
-        ),
+            key: widget.moneyIdentifierKey,
+            pictureService: widget.pictureService,
+            ttsService: widget.ttsService,
+            sessionToken: widget.sessionToken,
+            context: context),
       ),
     };
     return contentMapping[title] ?? Text('Content for $title goes here.');
