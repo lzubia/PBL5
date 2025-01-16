@@ -1,0 +1,70 @@
+{
+    "title": "BEGIA",
+    "contacts": "Contactos",
+    "theme": "Tema",
+    "dark_theme": "Tema Oscuro",
+    "language": "Idioma",
+    "font_size": "Tamaño de Fuente",
+    "speech_rate": "Velocidad de Habla",
+    "describe_environment": "Describir Entorno",
+    "gps_map": "GPS (Mapa)",
+    "money_identifier": "Identificador de Dinero",
+    "scanner": "Escáner (Leer Textos, QRs, ...)",
+    "voice_commands": {
+        "risk_detection_command": [
+            "peligro",
+            "peligró",
+            "perigo"
+        ],
+        "money_identifier_command": [
+            "dinero",
+            "dineró",
+            "dinéra"
+        ],
+        "map_command": [
+            "mapa",
+            "mappa",
+            "ma"
+        ],
+        "home_command": [
+            "casa",
+            "cáza",
+            "zasa",
+            "záza"
+        ],
+        "menu_command": [
+            "menú",
+            "menua",
+            "menúa"
+        ],
+        "text_command": [
+            "texto",
+            "textu",
+            "téstu",
+            "testuá",
+            "teks"
+        ],
+        "photo_command": [
+            "foto",
+            "phóto",
+            "fóto",
+            "photto",
+            "fotto"
+        ],
+        "command_not_recognized": [
+            "Comando no reconocido"
+        ]
+    },
+    "risk-on": "Riesgo activado",
+    "risk-off": "Riesgo desactivado",
+    "money-on": "Identificador de dinero activado",
+    "menu": "En el menú",
+    "describe-on": "Describiendo el entorno",
+    "text-on": "Leyendo texto",
+    "mapa-on": "Mapa abierto",
+    "loc_not_found": "Destino no encontrado",
+    "start_trip": "Iniciando tu viaje a",
+    "first": "Primero",
+    "now": "Ahora",
+    "reached": "Y llegarás a"
+}

@@ -8,14 +8,16 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 
 class MapWidget extends StatefulWidget {
   final ITtsService ttsService;
-  const MapWidget({super.key, required this.ttsService});
+  BuildContext context;
+  MapWidget({super.key, required this.ttsService, required this.context});
 
   @override
-  State<MapWidget> createState() => MapWidgetState();
+  State<MapWidget> createState() => MapWidgetState(this.context);
 }
 
 class MapWidgetState extends State<MapWidget> {
@@ -24,6 +26,7 @@ class MapWidgetState extends State<MapWidget> {
 
   LatLng? destination;
   String destinationText = '';
+  BuildContext context;
 
   List<LatLng> polylineCoordinates = [];
   List<Map<String, dynamic>> _instructions = [];
@@ -34,14 +37,26 @@ class MapWidgetState extends State<MapWidget> {
   BitmapDescriptor destinationIcon = BitmapDescriptor.defaultMarker;
   BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
 
+  MapWidgetState(this.context);
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   getCurrentLocation();
+  // }
+
   @override
   void initState() {
     super.initState();
     getCurrentLocation();
   }
 
+  void setContext(BuildContext context) {
+    this.context = context;
+  }
+
   void getCurrentLocation() async {
-    widget.ttsService.speakLabels(['Mapa abierto']);
+    widget.ttsService
+        .speakLabels([AppLocalizations.of(context).translate("mapa-on")]);
 
     Location location = Location();
 
@@ -95,7 +110,7 @@ class MapWidgetState extends State<MapWidget> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'ZERO_RESULTS') {
-        widget.ttsService.speakLabels(['Location not found, be more specific']);
+        widget.ttsService.speakLabels(['loc_not_found']);
         return;
       }
       final location = data['results'][0]['geometry']['location'];
@@ -174,7 +189,11 @@ class MapWidgetState extends State<MapWidget> {
           final translatedInstruction =
               await translateText(firstInstruction, 'es');
           widget.ttsService.speakLabels([
-            "Iniciando tu viaje a $destinationText . Primero, $translatedInstruction"
+            "${[
+              AppLocalizations.of(context).translate("start_trip")
+            ]} $destinationText . ${[
+              AppLocalizations.of(context).translate("first")
+            ]}, $translatedInstruction"
           ]);
           // setState(() {
           //   _instructions = _instructions.sublist(0);
@@ -236,13 +255,17 @@ class MapWidgetState extends State<MapWidget> {
       final instruction =
           removeHtmlTags(_instructions[closestIndex]['instruction']);
       final translatedInstruction = await translateText(instruction, 'es');
-      await widget.ttsService.speakLabels(["Ahora, $translatedInstruction"]);
+      await widget.ttsService.speakLabels([
+        "${AppLocalizations.of(context).translate("now")}, $translatedInstruction"
+      ]);
       setState(() {
         _instructions = _instructions.sublist(closestIndex + 1);
       });
     }
     if (_instructions.length == 0) {
-      widget.ttsService.speakLabels([" y Habrás llegado a tu destino"]);
+      widget.ttsService.speakLabels([
+        "${AppLocalizations.of(context).translate("reached")} $destinationText"
+      ]);
     }
   }
 

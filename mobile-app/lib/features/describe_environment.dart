@@ -25,6 +25,7 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
       endpoint:
           'https://192.168.1.5:1880/describe?session_id=${widget.sessionToken}',
       onLabelsDetected: (labels) {
+        //TODO: Translate labels to the user's language
         widget.ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Description: $labels')),

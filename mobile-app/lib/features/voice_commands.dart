@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:googleapis/admob/v1.dart';
 import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/features/grid_menu.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
@@ -8,16 +11,19 @@ import 'package:pbl5_menu/features/money_identifier.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/features/risk_detection.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service.dart';
+import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands {
   final AudioPlayer player = AudioPlayer();
-  List<List<String>> voiceCommands = [];
+  Map<String, List<String>> voiceCommands = {};
   bool _isActivated = false;
   // static bool useVoiceControl = false;
   static final ValueNotifier<bool> useVoiceControlNotifier =
       ValueNotifier(false);
   String _command = '';
+
+  Locale locale;
 
   GlobalKey<RiskDetectionState> _riskDetectionKey =
       GlobalKey<RiskDetectionState>();
@@ -30,36 +36,61 @@ class VoiceCommands {
   GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
 
   SttService sttService;
-  TtsService ttsService;
+  TtsServiceGoogle ttsServiceGoogle;
 
-  BuildContext? context;
+  late BuildContext context;
+
+  // Inside the class
+  List<String> activationCommands = [];
 
   VoiceCommands(
       this.sttService,
-      this.ttsService,
+      this.ttsServiceGoogle,
       this._riskDetectionKey,
       this._gridMenuKey,
       this._moneyIdentifierKey,
       this._describeEnvironmentKey,
       this._ocrWidgetKey,
-      this._mapKey) {
-    loadVoiceCommands();
+      this._mapKey,
+      this.locale) {
+    loadActivationCommands();
     startListening();
   }
 
-  void setContext(BuildContext context) {
+  void setContext(BuildContext context, Locale locale) {
     this.context = context;
+    this.locale = locale;
+    loadVoiceCommands();
   }
 
   Future<void> loadVoiceCommands() async {
+    // final locale = Locale('en', 'EU');
+    final String fileName = 'assets/lang/${locale.languageCode}.json';
+    final String fileContent = await rootBundle.loadString(fileName);
+
+    final Map<String, dynamic> jsonContent = json.decode(fileContent);
+
+    if (jsonContent.containsKey('voice_commands')) {
+      final voiceCommandsMap = jsonContent['voice_commands'];
+
+      if (voiceCommandsMap is Map) {
+        voiceCommands = voiceCommandsMap.map(
+          (key, value) {
+            return MapEntry(
+              key,
+              List<String>.from(value.map((cmd) => cmd.trim().toLowerCase())),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadActivationCommands() async {
     final String fileContent =
-        await rootBundle.loadString('assets/voice_commands.txt');
-    // Cada línea representa un grupo de sinónimos separados por comas
-    voiceCommands = fileContent
-        .split('\n') // Dividir por líneas
-        .map((line) =>
-            line.split(',').map((cmd) => cmd.trim().toLowerCase()).toList())
-        .toList();
+        await rootBundle.loadString('assets/activation_commands.txt');
+    activationCommands =
+        fileContent.split('\n').map((cmd) => cmd.trim().toLowerCase()).toList();
   }
 
   void startListening() async {
@@ -81,26 +112,7 @@ class VoiceCommands {
   }
 
   bool _isActivationCommand(String transcript) {
-    return transcript.contains("begia") ||
-        transcript.contains("veguia") ||
-        transcript.contains("veguía") ||
-        transcript.contains("veía") ||
-        transcript.contains("de día") ||
-        transcript.contains("beguía") ||
-        transcript.contains("begía") ||
-        transcript.contains("begia") ||
-        transcript.contains("beguía") ||
-        transcript.contains("beguía") ||
-        transcript.contains("beía") ||
-        transcript.contains("beguia") ||
-        transcript.contains("vía") ||
-        transcript.contains("viego") ||
-        transcript.contains("beja") ||
-        transcript.contains("begía") ||
-        transcript.contains("beía") ||
-        transcript.contains("vegia") ||
-        transcript.contains("de guía") ||
-        transcript.contains("beguía");
+    return activationCommands.any((command) => transcript.contains(command));
   }
 
   void _activateVoiceControl() {
@@ -121,58 +133,60 @@ class VoiceCommands {
     bool matched = false;
     const double similarityThreshold = 80.0;
 
-    for (var commandGroup in voiceCommands) {
-      final similarity = calculateSimilarity(command, commandGroup.first);
+    for (var commandGroup in voiceCommands.entries) {
+      final similarity = calculateSimilarity(command, commandGroup.value.first);
 
-      for (var synonym in commandGroup) {
+      for (var synonym in commandGroup.value) {
         // Calculamos la similitud usando la distancia de Levenshtein
         if (similarity >= similarityThreshold || command.contains(synonym)) {
-          final primaryCommand = commandGroup.first;
+          final primaryCommand = commandGroup.key;
 
           switch (primaryCommand) {
-            case 'arrisku': // Comando principal del grupo de riesgo
+            case 'risk_detection_command': // Comando principal del grupo de riesgo
               _riskDetectionKey.currentState?.toggleRiskDetection();
               matched = true;
               break;
 
-            case 'dirua': // Comando principal del grupo de identificador de dinero
+            case 'money_identifier_command': // Comando principal del grupo de identificador de dinero
               if (!widgetStates['Money Identifier']!) {
                 _gridMenuKey.currentState
                     ?.showBottomSheet(context!, 'Money Identifier');
                 widgetStates['Money Identifier'] = true;
               } else {
-                ttsService.speakLabels(
+                ttsServiceGoogle.speakLabels(
                     ['El identificador de dinero ya está abierto']);
               }
               matched = true;
               break;
 
-            case 'mapa': // Comando principal del grupo de mapas
+            case 'map_command': // Comando principal del grupo de mapas
               if (!widgetStates['GPS (Map)']!) {
                 _gridMenuKey.currentState
                     ?.showBottomSheet(context!, 'GPS (Map)');
                 widgetStates['GPS (Map)'] = true;
               } else {
-                ttsService.speakLabels(['El mapa ya está abierto']);
+                ttsServiceGoogle.speakLabels(['El mapa ya está abierto']);
               }
               matched = true;
               break;
 
-            case 'menua': // Comando principal del grupo de navegación a casa
+            case 'menu_command': // Comando principal del grupo de navegación a casa
               Navigator.popUntil(context!, (route) => route.isFirst);
-              ttsService.speakLabels(['Going to menu']);
+              ttsServiceGoogle.speakLabels([
+                [AppLocalizations.of(context).translate("menu")]
+              ]);
               matched = true;
               break;
 
-            case 'testua': // Comando principal del grupo de identificador de dinero
+            case 'text_command': // Comando principal del grupo de identificador de dinero
               _gridMenuKey.currentState
                   ?.showBottomSheet(context!, 'Scanner (Read Texts, QRs, ...)');
               matched = true;
               break;
 
-            case 'foto': // Handle 'foto' voice command
+            case 'photo_command': // Handle 'foto' voice command
               if (_gridMenuKey.currentState?.currentWidgetTitle ==
-                  describeEnvironmentTitle) {
+                  'describe_environment') {
                 _describeEnvironmentKey.currentState?.takeAndSendImage();
               } else if (_gridMenuKey.currentState?.currentWidgetTitle ==
                   scannerTitle) {

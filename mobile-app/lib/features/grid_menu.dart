@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'describe_environment.dart';
 import '../services/picture_service.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
 
-const String describeEnvironmentTitle = 'Describe Environment';
+// const String describeEnvironmentTitle = 'Describe Environment';
 const String gpsMapTitle = 'GPS (Map)';
 const String moneyIdentifierTitle = 'Money Identifier';
 const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
@@ -88,13 +89,15 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildContent(String title) {
-    if (title == describeEnvironmentTitle) {
+    if (title ==
+        AppLocalizations.of(context).translate('describe_environment')) {
       return _buildDescribeEnvironmentContent();
-    } else if (title == gpsMapTitle) {
+    } else if (title == AppLocalizations.of(context).translate("gps_map")) {
       return _buildMapContent();
-    } else if (title == moneyIdentifierTitle) {
+    } else if (title ==
+        AppLocalizations.of(context).translate("money_identifier")) {
       return _buildMoneyIdentifierContent();
-    } else if (title == scannerTitle) {
+    } else if (title == AppLocalizations.of(context).translate("scanner")) {
       return _buildScannerContent();
     } else {
       return Text('Content for $title goes here.');
@@ -148,7 +151,11 @@ class GridMenuState extends State<GridMenu> {
   Widget _buildMapContent() {
     return SizedBox(
         height: 500,
-        child: MapWidget(key: widget.mapKey, ttsService: widget.ttsService));
+        child: MapWidget(
+          key: widget.mapKey,
+          ttsService: widget.ttsService,
+          context: context,
+        ));
   }
 
   Widget _buildMoneyIdentifierContent() {
@@ -166,10 +173,22 @@ class GridMenuState extends State<GridMenu> {
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> menuOptions = [
-      {'title': describeEnvironmentTitle, 'icon': Icons.description},
-      {'title': gpsMapTitle, 'icon': Icons.map},
-      {'title': scannerTitle, 'icon': Icons.qr_code_scanner},
-      {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
+      {
+        'title': AppLocalizations.of(context).translate('describe_environment'),
+        'icon': Icons.description
+      },
+      {
+        'title': AppLocalizations.of(context).translate('gps_map'),
+        'icon': Icons.map
+      },
+      {
+        'title': AppLocalizations.of(context).translate('scanner'),
+        'icon': Icons.qr_code_scanner
+      },
+      {
+        'title': AppLocalizations.of(context).translate('money_identifier'),
+        'icon': Icons.attach_money
+      },
     ];
 
     return GridView.count(

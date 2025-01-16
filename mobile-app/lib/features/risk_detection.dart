@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_stt_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../services/picture_service.dart';
@@ -52,7 +53,8 @@ class RiskDetectionState extends State<RiskDetection> {
         },
       );
     });
-    widget.ttsService.speakLabels(["Risk detection on"]);
+    widget.ttsService
+        .speakLabels([AppLocalizations.of(context).translate("risk-on")]);
   }
 
   void disableRiskDetection() {
@@ -60,7 +62,8 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    widget.ttsService.speakLabels(["Risk detection off"]);
+    widget.ttsService
+        .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
   }
 
   Future<void> _takePicture() async {

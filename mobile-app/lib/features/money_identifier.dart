@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service.dart';
 import 'dart:async';
 import '../services/picture_service.dart';
 
@@ -36,7 +36,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   }
 
   void _startPeriodicPictureTaking() {
-    widget.ttsService.speakLabels(['Money Identifier on']);
+    widget.ttsService
+        .speakLabels([AppLocalizations.of(context).translate("money-on")]);
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _takeAndSendImage();
     });

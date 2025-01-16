@@ -14,7 +14,7 @@ class TtsServiceGoogle implements ITtsService {
   final String _authFilePath = 'assets/tts-english.json';
   String languageCode = 'en-US';
   String voiceName = 'en-US-Wavenet-D';
-  double speechRate = 1.0; // Default speech rate
+  double speechRate = 1.6; // Default speech rate
   final DatabaseHelper _dbHelper;
 
   TtsServiceGoogle(this._dbHelper) {
