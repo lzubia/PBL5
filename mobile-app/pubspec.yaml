@@ -59,6 +59,8 @@ dependencies:
   flutter_dotenv: ^5.2.1
   path: ^1.9.0
   flutter_launcher_icons: ^0.14.2
+  flutter_localizations:
+                  sdk: flutter
   #dcdg: ^4.1.0
 
 dev_dependencies:
@@ -92,7 +94,11 @@ flutter:
     - ./.env
     - assets/sounds/activation_sound.mp3
     - assets/voice_commands.txt
+    - assets/activation_commands.txt
     - assets/icons/app_icon.png
+    - assets/lang/en.json
+    - assets/lang/es.json
+    - assets/lang/eu.json
 
 flutter_icons:
                 android: true
