@@ -7,7 +7,7 @@ import 'describe_environment.dart';
 import '../services/picture_service.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
 
-// const String describeEnvironmentTitle = 'Describe Environment';
+const String describeEnvironmentTitle = 'Describe Environment';
 const String gpsMapTitle = 'GPS (Map)';
 const String moneyIdentifierTitle = 'Money Identifier';
 const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
@@ -39,6 +39,9 @@ class GridMenu extends StatefulWidget {
 class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
   String? currentWidgetTitle;
+  Widget? mapWidgetInstance;
+
+  final double contentHeight = 550;
 
   @override
   void initState() {
@@ -60,9 +63,17 @@ class GridMenuState extends State<GridMenu> {
   }
 
   void showBottomSheet(BuildContext context, String title) {
+    String? widgetToClose = currentWidgetTitle;
     setState(() {
       currentWidgetTitle = title;
     });
+
+    if (!ModalRoute.of(context)!.isFirst &&
+        (widgetToClose != 'GPS (Map)' ||
+            (widgetToClose == 'GPS (Map)' &&
+                widget.mapKey.currentState?.destination == null))) {
+      Navigator.of(context).pop();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(
@@ -89,54 +100,50 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildContent(String title) {
-    if (title ==
-        AppLocalizations.of(context).translate('describe_environment')) {
-      return _buildDescribeEnvironmentContent();
-    } else if (title == AppLocalizations.of(context).translate("gps_map")) {
-      return _buildMapContent();
-    } else if (title ==
-        AppLocalizations.of(context).translate("money_identifier")) {
-      return _buildMoneyIdentifierContent();
-    } else if (title == AppLocalizations.of(context).translate("scanner")) {
-      return _buildScannerContent();
-    } else {
-      return Text('Content for $title goes here.');
-    }
-  }
-
-  Widget _buildDescribeEnvironmentContent() {
-    if (isCameraInitialized) {
-      return SizedBox(
-        height: 550,
-        child: DescribeEnvironment(
-          key: widget.describeEnvironmentKey,
-          pictureService: widget.pictureService,
-          ttsService: widget.ttsService,
-          sessionToken: widget.sessionToken,
+    final contentMapping = {
+      AppLocalizations.of(context).translate('describe_environment'):
+          _buildDynamicWidget(
+        DescribeEnvironment(
+            key: widget.describeEnvironmentKey,
+            pictureService: widget.pictureService,
+            ttsService: widget.ttsService,
+            sessionToken: widget.sessionToken),
+      ),
+      AppLocalizations.of(context).translate("gps_map"): _buildDynamicWidget(
+        mapWidgetInstance ??= SizedBox(
+          // Use existing instance or create new
+          height: contentHeight,
+          child: MapWidget(
+            key: widget.mapKey,
+            ttsService: widget.ttsService,
+            context: context,
+          ),
         ),
-      );
-    } else {
-      return const Center(
-        child: SizedBox(
-          width: 50.0,
-          height: 50.0,
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-  }
-
-  Widget _buildScannerContent() {
-    if (isCameraInitialized) {
-      return SizedBox(
-        height: 550,
-        child: OcrWidget(
+      ),
+      AppLocalizations.of(context).translate("scanner"): _buildDynamicWidget(
+        OcrWidget(
           key: widget.ocrWidgetKey,
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
           sessionToken: widget.sessionToken,
         ),
-      );
+      ),
+      AppLocalizations.of(context).translate("money_identifier"):
+          _buildDynamicWidget(
+        MoneyIdentifier(
+          key: widget.moneyIdentifierKey,
+          pictureService: widget.pictureService,
+          ttsService: widget.ttsService,
+          sessionToken: widget.sessionToken,
+        ),
+      ),
+    };
+    return contentMapping[title] ?? Text('Content for $title goes here.');
+  }
+
+  Widget _buildDynamicWidget(Widget widgetContent) {
+    if (isCameraInitialized) {
+      return SizedBox(height: contentHeight, child: widgetContent);
     } else {
       return const Center(
         child: SizedBox(
@@ -146,28 +153,6 @@ class GridMenuState extends State<GridMenu> {
         ),
       );
     }
-  }
-
-  Widget _buildMapContent() {
-    return SizedBox(
-        height: 500,
-        child: MapWidget(
-          key: widget.mapKey,
-          ttsService: widget.ttsService,
-          context: context,
-        ));
-  }
-
-  Widget _buildMoneyIdentifierContent() {
-    return SizedBox(
-      height: 550,
-      child: MoneyIdentifier(
-        key: widget.moneyIdentifierKey,
-        pictureService: widget.pictureService,
-        ttsService: widget.ttsService,
-        sessionToken: widget.sessionToken,
-      ),
-    );
   }
 
   @override

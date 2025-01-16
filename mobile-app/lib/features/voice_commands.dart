@@ -97,6 +97,10 @@ class VoiceCommands {
     await sttService.startListening(_handleSpeechResult);
   }
 
+  void stopListening() async {
+    await sttService.stopListening();
+  }
+
   void _handleSpeechResult(String recognizedText) {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
@@ -172,9 +176,8 @@ class VoiceCommands {
 
             case 'menu_command': // Comando principal del grupo de navegación a casa
               Navigator.popUntil(context!, (route) => route.isFirst);
-              ttsServiceGoogle.speakLabels([
-                [AppLocalizations.of(context).translate("menu")]
-              ]);
+              ttsServiceGoogle.speakLabels(
+                  [AppLocalizations.of(context).translate("menu")]);
               matched = true;
               break;
 
@@ -199,8 +202,9 @@ class VoiceCommands {
               break;
           }
 
-          if (matched)
-            break; // Detenemos el bucle si encontramos un comando válido
+          if (matched) stopListening();
+          startListening();
+          break; // Detenemos el bucle si encontramos un comando válido
         }
       }
       if (matched)

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
@@ -24,116 +25,22 @@ import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:audioplayers/audioplayers.dart'; // For audio playback
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-String sessionToken = '';
-
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  HttpOverrides.global = MyHttpOverrides();
-  Locale locale = Locale('en', 'US');
-
-  const platform = MethodChannel('com.example.pbl5_menu/endSession');
-  platform.setMethodCallHandler((call) async {
-    if (call.method == 'endSession') {
-      await endSession(sessionToken);
-    } else if (call.method == 'startSession') {
-      await startSession();
-    }
-  });
-
-  final pictureService = PictureService();
-  await pictureService.setupCamera();
-  await pictureService.initializeCamera();
-
-  final databaseHelper = DatabaseHelper();
-  final ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
-  final sttService = SttService(); // Initialize another Speech-to-Text service
-
-  ttsServiceGoogle.initializeTts();
-  await sttService.initializeStt(); // Initialize another STT service
-  await dotenv.load(fileName: "./.env");
-
-  final GlobalKey<RiskDetectionState> _riskDetectionKey =
-      GlobalKey<RiskDetectionState>();
-  final GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
-  final GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
-      GlobalKey<MoneyIdentifierState>();
-  final GlobalKey<DescribeEnvironmentState> _describeEnvironmentKey =
-      GlobalKey<DescribeEnvironmentState>();
-  final GlobalKey<OcrWidgetState> _ocrWidgetKey = GlobalKey<OcrWidgetState>();
-  final GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
-
-  final voiceCommands = VoiceCommands(
-      sttService,
-      ttsServiceGoogle,
-      _riskDetectionKey,
-      _gridMenuKey,
-      _moneyIdentifierKey,
-      _describeEnvironmentKey,
-      _ocrWidgetKey,
-      _mapKey,
-      locale);
-
+  await AppInitializer.initialize();
   runApp(MyApp(
-    pictureService: pictureService,
-    ttsServiceGoogle: ttsServiceGoogle,
-    databaseHelper: databaseHelper,
-    sttService: sttService, // Pass another STT service
-    voiceCommands: voiceCommands,
-    riskDetectionKey: _riskDetectionKey,
-    gridMenuKey: _gridMenuKey,
-    moneyIdentifierKey: _moneyIdentifierKey,
-    describeEnvironmentKey: _describeEnvironmentKey,
-    ocrWidgetKey: _ocrWidgetKey,
-    mapKey: _mapKey,
-    locale: locale,
+    pictureService: AppInitializer.pictureService,
+    ttsServiceGoogle: AppInitializer.ttsServiceGoogle,
+    databaseHelper: AppInitializer.databaseHelper,
+    sttService: AppInitializer.sttService,
+    voiceCommands: AppInitializer.voiceCommands,
+    riskDetectionKey: AppInitializer.riskDetectionKey,
+    gridMenuKey: AppInitializer.gridMenuKey,
+    moneyIdentifierKey: AppInitializer.moneyIdentifierKey,
+    describeEnvironmentKey: AppInitializer.describeEnvironmentKey,
+    ocrWidgetKey: AppInitializer.ocrWidgetKey,
+    mapKey: AppInitializer.mapKey,
+    locale: AppInitializer.locale,
   ));
-}
-
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
-
-Future<void> startSession({http.Client? client}) async {
-  final url = Uri.parse('https://192.168.1.5:1880/start-session');
-  client ??= http.Client();
-  try {
-    final response = await client.get(url);
-    if (response.statusCode == 200) {
-      sessionToken = jsonDecode(response.body)['session_id'];
-      print('Session started successfully');
-    } else {
-      sessionToken = ''; // Reset sessionToken on failure
-      print('Failed to start session: ${response.statusCode}');
-    }
-  } catch (e) {
-    sessionToken = ''; // Reset sessionToken on error
-    print('Error starting session: $e');
-  }
-}
-
-Future<void> endSession(String sessionId, {http.Client? client}) async {
-  final url =
-      Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
-  client ??= http.Client();
-  try {
-    final response = await client.delete(url);
-    if (response.statusCode == 200) {
-      print('Session ended successfully');
-      print('Response: ${response.body}');
-    } else if (response.statusCode == 404) {
-      print('Session ID not found');
-    } else {
-      print('Failed to end session: ${response.statusCode}');
-    }
-  } catch (e) {
-    print('Error ending session: $e');
-  }
 }
 
 class MyApp extends StatefulWidget {
@@ -141,6 +48,7 @@ class MyApp extends StatefulWidget {
   final ITtsService ttsServiceGoogle;
   final DatabaseHelper databaseHelper;
   final ISttService sttService;
+
   final GlobalKey<RiskDetectionState> riskDetectionKey;
   final GlobalKey<GridMenuState> gridMenuKey;
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
@@ -267,8 +175,8 @@ class MyHomePage extends StatefulWidget {
 class MyHomePageState extends State<MyHomePage> {
   bool useGoogleStt = false;
   bool useGoogleTts = false;
-  bool _isActivated =
-      false; // Para verificar si el control de voz está activado
+  bool _isActivated = false;
+  final String sessionToken = AppInitializer.sessionToken;
   final GlobalKey<RiskDetectionState> riskDetectionKey;
   final GlobalKey<GridMenuState> gridMenuKey;
   final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;

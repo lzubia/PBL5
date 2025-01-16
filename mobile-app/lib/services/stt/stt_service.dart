@@ -29,7 +29,7 @@ class SttService implements ISttService {
   }
 
   @override
-  void stopListening() {
+  Future<void> stopListening() async {
     if (_isListening) {
       _isListening = false;
       _speech.stop();
