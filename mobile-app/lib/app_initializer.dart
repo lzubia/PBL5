@@ -42,9 +42,9 @@ class AppInitializer {
     // Configure MethodChannel for session management
     platform.setMethodCallHandler((call) async {
       if (call.method == 'endSession') {
-        // await endSession(sessionToken); // Pass sessionToken to endSession
+        await endSession(sessionToken); // Pass sessionToken to endSession
       } else if (call.method == 'startSession') {
-        // await startSession();
+        await startSession();
       }
     });
 
@@ -81,7 +81,7 @@ class AppInitializer {
         locale);
 
     // Start a session and set the sessionToken
-    // await startSession();
+    await startSession();
   }
 
   static Future<void> startSession({http.Client? client}) async {
