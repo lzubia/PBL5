@@ -57,7 +57,7 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   Future<void> _takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:
-          'https://192.168.1.5:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
+          'https://begiapbl.duckdns.org:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
         widget.ttsService

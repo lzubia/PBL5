@@ -103,6 +103,12 @@
             "fo'to",
             "fótto"
         ],
+        "back_command": [
+            "atzera",
+            "atsera",
+            "a tzera",
+            "atxera"
+        ],
         "command_not_recognized": [
             "Komandoa ez da ezagutu"
         ]

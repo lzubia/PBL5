@@ -40,7 +40,7 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
   Future<void> takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:
-          'https://192.168.1.5:1880/describe?session_id=${widget.sessionToken}',
+          'https://begiapbl.duckdns.org:1880/describe?session_id=${widget.sessionToken}',
       onLabelsDetected: (labels) {
         //TODO: Translate labels to the user's language
         widget.ttsService.speakLabels(labels);

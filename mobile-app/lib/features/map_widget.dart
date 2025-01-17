@@ -105,7 +105,8 @@ class MapWidgetState extends State<MapWidget> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'ZERO_RESULTS') {
-        widget.ttsService.speakLabels(['loc_not_found']);
+        widget.ttsService.speakLabels(
+            [AppLocalizations.of(context).translate('loc_not_found')]);
         return;
       }
       final location = data['results'][0]['geometry']['location'];
@@ -124,6 +125,7 @@ class MapWidgetState extends State<MapWidget> {
   }
 
   Future<String> translateText(String text, String targetLanguage) async {
+    if (targetLanguage == 'en') return text;
     final apiKey = dotenv.env['TRANSLATE_API_KEY'];
     final response = await http.post(
       Uri.parse(
@@ -132,7 +134,7 @@ class MapWidgetState extends State<MapWidget> {
       body: json.encode({
         'q': text,
         'source': 'en',
-        'target': 'es',
+        'target': targetLanguage,
         'format': 'text',
       }),
     );
@@ -181,8 +183,8 @@ class MapWidgetState extends State<MapWidget> {
         if (_instructions.isNotEmpty) {
           final firstInstruction =
               removeHtmlTags(_instructions[0]['instruction']);
-          final translatedInstruction =
-              await translateText(firstInstruction, 'es');
+          final translatedInstruction = await translateText(
+              firstInstruction, Localizations.localeOf(context).languageCode);
           widget.ttsService.speakLabels([
             "${[
               AppLocalizations.of(context).translate("start_trip")
@@ -249,7 +251,8 @@ class MapWidgetState extends State<MapWidget> {
     if (closestDistance < 10) {
       final instruction =
           removeHtmlTags(_instructions[closestIndex]['instruction']);
-      final translatedInstruction = await translateText(instruction, 'es');
+      final translatedInstruction = await translateText(
+          instruction, Localizations.localeOf(context).languageCode);
       await widget.ttsService.speakLabels([
         "${AppLocalizations.of(context).translate("now")}, $translatedInstruction"
       ]);

@@ -42,9 +42,9 @@ class AppInitializer {
     // Configure MethodChannel for session management
     platform.setMethodCallHandler((call) async {
       if (call.method == 'endSession') {
-        await endSession(sessionToken); // Pass sessionToken to endSession
+        // await endSession(sessionToken); // Pass sessionToken to endSession
       } else if (call.method == 'startSession') {
-        await startSession();
+        // await startSession();
       }
     });
 
@@ -81,11 +81,11 @@ class AppInitializer {
         locale);
 
     // Start a session and set the sessionToken
-    await startSession();
+    // await startSession();
   }
 
   static Future<void> startSession({http.Client? client}) async {
-    final url = Uri.parse('https://192.168.1.5:1880/start-session');
+    final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
     client ??= http.Client();
     try {
       final response = await client.get(url);
@@ -104,8 +104,8 @@ class AppInitializer {
 
   static Future<void> endSession(String sessionId,
       {http.Client? client}) async {
-    final url =
-        Uri.parse('https://192.168.1.5:1880/end-session?session_id=$sessionId');
+    final url = Uri.parse(
+        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
     client ??= http.Client();
     try {
       final response = await client.delete(url);

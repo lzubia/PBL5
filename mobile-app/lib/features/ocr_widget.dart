@@ -23,7 +23,7 @@ class OcrWidgetState extends State<OcrWidget> {
   Future<void> takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:
-          'https://192.168.1.5:1880/ocr?session_id=${widget.sessionToken}',
+          'https://begiapbl.duckdns.org:1880/ocr?session_id=${widget.sessionToken}',
       onLabelsDetected: (labels) {
         widget.ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(

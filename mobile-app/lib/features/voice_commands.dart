@@ -122,8 +122,10 @@ class VoiceCommands {
   }
 
   Map<String, bool> widgetStates = {
-    'GPS (Map)': false,
-    'Money Identifier': false,
+    'map_command': false,
+    'money_identifier_command': false,
+    'text_command': false,
+    'photo_command': false,
     // Add other widgets as needed
   };
 
@@ -148,7 +150,7 @@ class VoiceCommands {
               break;
 
             case 'money_identifier_command': // Comando principal del grupo de identificador de dinero
-              if (!widgetStates['Money Identifier']!) {
+              if (!widgetStates['money_identifier_command']!) {
                 _gridMenuKey.currentState
                     ?.showBottomSheet(context!, 'Money Identifier');
                 widgetStates['Money Identifier'] = true;
@@ -160,10 +162,10 @@ class VoiceCommands {
               break;
 
             case 'map_command': // Comando principal del grupo de mapas
-              if (!widgetStates['GPS (Map)']!) {
+              if (!widgetStates['map_command']!) {
                 _gridMenuKey.currentState
                     ?.showBottomSheet(context!, 'GPS (Map)');
-                widgetStates['GPS (Map)'] = true;
+                widgetStates['map_command'] = true;
               } else {
                 ttsServiceGoogle.speakLabels(['El mapa ya está abierto']);
               }
@@ -193,13 +195,18 @@ class VoiceCommands {
               }
               matched = true;
               break;
-
             default:
               break;
           }
 
-          if (matched)
-            break; // Detenemos el bucle si encontramos un comando válido
+          if (matched) {
+            widgetStates.forEach((key, value) {
+              if (key != primaryCommand) {
+                widgetStates[key] = false;
+              }
+            });
+          }
+          break; // Detenemos el bucle si encontramos un comando válido
         }
       }
       if (matched)

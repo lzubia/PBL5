@@ -6,7 +6,7 @@
     "language": "Language",
     "font_size": "Font Size",
     "speech_rate": "Speech Rate",
-    "describe_environment": "Describe Environment",
+    "describe_environment": "Describe",
     "gps_map": "GPS (Map)",
     "money_identifier": "Money Identifier",
     "scanner": "Scanner (Read Texts, QRs, ...)",
@@ -56,6 +56,12 @@
             "fotto",
             "fohtoh",
             "photto"
+        ],
+        "back_command": [
+            "back",
+            "bak",
+            "bac",
+            "baq"
         ],
         "command_not_recognized": [
             "Command not recognized"

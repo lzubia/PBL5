@@ -6,7 +6,7 @@
     "language": "Idioma",
     "font_size": "Tamaño de Fuente",
     "speech_rate": "Velocidad de Habla",
-    "describe_environment": "Describir Entorno",
+    "describe_environment": "Describir",
     "gps_map": "GPS (Mapa)",
     "money_identifier": "Identificador de Dinero",
     "scanner": "Escáner (Leer Textos, QRs, ...)",
@@ -50,6 +50,11 @@
             "fóto",
             "photto",
             "fotto"
+        ],
+        "back_command": [
+            "atrás",
+            "atras",
+            "a tras"
         ],
         "command_not_recognized": [
             "Comando no reconocido"

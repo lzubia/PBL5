@@ -68,7 +68,7 @@ class RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture() async {
     final endpoint =
-        'https://192.168.1.5:1880/detect?session_id=${widget.sessionToken}';
+        'https://begiapbl.duckdns.org:1880/detect?session_id=${widget.sessionToken}';
     await widget.pictureService.takePicture(
       endpoint: endpoint, // Usa el endpoint con el sessionToken
       onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
