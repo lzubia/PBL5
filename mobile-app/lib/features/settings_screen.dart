@@ -4,16 +4,17 @@ import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter/services.dart'; // For vibration
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../shared/database_helper.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ITtsService ttsServiceGoogle;
-  final ITtsService ttsService;
   final DatabaseHelper databaseHelper;
+  final Function(Locale) setLocale;
 
   const SettingsScreen({
     required this.ttsServiceGoogle,
-    required this.ttsService,
     required this.databaseHelper,
+    required this.setLocale,
     super.key,
   });
 
@@ -90,7 +91,6 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
-    widget.ttsService.updateLanguage(languageCode, voiceName);
     widget.ttsServiceGoogle.updateLanguage(languageCode, voiceName);
     setState(() {
       _language = languageCode;
@@ -105,7 +105,6 @@ class SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _speechRate = rate;
     });
-    widget.ttsService.updateSpeechRate(rate / 2);
     widget.ttsServiceGoogle.updateSpeechRate(rate);
     _savePreferences();
   }
@@ -162,8 +161,8 @@ class SettingsScreenState extends State<SettingsScreen> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: const Text(
-            'BEGIA',
+          title: Text(
+            AppLocalizations.of(context).translate('title'),
             style: TextStyle(fontSize: 24.0), // Increase font size
           ),
           centerTitle: true,
@@ -175,7 +174,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Contacts',
+                AppLocalizations.of(context).translate('contacts'),
                 style: TextStyle(
                   fontSize: _fontSize + 4,
                   fontWeight: FontWeight.bold,
@@ -242,7 +241,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(),
               Text(
-                'Theme',
+                AppLocalizations.of(context).translate('theme'),
                 style: TextStyle(
                   fontSize: _fontSize + 4,
                   fontWeight: FontWeight.bold,
@@ -251,7 +250,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               ),
               SwitchListTile(
                 title: Text(
-                  'Dark Theme',
+                  AppLocalizations.of(context).translate('dark_theme'),
                   style: TextStyle(fontSize: _fontSize, color: textColor),
                 ),
                 value: _isDarkTheme,
@@ -259,7 +258,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(),
               Text(
-                'Language',
+                AppLocalizations.of(context).translate('language'),
                 style: TextStyle(
                   fontSize: _fontSize + 4,
                   fontWeight: FontWeight.bold,
@@ -277,36 +276,58 @@ class SettingsScreenState extends State<SettingsScreen> {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ...languages.map((language) {
-                        String fullText = language['label']!;
-                        String shortText = language['label']!.substring(0, 3);
-
-                        return ElevatedButton(
-                          onPressed: () => _changeLanguage(
-                              language['languageCode']!,
-                              language['voiceName']!),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                _language == language['languageCode']
-                                    ? Colors.blue
-                                    : Colors.grey,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 15),
-                          ),
-                          child: Text(
-                            isCompact ? shortText : fullText,
-                            style: TextStyle(
-                                fontSize: _fontSize, color: Colors.white),
-                          ),
-                        );
-                      }),
+                      ElevatedButton(
+                        onPressed: () {
+                          widget.setLocale(Locale('en', 'US'));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                        child: Text(
+                          'English',
+                          style: TextStyle(
+                              fontSize: _fontSize, color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          widget.setLocale(Locale('es', 'ES'));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                        child: Text(
+                          'Español',
+                          style: TextStyle(
+                              fontSize: _fontSize, color: Colors.white),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          widget.setLocale(Locale('eu', 'ES'));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
+                        ),
+                        child: Text(
+                          'Euskera',
+                          style: TextStyle(
+                              fontSize: _fontSize, color: Colors.white),
+                        ),
+                      ),
                     ],
                   );
                 },
               ),
               const Divider(),
               Text(
-                'Font Size',
+                AppLocalizations.of(context).translate('font_size'),
                 style: TextStyle(
                   fontSize: _fontSize + 4,
                   fontWeight: FontWeight.bold,
@@ -321,7 +342,7 @@ class SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(),
               Text(
-                'Speech Rate',
+                AppLocalizations.of(context).translate('speech_rate'),
                 style: TextStyle(
                   fontSize: _fontSize + 4,
                   fontWeight: FontWeight.bold,

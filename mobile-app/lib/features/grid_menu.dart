@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'describe_environment.dart';
 import '../services/picture_service.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
@@ -38,6 +39,9 @@ class GridMenu extends StatefulWidget {
 class GridMenuState extends State<GridMenu> {
   bool isCameraInitialized = false;
   String? currentWidgetTitle;
+  Widget? mapWidgetInstance;
+
+  final double contentHeight = 550;
 
   @override
   void initState() {
@@ -59,9 +63,17 @@ class GridMenuState extends State<GridMenu> {
   }
 
   void showBottomSheet(BuildContext context, String title) {
+    String? widgetToClose = currentWidgetTitle;
     setState(() {
       currentWidgetTitle = title;
     });
+
+    if (!ModalRoute.of(context)!.isFirst &&
+        (widgetToClose != 'GPS (Map)' ||
+            (widgetToClose == 'GPS (Map)' &&
+                widget.mapKey.currentState?.destination == null))) {
+      Navigator.of(context).pop();
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(
@@ -83,57 +95,59 @@ class GridMenuState extends State<GridMenu> {
             ),
           );
         },
-      );
+      ).whenComplete(() {
+        setState(() {
+          currentWidgetTitle = null;
+        });
+      });
     });
   }
 
   Widget _buildContent(String title) {
-    if (title == describeEnvironmentTitle) {
-      return _buildDescribeEnvironmentContent();
-    } else if (title == gpsMapTitle) {
-      return _buildMapContent();
-    } else if (title == moneyIdentifierTitle) {
-      return _buildMoneyIdentifierContent();
-    } else if (title == scannerTitle) {
-      return _buildScannerContent();
-    } else {
-      return Text('Content for $title goes here.');
-    }
-  }
-
-  Widget _buildDescribeEnvironmentContent() {
-    if (isCameraInitialized) {
-      return SizedBox(
-        height: 550,
-        child: DescribeEnvironment(
-          key: widget.describeEnvironmentKey,
-          pictureService: widget.pictureService,
-          ttsService: widget.ttsService,
-          sessionToken: widget.sessionToken,
+    final contentMapping = {
+      AppLocalizations.of(context).translate('describe_environment'):
+          _buildDynamicWidget(
+        DescribeEnvironment(
+            key: widget.describeEnvironmentKey,
+            pictureService: widget.pictureService,
+            ttsService: widget.ttsService,
+            sessionToken: widget.sessionToken),
+      ),
+      AppLocalizations.of(context).translate("gps_map"): _buildDynamicWidget(
+        mapWidgetInstance ??= SizedBox(
+          // Use existing instance or create new
+          height: contentHeight,
+          child: MapWidget(
+            key: widget.mapKey,
+            ttsService: widget.ttsService,
+            context: context,
+          ),
         ),
-      );
-    } else {
-      return const Center(
-        child: SizedBox(
-          width: 50.0,
-          height: 50.0,
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-  }
-
-  Widget _buildScannerContent() {
-    if (isCameraInitialized) {
-      return SizedBox(
-        height: 550,
-        child: OcrWidget(
+      ),
+      AppLocalizations.of(context).translate("scanner"): _buildDynamicWidget(
+        OcrWidget(
           key: widget.ocrWidgetKey,
           pictureService: widget.pictureService,
           ttsService: widget.ttsService,
           sessionToken: widget.sessionToken,
         ),
-      );
+      ),
+      AppLocalizations.of(context).translate("money_identifier"):
+          _buildDynamicWidget(
+        MoneyIdentifier(
+            key: widget.moneyIdentifierKey,
+            pictureService: widget.pictureService,
+            ttsService: widget.ttsService,
+            sessionToken: widget.sessionToken,
+            context: context),
+      ),
+    };
+    return contentMapping[title] ?? Text('Content for $title goes here.');
+  }
+
+  Widget _buildDynamicWidget(Widget widgetContent) {
+    if (isCameraInitialized) {
+      return SizedBox(height: contentHeight, child: widgetContent);
     } else {
       return const Center(
         child: SizedBox(
@@ -145,31 +159,25 @@ class GridMenuState extends State<GridMenu> {
     }
   }
 
-  Widget _buildMapContent() {
-    return SizedBox(
-        height: 500,
-        child: MapWidget(key: widget.mapKey, ttsService: widget.ttsService));
-  }
-
-  Widget _buildMoneyIdentifierContent() {
-    return SizedBox(
-      height: 550,
-      child: MoneyIdentifier(
-        key: widget.moneyIdentifierKey,
-        pictureService: widget.pictureService,
-        ttsService: widget.ttsService,
-        sessionToken: widget.sessionToken,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> menuOptions = [
-      {'title': describeEnvironmentTitle, 'icon': Icons.description},
-      {'title': gpsMapTitle, 'icon': Icons.map},
-      {'title': scannerTitle, 'icon': Icons.qr_code_scanner},
-      {'title': moneyIdentifierTitle, 'icon': Icons.attach_money},
+      {
+        'title': AppLocalizations.of(context).translate('describe_environment'),
+        'icon': Icons.description
+      },
+      {
+        'title': AppLocalizations.of(context).translate('gps_map'),
+        'icon': Icons.map
+      },
+      {
+        'title': AppLocalizations.of(context).translate('scanner'),
+        'icon': Icons.qr_code_scanner
+      },
+      {
+        'title': AppLocalizations.of(context).translate('money_identifier'),
+        'icon': Icons.attach_money
+      },
     ];
 
     return GridView.count(

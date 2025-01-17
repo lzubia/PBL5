@@ -20,11 +20,29 @@ class DescribeEnvironment extends StatefulWidget {
 }
 
 class DescribeEnvironmentState extends State<DescribeEnvironment> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeAsync();
+  }
+
+  Future<void> _initializeAsync() async {
+    await widget.pictureService.initializeCamera();
+    setState(() {}); // Actualiza la interfaz si es necesario
+  }
+
+  @override
+  void dispose() {
+    widget.pictureService.disposeCamera();
+    super.dispose();
+  }
+
   Future<void> takeAndSendImage() async {
     await widget.pictureService.takePicture(
       endpoint:
           'https://192.168.1.5:1880/describe?session_id=${widget.sessionToken}',
       onLabelsDetected: (labels) {
+        //TODO: Translate labels to the user's language
         widget.ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Description: $labels')),
