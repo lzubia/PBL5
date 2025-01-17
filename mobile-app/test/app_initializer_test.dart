@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as dotenv;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -31,8 +30,6 @@ import 'app_initializer_test.mocks.dart';
   VoiceCommands,
   http.Client,
 ])
-
-class MockDotenv extends Mock implements dotenv.DotEnv {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -42,7 +39,6 @@ void main() {
   late MockSttService mockSttService;
   late MockVoiceCommands mockVoiceCommands;
   late MockClient mockHttpClient;
-  late MockDotenv mockDotenv;
 
   setUp(() {
     mockPictureService = MockPictureService();
@@ -51,7 +47,6 @@ void main() {
     mockSttService = MockSttService();
     mockVoiceCommands = MockVoiceCommands();
     mockHttpClient = MockClient();
-    mockDotenv = MockDotenv();
 
     // Mock the MethodChannel for AudioPlayer
     const MethodChannel('xyz.luan/audioplayers')
@@ -76,11 +71,6 @@ void main() {
       }
       return null;
     });
-
-    // Mock dotenv.load
-    when(mockDotenv.load(fileName: anyNamed('fileName') ?? ''))
-        .thenAnswer((_) async => Future.value());
-    when(mockDotenv.env).thenReturn({});
   });
 
   group('AppInitializer', () {
@@ -94,7 +84,6 @@ void main() {
 
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
-      dotenv.dotenv = mockDotenv; // Inject mock dotenv
       await AppInitializer.initialize();
 
       expect(AppInitializer.pictureService, isA<PictureService>());
