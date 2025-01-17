@@ -78,7 +78,7 @@ void main() {
     });
 
     // Mock dotenv.load
-    when(mockDotenv.load(fileName: anyNamed('fileName')))
+    when(mockDotenv.load(fileName: anyNamed('fileName') ?? ''))
         .thenAnswer((_) async => Future.value());
     when(mockDotenv.env).thenReturn({});
   });
