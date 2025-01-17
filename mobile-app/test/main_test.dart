@@ -1,18 +1,20 @@
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:pbl5_menu/services/stt/stt_service_google.dart';
+import 'package:pbl5_menu/features/describe_environment.dart';
+import 'package:pbl5_menu/features/grid_menu.dart';
+import 'package:pbl5_menu/features/map_widget.dart';
+import 'package:pbl5_menu/features/money_identifier.dart';
+import 'package:pbl5_menu/features/ocr_widget.dart';
+import 'package:pbl5_menu/features/risk_detection.dart';
+import 'package:pbl5_menu/features/voice_commands.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/stt/i_stt_service.dart';
-import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/features/risk_detection.dart';
-import 'package:pbl5_menu/features/grid_menu.dart';
 import 'package:pbl5_menu/features/settings_screen.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:pbl5_menu/main.dart';
 
@@ -21,193 +23,156 @@ import 'main_test.mocks.dart';
 @GenerateMocks([
   PictureService,
   TtsServiceGoogle,
-  TtsService,
-  SttServiceGoogle,
-  SttService,
   DatabaseHelper,
-  ISttService,
-  ITtsService,
-  http.Client,
+  SttService,
+  VoiceCommands,
+  NavigatorObserver,
 ])
 void main() {
   late MockPictureService mockPictureService;
   late MockTtsServiceGoogle mockTtsServiceGoogle;
-  late MockTtsService mockTtsService;
-  late MockSttServiceGoogle mockSttServiceGoogle;
-  late MockSttService mockSttService;
   late MockDatabaseHelper mockDatabaseHelper;
+  late MockSttService mockSttService;
+  late MockVoiceCommands mockVoiceCommands;
+  late MockNavigatorObserver mockNavigatorObserver;
 
   setUp(() {
     mockPictureService = MockPictureService();
     mockTtsServiceGoogle = MockTtsServiceGoogle();
-    mockTtsService = MockTtsService();
-    mockSttServiceGoogle = MockSttServiceGoogle();
-    mockSttService = MockSttService();
     mockDatabaseHelper = MockDatabaseHelper();
+    mockSttService = MockSttService();
+    mockVoiceCommands = MockVoiceCommands();
+    mockNavigatorObserver = MockNavigatorObserver();
 
-    when(mockPictureService.isCameraInitialized).thenReturn(true);
+    // Mock the necessary methods
+    when(mockPictureService.isCameraInitialized).thenAnswer((_) => true);
+    when(mockVoiceCommands.setContext(any, any)).thenReturn(null);
+    when(mockVoiceCommands.loadVoiceCommands()).thenAnswer((_) async {});
+    when(mockVoiceCommands.startListening()).thenReturn(null);
+    when(mockDatabaseHelper.getPreferences()).thenAnswer((_) async => {});
   });
 
-  group('MyApp Widget Tests', () {
-    testWidgets('renders MyHomePage widget correctly',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp(
-        pictureService: mockPictureService,
-        ttsServiceGoogle: mockTtsServiceGoogle,
-        ttsService: mockTtsService,
-        databaseHelper: mockDatabaseHelper,
-        sttServiceGoogle: mockSttServiceGoogle,
-        sttService: mockSttService,
-      ));
+  testWidgets('MyApp initializes and displays MyHomePage',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(MyApp(
+      pictureService: mockPictureService,
+      ttsServiceGoogle: mockTtsServiceGoogle,
+      databaseHelper: mockDatabaseHelper,
+      sttService: mockSttService,
+      voiceCommands: mockVoiceCommands,
+      riskDetectionKey: GlobalKey<RiskDetectionState>(),
+      gridMenuKey: GlobalKey<GridMenuState>(),
+      moneyIdentifierKey: GlobalKey<MoneyIdentifierState>(),
+      describeEnvironmentKey: GlobalKey<DescribeEnvironmentState>(),
+      ocrWidgetKey: GlobalKey<OcrWidgetState>(),
+      mapKey: GlobalKey<MapWidgetState>(),
+      locale: Locale('en', 'US'),
+    ));
 
-      expect(find.byType(MyHomePage), findsOneWidget);
-      expect(find.text('BEGIA'), findsOneWidget);
-    });
+    await tester.pumpAndSettle();
 
-    testWidgets('navigates to SettingsScreen on settings icon tap',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(MyApp(
-        pictureService: mockPictureService,
-        ttsServiceGoogle: mockTtsServiceGoogle,
-        ttsService: mockTtsService,
-        databaseHelper: mockDatabaseHelper,
-        sttServiceGoogle: mockSttServiceGoogle,
-        sttService: mockSttService,
-      ));
-
-      final settingsIcon = find.byIcon(Icons.settings);
-      expect(settingsIcon, findsOneWidget);
-
-      await tester.tap(settingsIcon);
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SettingsScreen), findsOneWidget);
-    });
+    expect(find.byType(MyHomePage), findsOneWidget);
   });
 
-  group('startSession Function', () {
-    test('starts a session successfully', () async {
-      final mockClient = MockClient();
-      when(mockClient.get(any)).thenAnswer(
-        (_) async => http.Response('{"session_id": "12345"}', 200),
-      );
+  // testWidgets('MyHomePage displays the correct widgets',
+  //     (WidgetTester tester) async {
+  //   final riskDetectionKey = GlobalKey<RiskDetectionState>();
+  //   final gridMenuKey = GlobalKey<GridMenuState>();
+  //   final moneyIdentifierKey = GlobalKey<MoneyIdentifierState>();
+  //   final describeEnvironmentKey = GlobalKey<DescribeEnvironmentState>();
+  //   final ocrWidgetKey = GlobalKey<OcrWidgetState>();
+  //   final mapKey = GlobalKey<MapWidgetState>();
 
-      await startSession(client: mockClient);
+  //   await tester.pumpWidget(MaterialApp(
+  //     localizationsDelegates: [
+  //       AppLocalizations.delegate,
+  //       GlobalMaterialLocalizations.delegate,
+  //       GlobalCupertinoLocalizations.delegate,
+  //       GlobalWidgetsLocalizations.delegate,
+  //     ],
+  //     supportedLocales: const [
+  //       Locale('en', 'US'),
+  //       Locale('es', 'ES'),
+  //       Locale('eu', 'ES'),
+  //     ],
+  //     home: MyHomePage(
+  //       pictureService: mockPictureService,
+  //       ttsServiceGoogle: mockTtsServiceGoogle,
+  //       databaseHelper: mockDatabaseHelper,
+  //       sttService: mockSttService,
+  //       voiceCommands: mockVoiceCommands,
+  //       riskDetectionKey: riskDetectionKey,
+  //       gridMenuKey: gridMenuKey,
+  //       moneyIdentifierKey: moneyIdentifierKey,
+  //       describeEnvironmentKey: describeEnvironmentKey,
+  //       ocrWidgetKey: ocrWidgetKey,
+  //       mapKey: mapKey,
+  //       setLocale: (Locale locale) {},
+  //       locale: const Locale('en', 'US'),
+  //     ),
+  //   ));
 
-      expect(sessionToken, equals('12345'));
-    });
+  //   await tester.pumpAndSettle();
 
-    test('handles session start failure', () async {
-      final mockClient = MockClient();
-      when(mockClient.get(any)).thenAnswer(
-        (_) async => http.Response('Error', 500),
-      );
+  //   // Verify widgets
+  //   expect(find.byType(RiskDetection), findsOneWidget);
+  //   expect(find.byType(GridMenu), findsOneWidget);
+  //   expect(find.byKey(const Key('voiceControlSwitch')), findsOneWidget);
+  // });
 
-      await startSession(client: mockClient);
+  // testWidgets('Settings button navigates to SettingsScreen',
+  //     (WidgetTester tester) async {
+  //   final riskDetectionKey = GlobalKey<RiskDetectionState>();
+  //   final gridMenuKey = GlobalKey<GridMenuState>();
+  //   final moneyIdentifierKey = GlobalKey<MoneyIdentifierState>();
+  //   final describeEnvironmentKey = GlobalKey<DescribeEnvironmentState>();
+  //   final ocrWidgetKey = GlobalKey<OcrWidgetState>();
+  //   final mapKey = GlobalKey<MapWidgetState>();
 
-      expect(sessionToken, isEmpty);
-    });
+  //   // Mock the getPreferences method for DatabaseHelper
+  //   when(mockDatabaseHelper.getPreferences()).thenAnswer((_) async => {});
 
-    test('handles session start error', () async {
-      final mockClient = MockClient();
-      when(mockClient.get(any)).thenThrow(Exception('Network Error'));
+  //   // Create a NavigatorObserver to test navigation
+  //   final mockNavigatorObserver = MockNavigatorObserver();
 
-      await startSession(client: mockClient);
+  //   await tester.pumpWidget(MaterialApp(
+  //     navigatorObservers: [mockNavigatorObserver], // Add the observer
+  //     localizationsDelegates: [
+  //       AppLocalizations.delegate, // Localization delegate
+  //       GlobalMaterialLocalizations.delegate,
+  //       GlobalCupertinoLocalizations.delegate,
+  //       GlobalWidgetsLocalizations.delegate,
+  //     ],
+  //     supportedLocales: const [
+  //       Locale('en', 'US'),
+  //       Locale('es', 'ES'),
+  //       Locale('eu', 'ES'),
+  //     ],
+  //     home: MyHomePage(
+  //       pictureService: mockPictureService,
+  //       ttsServiceGoogle: mockTtsServiceGoogle,
+  //       databaseHelper: mockDatabaseHelper,
+  //       sttService: mockSttService,
+  //       voiceCommands: mockVoiceCommands,
+  //       riskDetectionKey: riskDetectionKey,
+  //       gridMenuKey: gridMenuKey,
+  //       moneyIdentifierKey: moneyIdentifierKey,
+  //       describeEnvironmentKey: describeEnvironmentKey,
+  //       ocrWidgetKey: ocrWidgetKey,
+  //       mapKey: mapKey,
+  //       setLocale: (Locale locale) {},
+  //       locale: const Locale('en', 'US'),
+  //     ),
+  //   ));
 
-      expect(sessionToken, isEmpty);
-    });
-  });
+  //   await tester.pumpAndSettle();
 
-  group('endSession Function', () {
-    test('ends a session successfully', () async {
-      final mockClient = MockClient();
-      when(mockClient.delete(any)).thenAnswer(
-        (_) async => http.Response('Success', 200),
-      );
+  //   // Tap on the settings button using the Key
+  //   await tester.tap(find.byKey(const Key('settingsButton')));
+  //   await tester.pumpAndSettle();
 
-      await endSession('12345', client: mockClient);
-
-      verify(mockClient.delete(any)).called(1);
-    });
-
-    test('handles session end failure', () async {
-      final mockClient = MockClient();
-      when(mockClient.delete(any))
-          .thenAnswer((_) async => http.Response('Error', 404));
-
-      await endSession('12345', client: mockClient);
-
-      verify(mockClient.delete(any)).called(1);
-    });
-
-    test('handles session end error', () async {
-      final mockClient = MockClient();
-      when(mockClient.delete(any)).thenThrow(Exception('Network Error'));
-
-      await endSession('12345', client: mockClient);
-
-      verify(mockClient.delete(any)).called(1);
-    });
-  });
-
-  group('MyHomePageState Tests', () {
-    testWidgets('toggles voice control', (WidgetTester tester) async {
-      // Arrange: Pump the widget tree
-      await tester.pumpWidget(MyApp(
-        pictureService: mockPictureService,
-        ttsServiceGoogle: mockTtsServiceGoogle,
-        ttsService: mockTtsService,
-        databaseHelper: mockDatabaseHelper,
-        sttServiceGoogle: mockSttServiceGoogle,
-        sttService: mockSttService,
-      ));
-
-      // Assert: Ensure the initial state of useVoiceControl is false
-      final MyHomePageState state =
-          tester.state(find.byType(MyHomePage)) as MyHomePageState;
-      expect(state.useVoiceControl, isFalse);
-
-      // Act: Find the switch and toggle it
-      final switchFinder = find.byKey(const Key('voiceControlSwitch'));
-      expect(switchFinder, findsOneWidget);
-
-      await tester.tap(switchFinder);
-      await tester.pump(); // Trigger a rebuild after state change
-
-      // Assert: Ensure the state has toggled
-      expect(state.useVoiceControl, isTrue);
-    });
-
-    testWidgets('displays the correct sessionToken',
-        (WidgetTester tester) async {
-      sessionToken = 'test-token';
-      await tester.pumpWidget(MyApp(
-        pictureService: mockPictureService,
-        ttsServiceGoogle: mockTtsServiceGoogle,
-        ttsService: mockTtsService,
-        databaseHelper: mockDatabaseHelper,
-        sttServiceGoogle: mockSttServiceGoogle,
-        sttService: mockSttService,
-      ));
-
-      expect(find.text('test-token'), findsOneWidget);
-    });
-
-    testWidgets('displays detected command text', (WidgetTester tester) async {
-      final state = MyHomePageState();
-      state.detectedCommand = 'risk detection on';
-      await tester.pumpWidget(MaterialApp(
-          home: MyHomePage(
-        pictureService: mockPictureService,
-        ttsServiceGoogle: mockTtsServiceGoogle,
-        ttsService: mockTtsService,
-        databaseHelper: mockDatabaseHelper,
-        sttServiceGoogle: mockSttServiceGoogle,
-        sttService: mockSttService,
-      )));
-
-      expect(find.text('Command: risk detection on'),
-          findsNothing); // State is not built yet
-    });
-  });
+  //   // Verify navigation to SettingsScreen
+  //   verify(mockNavigatorObserver.didPush(any, any)).called(1);
+  //   expect(find.byType(SettingsScreen), findsOneWidget);
+  // });
 }

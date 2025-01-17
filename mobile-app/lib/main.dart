@@ -218,6 +218,7 @@ class MyHomePageState extends State<MyHomePage> {
         title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
         actions: [
           IconButton(
+            key: const Key('settingsButton'),
             icon: const Icon(Icons.settings, size: 50),
             onPressed: () {
               Navigator.push(
