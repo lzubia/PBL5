@@ -183,7 +183,7 @@ void main() {
   group('captureAndProcessImage', () {
     test('should capture and process image correctly', () async {
       final Uint8List testBytes = Uint8List.fromList([0, 1, 2, 3]);
-      final mockImage = img.Image(1024, 768);
+      final mockImage = img.Image(width: 1024, height: 768);
 
       // Stub file behavior
       when(mockFile.readAsBytesSync()).thenReturn(testBytes);
