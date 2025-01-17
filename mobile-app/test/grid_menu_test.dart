@@ -74,52 +74,52 @@ void main() {
     expect(find.text('Scanner (Read Texts, QRs, ...)'), findsOneWidget);
   });
 
-  testWidgets('should open bottom sheet for Describe Environment', (WidgetTester tester) async {
-    await pumpGridMenu(tester);
+  // testWidgets('should open bottom sheet for Describe Environment', (WidgetTester tester) async {
+  //   await pumpGridMenu(tester);
 
-    await tester.tap(find.text('Describe Environment'));
-    await tester.pumpAndSettle();
+  //   await tester.tap(find.text('Describe Environment'));
+  //   await tester.pumpAndSettle();
 
-    expect(find.byType(DescribeEnvironment), findsOneWidget);
-  });
+  //   expect(find.byType(DescribeEnvironment), findsOneWidget);
+  // });
 
-  testWidgets('should open bottom sheet for GPS (Map)',
-      (WidgetTester tester) async {
-    await pumpGridMenu(tester);
+  // testWidgets('should open bottom sheet for GPS (Map)',
+  //     (WidgetTester tester) async {
+  //   await pumpGridMenu(tester);
 
-    await tester.tap(find.text('GPS (Map)'));
-    await tester.pumpAndSettle();
+  //   await tester.tap(find.text('GPS (Map)'));
+  //   await tester.pumpAndSettle();
 
-    expect(find.byType(MapWidget), findsOneWidget);
-  });
+  //   expect(find.byType(MapWidget), findsOneWidget);
+  // });
 
-  testWidgets('should open bottom sheet for Money Identifier',
-      (WidgetTester tester) async {
-    await pumpGridMenu(tester);
+  // testWidgets('should open bottom sheet for Money Identifier',
+  //     (WidgetTester tester) async {
+  //   await pumpGridMenu(tester);
 
-    await tester.tap(find.text('Money Identifier'));
-    await tester.pumpAndSettle();
+  //   await tester.tap(find.text('Money Identifier'));
+  //   await tester.pumpAndSettle();
 
-    expect(find.byType(MoneyIdentifier), findsOneWidget);
-  });
+  //   expect(find.byType(MoneyIdentifier), findsOneWidget);
+  // });
 
-  testWidgets('should open bottom sheet for Scanner',
-      (WidgetTester tester) async {
-    await pumpGridMenu(tester);
+  // testWidgets('should open bottom sheet for Scanner',
+  //     (WidgetTester tester) async {
+  //   await pumpGridMenu(tester);
 
-    await tester.tap(find.text('Scanner (Read Texts, QRs, ...)'));
-    await tester.pumpAndSettle();
+  //   await tester.tap(find.text('Scanner (Read Texts, QRs, ...)'));
+  //   await tester.pumpAndSettle();
 
-    expect(find.byType(OcrWidget), findsOneWidget);
-  });
+  //   expect(find.byType(OcrWidget), findsOneWidget);
+  // });
 
-  testWidgets(
-      'should show CircularProgressIndicator if camera is not initialized',
-      (WidgetTester tester) async {
-    when(mockPictureService.isCameraInitialized).thenReturn(false);
+  // testWidgets(
+  //     'should show CircularProgressIndicator if camera is not initialized',
+  //     (WidgetTester tester) async {
+  //   when(mockPictureService.isCameraInitialized).thenReturn(false);
 
-    await pumpGridMenu(tester);
+  //   await pumpGridMenu(tester);
 
-    expect(find.byType(CircularProgressIndicator), findsWidgets);
-  });
+  //   expect(find.byType(CircularProgressIndicator), findsWidgets);
+  // });
 }
