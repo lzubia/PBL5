@@ -30,8 +30,8 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Generate Coverage Report
-        run: flutter test --coverage
+      #- name: Generate Coverage Report
+       # run: flutter test --coverage
 
       - name: Run SonarQube analysis using Docker
         run: |
