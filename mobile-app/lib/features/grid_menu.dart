@@ -95,7 +95,11 @@ class GridMenuState extends State<GridMenu> {
             ),
           );
         },
-      );
+      ).whenComplete(() {
+        setState(() {
+          currentWidgetTitle = null;
+        });
+      });
     });
   }
 

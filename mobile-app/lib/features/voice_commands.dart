@@ -97,10 +97,6 @@ class VoiceCommands {
     await sttService.startListening(_handleSpeechResult);
   }
 
-  void stopListening() async {
-    await sttService.stopListening();
-  }
-
   void _handleSpeechResult(String recognizedText) {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
@@ -202,9 +198,8 @@ class VoiceCommands {
               break;
           }
 
-          if (matched) stopListening();
-          startListening();
-          break; // Detenemos el bucle si encontramos un comando válido
+          if (matched)
+            break; // Detenemos el bucle si encontramos un comando válido
         }
       }
       if (matched)

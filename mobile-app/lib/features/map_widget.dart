@@ -38,11 +38,6 @@ class MapWidgetState extends State<MapWidget> {
   BitmapDescriptor currentLocationIcon = BitmapDescriptor.defaultMarker;
 
   MapWidgetState(this.context);
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getCurrentLocation();
-  // }
 
   @override
   void initState() {
