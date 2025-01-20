@@ -5,22 +5,24 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i13;
 import 'dart:io' as _i5;
+import 'dart:ui' as _i15;
 
 import 'package:audioplayers/audioplayers.dart' as _i12;
 import 'package:camera/camera.dart' as _i2;
-import 'package:flutter/foundation.dart' as _i9;
 import 'package:flutter/material.dart' as _i6;
+import 'package:flutter/src/foundation/assertions.dart' as _i16;
+import 'package:flutter/src/foundation/diagnostics.dart' as _i8;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i14;
-import 'package:pbl5_menu/features/describe_environment.dart' as _i8;
-import 'package:pbl5_menu/features/map_widget.dart' as _i15;
+import 'package:pbl5_menu/features/describe_environment.dart' as _i7;
+import 'package:pbl5_menu/features/map_widget.dart' as _i17;
 import 'package:pbl5_menu/features/money_identifier.dart' as _i11;
 import 'package:pbl5_menu/features/ocr_widget.dart' as _i10;
 import 'package:pbl5_menu/services/picture_service.dart' as _i4;
-import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i7;
-import 'package:pbl5_menu/services/stt/stt_service.dart' as _i17;
-import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i16;
+import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i9;
+import 'package:pbl5_menu/services/stt/stt_service.dart' as _i19;
+import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i18;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -112,30 +114,9 @@ class _FakeWidget_6 extends _i1.SmartFake implements _i6.Widget {
       super.toString();
 }
 
-class _FakePictureService_7 extends _i1.SmartFake
-    implements _i4.PictureService {
-  _FakePictureService_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeITtsService_8 extends _i1.SmartFake implements _i7.ITtsService {
-  _FakeITtsService_8(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeDescribeEnvironmentState_9 extends _i1.SmartFake
-    implements _i8.DescribeEnvironmentState {
-  _FakeDescribeEnvironmentState_9(
+class _FakeDescribeEnvironmentState_7 extends _i1.SmartFake
+    implements _i7.DescribeEnvironmentState {
+  _FakeDescribeEnvironmentState_7(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -148,9 +129,9 @@ class _FakeDescribeEnvironmentState_9 extends _i1.SmartFake
       super.toString();
 }
 
-class _FakeStatefulElement_10 extends _i1.SmartFake
+class _FakeStatefulElement_8 extends _i1.SmartFake
     implements _i6.StatefulElement {
-  _FakeStatefulElement_10(
+  _FakeStatefulElement_8(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -163,9 +144,9 @@ class _FakeStatefulElement_10 extends _i1.SmartFake
       super.toString();
 }
 
-class _FakeDiagnosticsNode_11 extends _i1.SmartFake
+class _FakeDiagnosticsNode_9 extends _i1.SmartFake
     implements _i6.DiagnosticsNode {
-  _FakeDiagnosticsNode_11(
+  _FakeDiagnosticsNode_9(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -175,14 +156,14 @@ class _FakeDiagnosticsNode_11 extends _i1.SmartFake
 
   @override
   String toString({
-    _i9.TextTreeConfiguration? parentConfiguration,
+    _i8.TextTreeConfiguration? parentConfiguration,
     _i6.DiagnosticLevel? minLevel = _i6.DiagnosticLevel.info,
   }) =>
       super.toString();
 }
 
-class _FakeBuildContext_12 extends _i1.SmartFake implements _i6.BuildContext {
-  _FakeBuildContext_12(
+class _FakeITtsService_10 extends _i1.SmartFake implements _i9.ITtsService {
+  _FakeITtsService_10(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -191,9 +172,19 @@ class _FakeBuildContext_12 extends _i1.SmartFake implements _i6.BuildContext {
         );
 }
 
-class _FakeState_13<T extends _i6.StatefulWidget> extends _i1.SmartFake
+class _FakeBuildContext_11 extends _i1.SmartFake implements _i6.BuildContext {
+  _FakeBuildContext_11(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeState_12<T extends _i6.StatefulWidget> extends _i1.SmartFake
     implements _i6.State<T> {
-  _FakeState_13(
+  _FakeState_12(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -206,9 +197,9 @@ class _FakeState_13<T extends _i6.StatefulWidget> extends _i1.SmartFake
       super.toString();
 }
 
-class _FakeOcrWidgetState_14 extends _i1.SmartFake
+class _FakeOcrWidgetState_13 extends _i1.SmartFake
     implements _i10.OcrWidgetState {
-  _FakeOcrWidgetState_14(
+  _FakeOcrWidgetState_13(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -221,9 +212,9 @@ class _FakeOcrWidgetState_14 extends _i1.SmartFake
       super.toString();
 }
 
-class _FakeMoneyIdentifierState_15 extends _i1.SmartFake
+class _FakeMoneyIdentifierState_14 extends _i1.SmartFake
     implements _i11.MoneyIdentifierState {
-  _FakeMoneyIdentifierState_15(
+  _FakeMoneyIdentifierState_14(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -236,8 +227,8 @@ class _FakeMoneyIdentifierState_15 extends _i1.SmartFake
       super.toString();
 }
 
-class _FakeAudioPlayer_16 extends _i1.SmartFake implements _i12.AudioPlayer {
-  _FakeAudioPlayer_16(
+class _FakeAudioPlayer_15 extends _i1.SmartFake implements _i12.AudioPlayer {
+  _FakeAudioPlayer_15(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -387,6 +378,12 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       );
 
   @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+      ) as bool);
+
+  @override
   _i13.Future<void> setupCamera() => (super.noSuchMethod(
         Invocation.method(
           #setupCamera,
@@ -495,58 +492,67 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
         ),
         returnValue: <String>[],
       ) as List<String>);
+
+  @override
+  void addListener(_i15.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i15.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }
 
 /// A class which mocks [DescribeEnvironment].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockDescribeEnvironment extends _i1.Mock
-    implements _i8.DescribeEnvironment {
+    implements _i7.DescribeEnvironment {
   MockDescribeEnvironment() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.PictureService get pictureService => (super.noSuchMethod(
-        Invocation.getter(#pictureService),
-        returnValue: _FakePictureService_7(
-          this,
-          Invocation.getter(#pictureService),
-        ),
-      ) as _i4.PictureService);
-
-  @override
-  _i7.ITtsService get ttsService => (super.noSuchMethod(
-        Invocation.getter(#ttsService),
-        returnValue: _FakeITtsService_8(
-          this,
-          Invocation.getter(#ttsService),
-        ),
-      ) as _i7.ITtsService);
-
-  @override
-  String get sessionToken => (super.noSuchMethod(
-        Invocation.getter(#sessionToken),
-        returnValue: _i14.dummyValue<String>(
-          this,
-          Invocation.getter(#sessionToken),
-        ),
-      ) as String);
-
-  @override
-  _i8.DescribeEnvironmentState createState() => (super.noSuchMethod(
+  _i7.DescribeEnvironmentState createState() => (super.noSuchMethod(
         Invocation.method(
           #createState,
           [],
         ),
-        returnValue: _FakeDescribeEnvironmentState_9(
+        returnValue: _FakeDescribeEnvironmentState_7(
           this,
           Invocation.method(
             #createState,
             [],
           ),
         ),
-      ) as _i8.DescribeEnvironmentState);
+      ) as _i7.DescribeEnvironmentState);
 
   @override
   _i6.StatefulElement createElement() => (super.noSuchMethod(
@@ -554,7 +560,7 @@ class MockDescribeEnvironment extends _i1.Mock
           #createElement,
           [],
         ),
-        returnValue: _FakeStatefulElement_10(
+        returnValue: _FakeStatefulElement_8(
           this,
           Invocation.method(
             #createElement,
@@ -579,7 +585,7 @@ class MockDescribeEnvironment extends _i1.Mock
       ) as String);
 
   @override
-  void debugFillProperties(_i9.DiagnosticPropertiesBuilder? properties) =>
+  void debugFillProperties(_i16.DiagnosticPropertiesBuilder? properties) =>
       super.noSuchMethod(
         Invocation.method(
           #debugFillProperties,
@@ -648,7 +654,7 @@ class MockDescribeEnvironment extends _i1.Mock
   @override
   _i6.DiagnosticsNode toDiagnosticsNode({
     String? name,
-    _i9.DiagnosticsTreeStyle? style,
+    _i16.DiagnosticsTreeStyle? style,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -659,7 +665,7 @@ class MockDescribeEnvironment extends _i1.Mock
             #style: style,
           },
         ),
-        returnValue: _FakeDiagnosticsNode_11(
+        returnValue: _FakeDiagnosticsNode_9(
           this,
           Invocation.method(
             #toDiagnosticsNode,
@@ -689,24 +695,24 @@ class MockDescribeEnvironment extends _i1.Mock
 /// A class which mocks [MapWidget].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
+class MockMapWidget extends _i1.Mock implements _i17.MapWidget {
   MockMapWidget() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i7.ITtsService get ttsService => (super.noSuchMethod(
+  _i9.ITtsService get ttsService => (super.noSuchMethod(
         Invocation.getter(#ttsService),
-        returnValue: _FakeITtsService_8(
+        returnValue: _FakeITtsService_10(
           this,
           Invocation.getter(#ttsService),
         ),
-      ) as _i7.ITtsService);
+      ) as _i9.ITtsService);
 
   @override
   _i6.BuildContext get context => (super.noSuchMethod(
         Invocation.getter(#context),
-        returnValue: _FakeBuildContext_12(
+        returnValue: _FakeBuildContext_11(
           this,
           Invocation.getter(#context),
         ),
@@ -722,19 +728,19 @@ class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
       );
 
   @override
-  _i6.State<_i15.MapWidget> createState() => (super.noSuchMethod(
+  _i6.State<_i17.MapWidget> createState() => (super.noSuchMethod(
         Invocation.method(
           #createState,
           [],
         ),
-        returnValue: _FakeState_13<_i15.MapWidget>(
+        returnValue: _FakeState_12<_i17.MapWidget>(
           this,
           Invocation.method(
             #createState,
             [],
           ),
         ),
-      ) as _i6.State<_i15.MapWidget>);
+      ) as _i6.State<_i17.MapWidget>);
 
   @override
   _i6.StatefulElement createElement() => (super.noSuchMethod(
@@ -742,7 +748,7 @@ class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
           #createElement,
           [],
         ),
-        returnValue: _FakeStatefulElement_10(
+        returnValue: _FakeStatefulElement_8(
           this,
           Invocation.method(
             #createElement,
@@ -767,7 +773,7 @@ class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
       ) as String);
 
   @override
-  void debugFillProperties(_i9.DiagnosticPropertiesBuilder? properties) =>
+  void debugFillProperties(_i16.DiagnosticPropertiesBuilder? properties) =>
       super.noSuchMethod(
         Invocation.method(
           #debugFillProperties,
@@ -836,7 +842,7 @@ class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
   @override
   _i6.DiagnosticsNode toDiagnosticsNode({
     String? name,
-    _i9.DiagnosticsTreeStyle? style,
+    _i16.DiagnosticsTreeStyle? style,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -847,7 +853,7 @@ class MockMapWidget extends _i1.Mock implements _i15.MapWidget {
             #style: style,
           },
         ),
-        returnValue: _FakeDiagnosticsNode_11(
+        returnValue: _FakeDiagnosticsNode_9(
           this,
           Invocation.method(
             #toDiagnosticsNode,
@@ -883,39 +889,12 @@ class MockOcrWidget extends _i1.Mock implements _i10.OcrWidget {
   }
 
   @override
-  _i4.PictureService get pictureService => (super.noSuchMethod(
-        Invocation.getter(#pictureService),
-        returnValue: _FakePictureService_7(
-          this,
-          Invocation.getter(#pictureService),
-        ),
-      ) as _i4.PictureService);
-
-  @override
-  _i7.ITtsService get ttsService => (super.noSuchMethod(
-        Invocation.getter(#ttsService),
-        returnValue: _FakeITtsService_8(
-          this,
-          Invocation.getter(#ttsService),
-        ),
-      ) as _i7.ITtsService);
-
-  @override
-  String get sessionToken => (super.noSuchMethod(
-        Invocation.getter(#sessionToken),
-        returnValue: _i14.dummyValue<String>(
-          this,
-          Invocation.getter(#sessionToken),
-        ),
-      ) as String);
-
-  @override
   _i10.OcrWidgetState createState() => (super.noSuchMethod(
         Invocation.method(
           #createState,
           [],
         ),
-        returnValue: _FakeOcrWidgetState_14(
+        returnValue: _FakeOcrWidgetState_13(
           this,
           Invocation.method(
             #createState,
@@ -930,7 +909,7 @@ class MockOcrWidget extends _i1.Mock implements _i10.OcrWidget {
           #createElement,
           [],
         ),
-        returnValue: _FakeStatefulElement_10(
+        returnValue: _FakeStatefulElement_8(
           this,
           Invocation.method(
             #createElement,
@@ -955,7 +934,7 @@ class MockOcrWidget extends _i1.Mock implements _i10.OcrWidget {
       ) as String);
 
   @override
-  void debugFillProperties(_i9.DiagnosticPropertiesBuilder? properties) =>
+  void debugFillProperties(_i16.DiagnosticPropertiesBuilder? properties) =>
       super.noSuchMethod(
         Invocation.method(
           #debugFillProperties,
@@ -1024,7 +1003,7 @@ class MockOcrWidget extends _i1.Mock implements _i10.OcrWidget {
   @override
   _i6.DiagnosticsNode toDiagnosticsNode({
     String? name,
-    _i9.DiagnosticsTreeStyle? style,
+    _i16.DiagnosticsTreeStyle? style,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1035,7 +1014,7 @@ class MockOcrWidget extends _i1.Mock implements _i10.OcrWidget {
             #style: style,
           },
         ),
-        returnValue: _FakeDiagnosticsNode_11(
+        returnValue: _FakeDiagnosticsNode_9(
           this,
           Invocation.method(
             #toDiagnosticsNode,
@@ -1071,57 +1050,12 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
   }
 
   @override
-  _i4.PictureService get pictureService => (super.noSuchMethod(
-        Invocation.getter(#pictureService),
-        returnValue: _FakePictureService_7(
-          this,
-          Invocation.getter(#pictureService),
-        ),
-      ) as _i4.PictureService);
-
-  @override
-  _i7.ITtsService get ttsService => (super.noSuchMethod(
-        Invocation.getter(#ttsService),
-        returnValue: _FakeITtsService_8(
-          this,
-          Invocation.getter(#ttsService),
-        ),
-      ) as _i7.ITtsService);
-
-  @override
-  String get sessionToken => (super.noSuchMethod(
-        Invocation.getter(#sessionToken),
-        returnValue: _i14.dummyValue<String>(
-          this,
-          Invocation.getter(#sessionToken),
-        ),
-      ) as String);
-
-  @override
-  _i6.BuildContext get context => (super.noSuchMethod(
-        Invocation.getter(#context),
-        returnValue: _FakeBuildContext_12(
-          this,
-          Invocation.getter(#context),
-        ),
-      ) as _i6.BuildContext);
-
-  @override
-  set context(_i6.BuildContext? _context) => super.noSuchMethod(
-        Invocation.setter(
-          #context,
-          _context,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   _i11.MoneyIdentifierState createState() => (super.noSuchMethod(
         Invocation.method(
           #createState,
           [],
         ),
-        returnValue: _FakeMoneyIdentifierState_15(
+        returnValue: _FakeMoneyIdentifierState_14(
           this,
           Invocation.method(
             #createState,
@@ -1136,7 +1070,7 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
           #createElement,
           [],
         ),
-        returnValue: _FakeStatefulElement_10(
+        returnValue: _FakeStatefulElement_8(
           this,
           Invocation.method(
             #createElement,
@@ -1161,7 +1095,7 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
       ) as String);
 
   @override
-  void debugFillProperties(_i9.DiagnosticPropertiesBuilder? properties) =>
+  void debugFillProperties(_i16.DiagnosticPropertiesBuilder? properties) =>
       super.noSuchMethod(
         Invocation.method(
           #debugFillProperties,
@@ -1230,7 +1164,7 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
   @override
   _i6.DiagnosticsNode toDiagnosticsNode({
     String? name,
-    _i9.DiagnosticsTreeStyle? style,
+    _i16.DiagnosticsTreeStyle? style,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1241,7 +1175,7 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
             #style: style,
           },
         ),
-        returnValue: _FakeDiagnosticsNode_11(
+        returnValue: _FakeDiagnosticsNode_9(
           this,
           Invocation.method(
             #toDiagnosticsNode,
@@ -1271,7 +1205,7 @@ class MockMoneyIdentifier extends _i1.Mock implements _i11.MoneyIdentifier {
 /// A class which mocks [TtsServiceGoogle].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
+class MockTtsServiceGoogle extends _i1.Mock implements _i18.TtsServiceGoogle {
   MockTtsServiceGoogle() {
     _i1.throwOnMissingStub(this);
   }
@@ -1279,7 +1213,7 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
   @override
   _i12.AudioPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
-        returnValue: _FakeAudioPlayer_16(
+        returnValue: _FakeAudioPlayer_15(
           this,
           Invocation.getter(#audioPlayer),
         ),
@@ -1346,13 +1280,14 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
       );
 
   @override
-  void initializeTts() => super.noSuchMethod(
+  _i13.Future<void> initializeTts() => (super.noSuchMethod(
         Invocation.method(
           #initializeTts,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   _i13.Future<void> updateLanguage(
@@ -1397,7 +1332,7 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
 /// A class which mocks [SttService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSttService extends _i1.Mock implements _i17.SttService {
+class MockSttService extends _i1.Mock implements _i19.SttService {
   MockSttService() {
     _i1.throwOnMissingStub(this);
   }

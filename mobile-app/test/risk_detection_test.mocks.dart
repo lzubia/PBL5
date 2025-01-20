@@ -5,6 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
 import 'dart:io' as _i5;
+import 'dart:ui' as _i9;
 
 import 'package:camera/camera.dart' as _i2;
 import 'package:flutter/material.dart' as _i6;
@@ -12,8 +13,7 @@ import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
 import 'package:pbl5_menu/services/picture_service.dart' as _i4;
-import 'package:pbl5_menu/services/stt/i_stt_service.dart' as _i10;
-import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i9;
+import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -246,6 +246,12 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       );
 
   @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+      ) as bool);
+
+  @override
   _i7.Future<void> setupCamera() => (super.noSuchMethod(
         Invocation.method(
           #setupCamera,
@@ -354,12 +360,48 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
         ),
         returnValue: <String>[],
       ) as List<String>);
+
+  @override
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }
 
 /// A class which mocks [ITtsService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockITtsService extends _i1.Mock implements _i9.ITtsService {
+class MockITtsService extends _i1.Mock implements _i10.ITtsService {
   MockITtsService() {
     _i1.throwOnMissingStub(this);
   }
@@ -411,43 +453,4 @@ class MockITtsService extends _i1.Mock implements _i9.ITtsService {
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
-}
-
-/// A class which mocks [ISttService].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockISttService extends _i1.Mock implements _i10.ISttService {
-  MockISttService() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i7.Future<void> initializeStt() => (super.noSuchMethod(
-        Invocation.method(
-          #initializeStt,
-          [],
-        ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
-
-  @override
-  _i7.Future<void> startListening(dynamic Function(String)? onResult) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #startListening,
-          [onResult],
-        ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
-
-  @override
-  void stopListening() => super.noSuchMethod(
-        Invocation.method(
-          #stopListening,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
 }
