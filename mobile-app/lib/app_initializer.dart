@@ -16,7 +16,7 @@ import '../features/risk_detection.dart';
 import '../features/grid_menu.dart';
 import '../features/voice_commands.dart';
 
-class AppInitializer extends ChangeNotifier {
+class AppInitializer {
   // Services and dependencies
   late DatabaseHelper databaseHelper;
   late TtsServiceGoogle ttsServiceGoogle;
@@ -33,15 +33,15 @@ class AppInitializer extends ChangeNotifier {
   Locale locale = const Locale('en', 'US');
 
   // Global keys
-  final GlobalKey<RiskDetectionState> riskDetectionKey =
-      GlobalKey<RiskDetectionState>();
-  final GlobalKey<GridMenuState> gridMenuKey = GlobalKey<GridMenuState>();
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey =
-      GlobalKey<MoneyIdentifierState>();
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey =
-      GlobalKey<DescribeEnvironmentState>();
-  final GlobalKey<OcrWidgetState> ocrWidgetKey = GlobalKey<OcrWidgetState>();
-  final GlobalKey<MapWidgetState> mapKey = GlobalKey<MapWidgetState>();
+  // final GlobalKey<RiskDetectionState> riskDetectionKey =
+  //     GlobalKey<RiskDetectionState>();
+  // final GlobalKey<GridMenuState> gridMenuKey = GlobalKey<GridMenuState>();
+  // final GlobalKey<MoneyIdentifierState> moneyIdentifierKey =
+  //     GlobalKey<MoneyIdentifierState>();
+  // final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey =
+  //     GlobalKey<DescribeEnvironmentState>();
+  // final GlobalKey<OcrWidgetState> ocrWidgetKey = GlobalKey<OcrWidgetState>();
+  // final GlobalKey<MapWidgetState> mapKey = GlobalKey<MapWidgetState>();
 
   static const MethodChannel platform =
       MethodChannel('com.example.pbl5_menu/endSession');
@@ -73,14 +73,11 @@ class AppInitializer extends ChangeNotifier {
       // Initialize TTS service with the database helper
       ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
 
-      // Initialize other services
-      databaseHelper = DatabaseHelper();
       sttService = SttService();
 
       // Initialize dependencies
       await pictureService.setupCamera(); // Use the shared PictureService
-      await pictureService
-          .initializeCamera(); // Notify listeners on state change
+      await pictureService.initializeCamera(); // Notify listeners on state change
       ttsServiceGoogle.initializeTts();
       await sttService.initializeStt();
 

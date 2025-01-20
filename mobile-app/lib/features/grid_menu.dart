@@ -40,16 +40,16 @@ class GridMenuState extends State<GridMenu> {
     });
 
     if (!ModalRoute.of(context)!.isFirst &&
-        (widgetToClose != 'GPS (Map)' ||
-            (widgetToClose == 'GPS (Map)' &&
-                context
-                        .read<AppInitializer>()
-                        .mapKey
-                        .currentState
-                        ?.destination ==
-                    null))) {
+        (widgetToClose != 'GPS (Map)' || (widgetToClose == 'GPS (Map)'))) {
       Navigator.of(context).pop();
     }
+
+    /*context
+        .read<AppInitializer>()
+        .mapKey
+        .currentState
+        ?.destination ==
+    null */
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showModalBottomSheet(

@@ -21,7 +21,6 @@ class RiskDetectionState extends State<RiskDetection> {
   @override
   void dispose() {
     _timer?.cancel();
-    Provider.of<PictureService>(context, listen: false).disposeCamera();
     super.dispose();
   }
 

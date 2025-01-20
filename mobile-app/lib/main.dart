@@ -29,13 +29,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => VoiceCommands()),
         ChangeNotifierProvider.value(
             value: pictureService), // Use the same instance
-        ChangeNotifierProvider.value(
-            value: appInitializer), // Provide appInitializer
         Provider(create: (_) => DatabaseHelper()), // Provide DatabaseHelper
-        Provider<ITtsService>(
-          create: (context) => TtsServiceGoogle(context.read<
-              DatabaseHelper>()), // Pass DatabaseHelper to TtsServiceGoogle
-        ),
+        Provider<ITtsService>(create: (context) => TtsServiceGoogle(context.read<DatabaseHelper>())),// Pass DatabaseHelper to TtsServiceGoogle
+        Provider(create: (_) => AppInitializer()),
         Provider(create: (_) => SttService()),
       ],
       child: const MyApp(),
