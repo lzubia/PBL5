@@ -1,23 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
-
 import '../shared/database_helper.dart';
 import '../locale_provider.dart';
 import '../services/stt/i_tts_service.dart';
 import '../services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final ITtsService ttsServiceGoogle;
-  final DatabaseHelper databaseHelper;
-
-  const SettingsScreen({
-    required this.ttsServiceGoogle,
-    required this.databaseHelper,
-    super.key,
-  });
+  const SettingsScreen({super.key});
 
   @override
   SettingsScreenState createState() => SettingsScreenState();
@@ -41,8 +31,9 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     try {
-      final prefs = await widget.databaseHelper.getPreferences();
-      final savedContacts = await widget.databaseHelper.getContacts();
+      final dbHelper = context.read<DatabaseHelper>();
+      final prefs = await dbHelper.getPreferences();
+      final savedContacts = await dbHelper.getContacts();
 
       setState(() {
         _fontSize = prefs['fontSize'];
@@ -58,7 +49,8 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _updatePreferences() async {
     try {
-      await widget.databaseHelper.updatePreferences(
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.updatePreferences(
         _fontSize,
         _language,
         _isDarkTheme,
@@ -71,7 +63,8 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _addContact(String contact) async {
     try {
-      await widget.databaseHelper.insertContact(contact);
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.insertContact(contact);
       setState(() {
         contacts.add(contact);
       });
@@ -81,7 +74,8 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _deleteContact(String contact) async {
-    await widget.databaseHelper.deleteContact(contact);
+    final dbHelper = context.read<DatabaseHelper>();
+    await dbHelper.deleteContact(contact);
     setState(() {
       contacts.remove(contact);
     });
@@ -95,7 +89,8 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
-    widget.ttsServiceGoogle.updateLanguage(languageCode, voiceName);
+    final ttsService = context.read<ITtsService>();
+    ttsService.updateLanguage(languageCode, voiceName);
     setState(() {
       _language = languageCode;
     });
@@ -110,10 +105,11 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeSpeechRate(double rate) {
+    final ttsService = context.read<ITtsService>();
     setState(() {
       _speechRate = rate;
     });
-    widget.ttsServiceGoogle.updateSpeechRate(rate);
+    ttsService.updateSpeechRate(rate);
     _updatePreferences();
   }
 
@@ -164,7 +160,11 @@ class SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSectionTitle(BuildContext context, String key, Color color) {
     return Text(
       AppLocalizations.of(context).translate(key),
-      style: TextStyle(fontSize: _fontSize + 4, fontWeight: FontWeight.bold, color: color),
+      style: TextStyle(
+        fontSize: _fontSize + 4,
+        fontWeight: FontWeight.bold,
+        color: color,
+      ),
     );
   }
 

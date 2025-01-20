@@ -69,8 +69,6 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ttsService = Provider.of<ITtsService>(context);
-    final databaseHelper = Provider.of<DatabaseHelper>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -83,10 +81,7 @@ class MyHomePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SettingsScreen(
-                    ttsServiceGoogle: ttsService,
-                    databaseHelper: databaseHelper,
-                  ),
+                  builder: (context) => SettingsScreen(),
                 ),
               );
             },
