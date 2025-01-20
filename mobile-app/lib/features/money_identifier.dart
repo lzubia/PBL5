@@ -1,39 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/apigeeregistry/v1.dart';
+import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import '../services/picture_service.dart';
 
 class MoneyIdentifier extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsService;
-  final String sessionToken;
-
-  BuildContext context;
-
-  MoneyIdentifier(
-      {super.key,
-      required this.pictureService,
-      required this.ttsService,
-      required this.sessionToken,
-      required this.context});
+  const MoneyIdentifier({super.key});
 
   @override
-  MoneyIdentifierState createState() => MoneyIdentifierState(this.context);
+  MoneyIdentifierState createState() => MoneyIdentifierState();
 }
 
 class MoneyIdentifierState extends State<MoneyIdentifier> {
   Timer? _timer;
   Duration responseTime = Duration.zero;
-  BuildContext context;
-
-  MoneyIdentifierState(this.context);
 
   @override
   void initState() {
     super.initState();
-    _startPeriodicPictureTaking();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Start the periodic picture-taking process here
+    if (_timer == null) {
+      _startPeriodicPictureTaking();
+    }
   }
 
   @override
@@ -42,12 +39,13 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
     super.dispose();
   }
 
-  void setContext(BuildContext context) {
-    this.context = context;
-  }
 
   void _startPeriodicPictureTaking() {
-    widget.ttsService
+
+    final ttsService = context.read<ITtsService>();
+    final locale = context.read<AppInitializer>().locale;
+    
+    ttsService
         .speakLabels([AppLocalizations.of(context).translate("money-on")]);
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _takeAndSendImage();
@@ -55,12 +53,16 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   }
 
   Future<void> _takeAndSendImage() async {
-    await widget.pictureService.takePicture(
+    final pictureService = context.read<PictureService>();
+    final ttsService = context.read<ITtsService>();
+    final sessionToken = context.read<AppInitializer>().sessionToken;
+    
+    await pictureService.takePicture(
       endpoint:
-          'https://begiapbl.duckdns.org:1880/money?session_id=${widget.sessionToken}', // Pass the endpoint here
+          'https://begiapbl.duckdns.org:1880/money?session_id=${sessionToken}', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
-        widget.ttsService
+        ttsService
             .speakLabels(labels); // Use ttsService to speak the labels
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Money Identified: $labels')),
@@ -79,13 +81,15 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.pictureService.isCameraInitialized) {
+    final pictureService = Provider.of<PictureService>(context);
+
+    if (!pictureService.isCameraInitialized) {
       return const Center(child: CircularProgressIndicator());
     }
 
     return Column(
       children: [
-        Expanded(child: widget.pictureService.getCameraPreview()),
+        Expanded(child: pictureService.getCameraPreview()),
         if (responseTime != Duration.zero)
           Padding(
             padding: const EdgeInsets.all(8.0),

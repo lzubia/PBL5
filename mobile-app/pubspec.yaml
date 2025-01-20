@@ -61,6 +61,8 @@ dependencies:
   flutter_launcher_icons: ^0.14.2
   flutter_localizations:
                   sdk: flutter
+  shared_preferences: ^2.3.5
+  provider: ^6.1.2
   #dcdg: ^4.1.0
 
 dev_dependencies:

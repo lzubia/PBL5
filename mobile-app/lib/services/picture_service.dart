@@ -28,7 +28,7 @@ class MultipartFileWrapper {
 typedef MultipartRequestFactory = http.MultipartRequest Function(
     String method, Uri url);
 
-class PictureService {
+class PictureService extends ChangeNotifier {
   late CameraController controller;
   late http.Client httpClient;
   bool isCameraInitialized = false;
@@ -61,16 +61,24 @@ class PictureService {
     try {
       await controller.initialize();
       isCameraInitialized = true;
+      notifyListeners(); // Notify listeners about the state change
     } catch (e) {
       print('Error initializing camera: $e');
       isCameraInitialized = false;
+      notifyListeners(); // Notify listeners about the state change
     }
   }
 
   void disposeCamera() {
     if (isCameraInitialized) {
-      controller.dispose();
-      isCameraInitialized = false;
+      try {
+        controller.dispose();
+      } catch (e) {
+        print('Error disposing camera: $e');
+      } finally {
+        isCameraInitialized = false;
+        notifyListeners(); // Notify listeners about the state change
+      }
     }
   }
 

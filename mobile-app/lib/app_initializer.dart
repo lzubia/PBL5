@@ -4,87 +4,90 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:pbl5_menu/features/map_widget.dart';
-import 'package:pbl5_menu/features/describe_environment.dart';
-import 'package:pbl5_menu/features/money_identifier.dart';
-import 'package:pbl5_menu/features/ocr_widget.dart';
-import 'package:pbl5_menu/features/risk_detection.dart';
-import 'package:pbl5_menu/features/grid_menu.dart';
-import 'package:pbl5_menu/features/voice_commands.dart';
-import 'package:pbl5_menu/services/tts/tts_service_google.dart';
-import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/shared/database_helper.dart';
-import 'package:pbl5_menu/services/picture_service.dart';
+import '../services/picture_service.dart';
+import '../shared/database_helper.dart';
+import '../services/tts/tts_service_google.dart';
+import '../services/stt/stt_service.dart';
+import '../features/map_widget.dart';
+import '../features/describe_environment.dart';
+import '../features/money_identifier.dart';
+import '../features/ocr_widget.dart';
+import '../features/risk_detection.dart';
+import '../features/grid_menu.dart';
+import '../features/voice_commands.dart';
 
-class AppInitializer {
-  static late final PictureService pictureService;
-  static late final DatabaseHelper databaseHelper;
-  static late final TtsServiceGoogle ttsServiceGoogle;
-  static late final SttService sttService;
-  static late final GlobalKey<RiskDetectionState> riskDetectionKey;
-  static late final GlobalKey<GridMenuState> gridMenuKey;
-  static late final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
-  static late final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
-  static late final GlobalKey<OcrWidgetState> ocrWidgetKey;
-  static late final GlobalKey<MapWidgetState> mapKey;
-  static late final VoiceCommands voiceCommands;
+class AppInitializer extends ChangeNotifier {
+  // Services and dependencies
+  late DatabaseHelper databaseHelper;
+  late TtsServiceGoogle ttsServiceGoogle;
+  late SttService sttService;
+  late VoiceCommands voiceCommands;
 
-  static String sessionToken = ''; // Add sessionToken as a static field
-  static Locale locale = Locale('en', 'US');
+  // External dependency
+  late PictureService pictureService;
 
-  static const MethodChannel platform =
-      MethodChannel('com.example.pbl5_menu/endSession');
+  // State variables
+  bool isInitialized = false;
+  String initializationError = '';
+  String sessionToken = '';
+  Locale locale = const Locale('en', 'US');
 
-  static Future<void> initialize() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    HttpOverrides.global = MyHttpOverrides();
+  // Global keys
+  final GlobalKey<RiskDetectionState> riskDetectionKey = GlobalKey<RiskDetectionState>();
+  final GlobalKey<GridMenuState> gridMenuKey = GlobalKey<GridMenuState>();
+  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey = GlobalKey<MoneyIdentifierState>();
+  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey = GlobalKey<DescribeEnvironmentState>();
+  final GlobalKey<OcrWidgetState> ocrWidgetKey = GlobalKey<OcrWidgetState>();
+  final GlobalKey<MapWidgetState> mapKey = GlobalKey<MapWidgetState>();
 
-    // Configure MethodChannel for session management
-    platform.setMethodCallHandler((call) async {
-      if (call.method == 'endSession') {
-        await endSession(sessionToken); // Pass sessionToken to endSession
-      } else if (call.method == 'startSession') {
-        await startSession();
-      }
-    });
+  static const MethodChannel platform = MethodChannel('com.example.pbl5_menu/endSession');
 
-    // Initialize services and dependencies
-    pictureService = PictureService();
-    databaseHelper = DatabaseHelper();
-    ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
-    sttService = SttService();
+  Future<void> initialize({required PictureService pictureService}) async {
+    this.pictureService = pictureService; // Use the passed-in PictureService
 
-    await pictureService.setupCamera();
-    await pictureService.initializeCamera();
-    ttsServiceGoogle.initializeTts();
-    await dotenv.load(fileName: "./.env");
-    await sttService.initializeStt();
+    try {
+      // Ensure Flutter bindings
+      WidgetsFlutterBinding.ensureInitialized();
+      HttpOverrides.global = MyHttpOverrides();
 
-    // Initialize global keys
-    riskDetectionKey = GlobalKey<RiskDetectionState>();
-    gridMenuKey = GlobalKey<GridMenuState>();
-    moneyIdentifierKey = GlobalKey<MoneyIdentifierState>();
-    describeEnvironmentKey = GlobalKey<DescribeEnvironmentState>();
-    ocrWidgetKey = GlobalKey<OcrWidgetState>();
-    mapKey = GlobalKey<MapWidgetState>();
+      // MethodChannel setup
+      platform.setMethodCallHandler((call) async {
+        if (call.method == 'endSession') {
+          //await endSession(sessionToken);
+        } else if (call.method == 'startSession') {
+          //await startSession();
+          sessionToken = '1234';
+        }
+      });
 
-    // Initialize VoiceCommands
-    voiceCommands = VoiceCommands(
-        sttService,
-        ttsServiceGoogle,
-        riskDetectionKey,
-        gridMenuKey,
-        moneyIdentifierKey,
-        describeEnvironmentKey,
-        ocrWidgetKey,
-        mapKey,
-        locale);
+      // Load environment variables
+      await dotenv.load(fileName: "./.env");
 
-    // Start a session and set the sessionToken
-    await startSession();
+      // Initialize other services
+      databaseHelper = DatabaseHelper();
+      ttsServiceGoogle = TtsServiceGoogle();
+      sttService = SttService();
+
+      // Initialize dependencies
+      await pictureService.setupCamera(); // Use the shared PictureService
+      await pictureService.initializeCamera(); // Notify listeners on state change
+      ttsServiceGoogle.initializeTts();
+      await sttService.initializeStt();
+
+      // Initialize VoiceCommands
+      voiceCommands = VoiceCommands();
+
+      // Start session
+      await startSession();
+
+      isInitialized = true; // Mark as initialized
+    } catch (e) {
+      initializationError = 'Initialization failed: $e';
+      isInitialized = false;
+    }
   }
 
-  static Future<void> startSession({http.Client? client}) async {
+  Future<void> startSession({http.Client? client}) async {
     final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
     client ??= http.Client();
     try {
@@ -93,32 +96,28 @@ class AppInitializer {
         sessionToken = jsonDecode(response.body)['session_id'];
         print('Session started successfully. Token: $sessionToken');
       } else {
-        sessionToken = ''; // Reset sessionToken on failure
-        print('Failed to start session: ${response.statusCode}');
+        sessionToken = '';
+        throw Exception('Failed to start session: ${response.statusCode}');
       }
     } catch (e) {
-      sessionToken = ''; // Reset sessionToken on error
-      print('Error starting session: $e');
+      sessionToken = '';
+      throw Exception('Error starting session: $e');
     }
   }
 
-  static Future<void> endSession(String sessionId,
-      {http.Client? client}) async {
-    final url = Uri.parse(
-        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
+  Future<void> endSession(String sessionId, {http.Client? client}) async {
+    final url = Uri.parse('https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
     client ??= http.Client();
     try {
       final response = await client.delete(url);
       if (response.statusCode == 200) {
         print('Session ended successfully');
-        sessionToken = ''; // Reset sessionToken after session ends
-      } else if (response.statusCode == 404) {
-        print('Session ID not found');
+        sessionToken = '';
       } else {
-        print('Failed to end session: ${response.statusCode}');
+        throw Exception('Failed to end session: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error ending session: $e');
+      throw Exception('Error ending session: $e');
     }
   }
 }

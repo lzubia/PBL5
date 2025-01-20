@@ -1,23 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/app_initializer.dart';
+import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_stt_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../services/picture_service.dart';
 
 class RiskDetection extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsService; // Accepts either TtsService or TtsServiceGoogle
-  final ISttService sttService; // Accepts either SttService or SttServiceGoogle
-  final String sessionToken;
-
-  const RiskDetection({
-    super.key,
-    required this.pictureService,
-    required this.ttsService,
-    required this.sttService,
-    required this.sessionToken,
-  });
+  const RiskDetection({super.key});
 
   @override
   RiskDetectionState createState() => RiskDetectionState();
@@ -31,7 +22,7 @@ class RiskDetectionState extends State<RiskDetection> {
   @override
   void dispose() {
     _timer?.cancel();
-    widget.pictureService.disposeCamera();
+    Provider.of<PictureService>(context, listen: false).disposeCamera();
     super.dispose();
   }
 
@@ -44,6 +35,8 @@ class RiskDetectionState extends State<RiskDetection> {
   }
 
   void enableRiskDetection() {
+    final ttsService = Provider.of<ITtsService>(context, listen: false);
+
     setState(() {
       isRiskDetectionEnabled = true;
       _timer = Timer.periodic(
@@ -53,25 +46,35 @@ class RiskDetectionState extends State<RiskDetection> {
         },
       );
     });
-    widget.ttsService
-        .speakLabels([AppLocalizations.of(context).translate("risk-on")]);
+    ttsService.speakLabels([
+      AppLocalizations.of(context).translate("risk-on"),
+    ]);
   }
 
   void disableRiskDetection() {
+    final ttsService = Provider.of<ITtsService>(context, listen: false);
+
     setState(() {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    widget.ttsService
-        .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
+    ttsService.speakLabels([
+      AppLocalizations.of(context).translate("risk-off"),
+    ]);
   }
 
   Future<void> _takePicture() async {
+    final pictureService = Provider.of<PictureService>(context, listen: false);
+    final sessionToken = AppInitializer().sessionToken; // Shared globally
+
     final endpoint =
-        'https://begiapbl.duckdns.org:1880/detect?session_id=${widget.sessionToken}';
-    await widget.pictureService.takePicture(
-      endpoint: endpoint, // Usa el endpoint con el sessionToken
-      onLabelsDetected: (labels) => widget.ttsService.speakLabels(labels),
+        'https://begiapbl.duckdns.org:1880/detect?session_id=$sessionToken';
+
+    await pictureService.takePicture(
+      endpoint: endpoint,
+      onLabelsDetected: (labels) {
+        Provider.of<ITtsService>(context, listen: false).speakLabels(labels);
+      },
       onResponseTimeUpdated: (duration) {
         setState(() {
           responseTime = duration;
@@ -82,7 +85,9 @@ class RiskDetectionState extends State<RiskDetection> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.pictureService.isCameraInitialized) {
+    final pictureService = Provider.of<PictureService>(context);
+
+    if (!pictureService.isCameraInitialized) {
       return Container();
     }
 

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/services/l10n.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:provider/provider.dart';
 import 'describe_environment.dart';
 import '../services/picture_service.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
@@ -13,24 +17,7 @@ const String moneyIdentifierTitle = 'Money Identifier';
 const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
 
 class GridMenu extends StatefulWidget {
-  final PictureService pictureService;
-  final dynamic ttsService;
-  final String sessionToken;
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
-  final GlobalKey<OcrWidgetState> ocrWidgetKey;
-  final GlobalKey<MapWidgetState> mapKey;
-
-  const GridMenu({
-    super.key,
-    required this.pictureService,
-    required this.ttsService,
-    required this.sessionToken,
-    required this.moneyIdentifierKey,
-    required this.describeEnvironmentKey,
-    required this.ocrWidgetKey,
-    required this.mapKey,
-  });
+  const GridMenu({super.key});
 
   @override
   GridMenuState createState() => GridMenuState();
@@ -46,19 +33,21 @@ class GridMenuState extends State<GridMenu> {
   @override
   void initState() {
     super.initState();
-    initializeCamera();
+    // initializeCamera();
   }
 
-  Future<void> initializeCamera() async {
-    await widget.pictureService.initializeCamera();
-    setState(() {
-      isCameraInitialized = true;
-    });
-  }
+  // Future<void> initializeCamera() async {
+  //   final pictureService = context.read<PictureService>();
+
+  //   await pictureService.initializeCamera();
+  //   setState(() {
+  //     isCameraInitialized = true;
+  //   });
+  // }
 
   @override
   void dispose() {
-    widget.pictureService.disposeCamera();
+    context.read<PictureService>().disposeCamera();
     super.dispose();
   }
 
@@ -71,7 +60,12 @@ class GridMenuState extends State<GridMenu> {
     if (!ModalRoute.of(context)!.isFirst &&
         (widgetToClose != 'GPS (Map)' ||
             (widgetToClose == 'GPS (Map)' &&
-                widget.mapKey.currentState?.destination == null))) {
+                context
+                        .read<AppInitializer>()
+                        .mapKey
+                        .currentState
+                        ?.destination ==
+                    null))) {
       Navigator.of(context).pop();
     }
 
@@ -104,49 +98,41 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildContent(String title) {
+    final pictureService = context.read<PictureService>();
+    final ttsService = context.read<ITtsService>();
     final contentMapping = {
       AppLocalizations.of(context).translate('describe_environment'):
           _buildDynamicWidget(
         DescribeEnvironment(
-            key: widget.describeEnvironmentKey,
-            pictureService: widget.pictureService,
-            ttsService: widget.ttsService,
-            sessionToken: widget.sessionToken),
+            key: AppInitializer().describeEnvironmentKey,
+            pictureService: pictureService,
+            ttsService: ttsService,
+            sessionToken: AppInitializer().sessionToken),
       ),
       AppLocalizations.of(context).translate("gps_map"): _buildDynamicWidget(
         mapWidgetInstance ??= SizedBox(
           // Use existing instance or create new
           height: contentHeight,
           child: MapWidget(
-            key: widget.mapKey,
-            ttsService: widget.ttsService,
+            ttsService: ttsService,
             context: context,
           ),
         ),
       ),
       AppLocalizations.of(context).translate("scanner"): _buildDynamicWidget(
-        OcrWidget(
-          key: widget.ocrWidgetKey,
-          pictureService: widget.pictureService,
-          ttsService: widget.ttsService,
-          sessionToken: widget.sessionToken,
-        ),
+        OcrWidget(),
       ),
       AppLocalizations.of(context).translate("money_identifier"):
           _buildDynamicWidget(
-        MoneyIdentifier(
-            key: widget.moneyIdentifierKey,
-            pictureService: widget.pictureService,
-            ttsService: widget.ttsService,
-            sessionToken: widget.sessionToken,
-            context: context),
+        MoneyIdentifier(),
       ),
     };
     return contentMapping[title] ?? Text('Content for $title goes here.');
   }
 
   Widget _buildDynamicWidget(Widget widgetContent) {
-    if (isCameraInitialized) {
+    final pictureService = context.read<PictureService>();
+    if (pictureService.isCameraInitialized) {
       return SizedBox(height: contentHeight, child: widgetContent);
     } else {
       return const Center(

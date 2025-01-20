@@ -1,9 +1,9 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:googleapis/admob/v1.dart';
+import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/features/grid_menu.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
@@ -14,74 +14,59 @@ import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
-class VoiceCommands {
+class VoiceCommands extends ChangeNotifier {
   final AudioPlayer player = AudioPlayer();
-  Map<String, List<String>> voiceCommands = {};
-  bool _isActivated = false;
-  // static bool useVoiceControl = false;
+  final Map<String, List<String>> voiceCommands = {};
+  final Map<String, bool> widgetStates = {
+    'map_command': false,
+    'money_identifier_command': false,
+    'text_command': false,
+    'photo_command': false,
+  };
+  void toggleActivation(bool value) {
+    isActivated = value;
+    notifyListeners(); // Notify widgets to rebuild
+  }
+
+  bool isActivated = false;
   static final ValueNotifier<bool> useVoiceControlNotifier =
       ValueNotifier(false);
   String _command = '';
-
-  Locale locale;
-
-  GlobalKey<RiskDetectionState> _riskDetectionKey =
-      GlobalKey<RiskDetectionState>();
-  GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
-  GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
-      GlobalKey<MoneyIdentifierState>();
-  GlobalKey<DescribeEnvironmentState> _describeEnvironmentKey =
-      GlobalKey<DescribeEnvironmentState>();
-  GlobalKey<OcrWidgetState> _ocrWidgetKey = GlobalKey<OcrWidgetState>();
-  GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
-
-  SttService sttService;
-  TtsServiceGoogle ttsServiceGoogle;
-
-  late BuildContext context;
-
-  // Inside the class
   List<String> activationCommands = [];
 
-  VoiceCommands(
-      this.sttService,
-      this.ttsServiceGoogle,
-      this._riskDetectionKey,
-      this._gridMenuKey,
-      this._moneyIdentifierKey,
-      this._describeEnvironmentKey,
-      this._ocrWidgetKey,
-      this._mapKey,
-      this.locale) {
-    loadActivationCommands();
-    startListening();
-  }
+  late Locale locale;
+  late SttService sttService;
+  late TtsServiceGoogle ttsServiceGoogle;
 
-  void setContext(BuildContext context, Locale locale) {
-    this.context = context;
+  VoiceCommands();
+
+  /// Initialize VoiceCommands with Locale, STT, and TTS Services
+  Future<void> initialize(
+      Locale locale, SttService stt, TtsServiceGoogle tts) async {
     this.locale = locale;
-    loadVoiceCommands();
+    this.sttService = stt;
+    this.ttsServiceGoogle = tts;
+
+    await loadActivationCommands();
+    await loadVoiceCommands();
+    startListening();
+    notifyListeners();
   }
 
   Future<void> loadVoiceCommands() async {
-    // final locale = Locale('en', 'EU');
     final String fileName = 'assets/lang/${locale.languageCode}.json';
     final String fileContent = await rootBundle.loadString(fileName);
-
     final Map<String, dynamic> jsonContent = json.decode(fileContent);
 
     if (jsonContent.containsKey('voice_commands')) {
       final voiceCommandsMap = jsonContent['voice_commands'];
-
       if (voiceCommandsMap is Map) {
-        voiceCommands = voiceCommandsMap.map(
-          (key, value) {
-            return MapEntry(
-              key,
-              List<String>.from(value.map((cmd) => cmd.trim().toLowerCase())),
-            );
-          },
-        );
+        voiceCommands.addAll(voiceCommandsMap.map(
+          (key, value) => MapEntry(
+            key,
+            List<String>.from(value.map((cmd) => cmd.trim().toLowerCase())),
+          ),
+        ));
       }
     }
   }
@@ -98,14 +83,13 @@ class VoiceCommands {
   }
 
   void _handleSpeechResult(String recognizedText) {
-    print('Texto reconocido: $recognizedText');
-    if (_isActivated) {
+    if (isActivated) {
       _command = recognizedText;
       _handleCommand(_command);
     } else if (_isActivationCommand(recognizedText)) {
-      _isActivated = true;
+      isActivated = true;
       useVoiceControlNotifier.value = true;
-      _activateVoiceControl();
+      _playActivationSound();
     } else {
       startListening();
     }
@@ -115,137 +99,88 @@ class VoiceCommands {
     return activationCommands.any((command) => transcript.contains(command));
   }
 
-  void _activateVoiceControl() {
-    useVoiceControlNotifier.value = true;
-    // Reproducir sonido de activación
-    _playActivationSound();
-  }
-
-  Map<String, bool> widgetStates = {
-    'map_command': false,
-    'money_identifier_command': false,
-    'text_command': false,
-    'photo_command': false,
-    // Add other widgets as needed
-  };
-
   void _handleCommand(String command) {
-    print('Activated command: $command');
-
     bool matched = false;
     const double similarityThreshold = 80.0;
 
     for (var commandGroup in voiceCommands.entries) {
       final similarity = calculateSimilarity(command, commandGroup.value.first);
 
-      for (var synonym in commandGroup.value) {
-        // Calculamos la similitud usando la distancia de Levenshtein
-        if (similarity >= similarityThreshold || command.contains(synonym)) {
-          final primaryCommand = commandGroup.key;
+      if (similarity >= similarityThreshold ||
+          commandGroup.value.any((synonym) => command.contains(synonym))) {
+        final primaryCommand = commandGroup.key;
 
-          switch (primaryCommand) {
-            case 'risk_detection_command': // Comando principal del grupo de riesgo
-              _riskDetectionKey.currentState?.toggleRiskDetection();
-              matched = true;
-              break;
+        switch (primaryCommand) {
+          case 'risk_detection_command':
+            matched = true;
+            notifyListeners(); // Trigger UI updates for Risk Detection
+            break;
 
-            case 'money_identifier_command': // Comando principal del grupo de identificador de dinero
-              if (!widgetStates['money_identifier_command']!) {
-                _gridMenuKey.currentState
-                    ?.showBottomSheet(context!, 'Money Identifier');
-                widgetStates['Money Identifier'] = true;
-              } else {
-                ttsServiceGoogle.speakLabels(
-                    ['El identificador de dinero ya está abierto']);
-              }
-              matched = true;
-              break;
+          case 'money_identifier_command':
+            matched = _handleMoneyIdentifierCommand();
+            break;
 
-            case 'map_command': // Comando principal del grupo de mapas
-              if (!widgetStates['map_command']!) {
-                _gridMenuKey.currentState
-                    ?.showBottomSheet(context!, 'GPS (Map)');
-                widgetStates['map_command'] = true;
-              } else {
-                ttsServiceGoogle.speakLabels(['El mapa ya está abierto']);
-              }
-              matched = true;
-              break;
+          case 'map_command':
+            matched = _handleMapCommand();
+            break;
 
-            case 'menu_command': // Comando principal del grupo de navegación a casa
-              Navigator.popUntil(context!, (route) => route.isFirst);
-              ttsServiceGoogle.speakLabels(
-                  [AppLocalizations.of(context).translate("menu")]);
-              matched = true;
-              break;
+          case 'menu_command':
+            matched = true;
+            ttsServiceGoogle.speakLabels([
+              AppLocalizations.of(context as BuildContext).translate("menu"),
+            ]);
+            break;
 
-            case 'text_command': // Comando principal del grupo de identificador de dinero
-              _gridMenuKey.currentState
-                  ?.showBottomSheet(context!, 'Scanner (Read Texts, QRs, ...)');
-              matched = true;
-              break;
+          case 'text_command':
+            matched = true;
+            notifyListeners(); // Handle Text Commands UI Logic
+            break;
 
-            case 'photo_command': // Handle 'foto' voice command
-              if (_gridMenuKey.currentState?.currentWidgetTitle ==
-                  'describe_environment') {
-                _describeEnvironmentKey.currentState?.takeAndSendImage();
-              } else if (_gridMenuKey.currentState?.currentWidgetTitle ==
-                  scannerTitle) {
-                _ocrWidgetKey.currentState?.takeAndSendImage();
-              }
-              matched = true;
-              break;
-            default:
-              break;
-          }
+          case 'photo_command':
+            matched = _handlePhotoCommand();
+            break;
 
-          if (matched) {
-            widgetStates.forEach((key, value) {
-              if (key != primaryCommand) {
-                widgetStates[key] = false;
-              }
-            });
-          }
-          break; // Detenemos el bucle si encontramos un comando válido
+          default:
+            break;
         }
+
+        break;
       }
-      if (matched)
-        break; // Salimos del bucle principal si ya hemos procesado el comando
     }
 
     if (!matched) {
       startListening();
     } else {
-      _isActivated = false;
+      isActivated = false;
       useVoiceControlNotifier.value = false;
     }
   }
 
-  int levenshteinDistance(String s1, String s2) {
-    final len1 = s1.length;
-    final len2 = s2.length;
-    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
-
-    for (var i = 0; i <= len1; i++) {
-      for (var j = 0; j <= len2; j++) {
-        if (i == 0) {
-          dp[i][j] = j;
-        } else if (j == 0) {
-          dp[i][j] = i;
-        } else if (s1[i - 1] == s2[j - 1]) {
-          dp[i][j] = dp[i - 1][j - 1];
-        } else {
-          dp[i][j] = 1 +
-              [
-                dp[i - 1][j], // Eliminación
-                dp[i][j - 1], // Inserción
-                dp[i - 1][j - 1] // Sustitución
-              ].reduce((a, b) => a < b ? a : b);
-        }
-      }
+  bool _handleMoneyIdentifierCommand() {
+    if (!widgetStates['money_identifier_command']!) {
+      widgetStates['money_identifier_command'] = true;
+      notifyListeners();
+      return true;
+    } else {
+      ttsServiceGoogle.speakLabels(['Money Identifier is already open']);
+      return false;
     }
+  }
 
-    return dp[len1][len2];
+  bool _handleMapCommand() {
+    if (!widgetStates['map_command']!) {
+      widgetStates['map_command'] = true;
+      notifyListeners();
+      return true;
+    } else {
+      ttsServiceGoogle.speakLabels(['Map is already open']);
+      return false;
+    }
+  }
+
+  bool _handlePhotoCommand() {
+    notifyListeners(); // Handle photo logic here if needed
+    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {
@@ -268,8 +203,31 @@ class VoiceCommands {
     return highestSimilarity;
   }
 
+  int levenshteinDistance(String s1, String s2) {
+    final len1 = s1.length;
+    final len2 = s2.length;
+    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+
+    for (var i = 0; i <= len1; i++) {
+      for (var j = 0; j <= len2; j++) {
+        if (i == 0) {
+          dp[i][j] = j;
+        } else if (j == 0) {
+          dp[i][j] = i;
+        } else if (s1[i - 1] == s2[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 +
+              [dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]]
+                  .reduce((a, b) => a < b ? a : b);
+        }
+      }
+    }
+
+    return dp[len1][len2];
+  }
+
   Future<void> _playActivationSound() async {
-    await player.play(AssetSource(
-        'sounds/activation_sound.mp3')); // Reproducir sonido de activación
+    await player.play(AssetSource('sounds/activation_sound.mp3'));
   }
 }

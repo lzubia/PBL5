@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:flutter/services.dart'; // For vibration
+import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:provider/provider.dart';
 import '../shared/database_helper.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
@@ -136,6 +138,8 @@ class SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeData = _isDarkTheme ? ThemeData.dark() : ThemeData.light();
     final textColor = _isDarkTheme ? Colors.white : Colors.black;
+
+    final localeProvider = context.watch<LocaleProvider>();
 
     // Language options
     final List<Map<String, String>> languages = [
@@ -278,7 +282,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          widget.setLocale(Locale('en', 'US'));
+                          localeProvider.setLocale(Locale('en', 'US'));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
@@ -293,7 +297,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          widget.setLocale(Locale('es', 'ES'));
+                          localeProvider.setLocale(Locale('es', 'ES'));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
@@ -308,7 +312,7 @@ class SettingsScreenState extends State<SettingsScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          widget.setLocale(Locale('eu', 'ES'));
+                          localeProvider.setLocale(Locale('eu', 'ES'));
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
