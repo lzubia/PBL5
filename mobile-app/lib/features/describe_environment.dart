@@ -1,19 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pbl5_menu/app_initializer.dart';
+import 'package:provider/provider.dart';
 import '../services/picture_service.dart';
 import '../services/stt/i_tts_service.dart';
 
 class DescribeEnvironment extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsService;
-  final String sessionToken;
 
-  const DescribeEnvironment({
-    super.key,
-    required this.pictureService,
-    required this.ttsService,
-    required this.sessionToken,
-  });
+  const DescribeEnvironment({super.key});
 
   @override
   DescribeEnvironmentState createState() => DescribeEnvironmentState();
@@ -23,27 +16,19 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
   @override
   void initState() {
     super.initState();
-    _initializeAsync();
   }
 
-  Future<void> _initializeAsync() async {
-    await widget.pictureService.initializeCamera();
-    setState(() {}); // Actualiza la interfaz si es necesario
-  }
-
-  @override
-  void dispose() {
-    widget.pictureService.disposeCamera();
-    super.dispose();
-  }
 
   Future<void> takeAndSendImage() async {
-    await widget.pictureService.takePicture(
+    final pictureService = context.read<PictureService>();
+    final ttsService = context.read<ITtsService>();
+    final sessionToken = context.read<AppInitializer>().sessionToken;
+  
+    await pictureService.takePicture(
       endpoint:
-          'https://begiapbl.duckdns.org:1880/describe?session_id=${widget.sessionToken}',
+          'https://begiapbl.duckdns.org:1880/describe?session_id=${sessionToken}',
       onLabelsDetected: (labels) {
-        //TODO: Translate labels to the user's language
-        widget.ttsService.speakLabels(labels);
+        ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Description: $labels')),
         );
@@ -58,9 +43,14 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
 
   @override
   Widget build(BuildContext context) {
+    final pictureService = Provider.of<PictureService>(context);
+
+    if (!pictureService.isCameraInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
-        Expanded(child: widget.pictureService.getCameraPreview()),
+        Expanded(child: pictureService.getCameraPreview()),
         ElevatedButton(
           onPressed: () => takeAndSendImage(),
           child: const Text('Take and Send Image'),

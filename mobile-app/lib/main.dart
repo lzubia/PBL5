@@ -1,29 +1,16 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
-import 'package:pbl5_menu/features/map_widget.dart';
-import 'package:pbl5_menu/features/describe_environment.dart';
-import 'package:pbl5_menu/features/money_identifier.dart';
-import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/stt/i_stt_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/features/risk_detection.dart';
 import 'package:pbl5_menu/features/grid_menu.dart';
 import 'package:pbl5_menu/features/settings_screen.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
-import 'package:audioplayers/audioplayers.dart'; // For audio playback
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pbl5_menu/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -79,10 +66,7 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final voiceCommands = Provider.of<VoiceCommands>(context);
-    final pictureService = Provider.of<PictureService>(context);
     final ttsService = Provider.of<ITtsService>(context);
-    final sttService = Provider.of<SttService>(context);
     final databaseHelper = Provider.of<DatabaseHelper>(context);
 
     return Scaffold(

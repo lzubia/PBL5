@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/app_initializer.dart';
-import 'package:pbl5_menu/main.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:provider/provider.dart';
 import 'describe_environment.dart';
 import '../services/picture_service.dart';
@@ -98,16 +96,11 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildContent(String title) {
-    final pictureService = context.read<PictureService>();
     final ttsService = context.read<ITtsService>();
     final contentMapping = {
       AppLocalizations.of(context).translate('describe_environment'):
           _buildDynamicWidget(
-        DescribeEnvironment(
-            key: AppInitializer().describeEnvironmentKey,
-            pictureService: pictureService,
-            ttsService: ttsService,
-            sessionToken: AppInitializer().sessionToken),
+        DescribeEnvironment(),
       ),
       AppLocalizations.of(context).translate("gps_map"): _buildDynamicWidget(
         mapWidgetInstance ??= SizedBox(

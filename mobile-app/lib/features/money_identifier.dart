@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:googleapis/apigeeregistry/v1.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
@@ -43,7 +42,6 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   void _startPeriodicPictureTaking() {
 
     final ttsService = context.read<ITtsService>();
-    final locale = context.read<AppInitializer>().locale;
     
     ttsService
         .speakLabels([AppLocalizations.of(context).translate("money-on")]);
