@@ -9,11 +9,6 @@ import 'describe_environment.dart';
 import '../services/picture_service.dart';
 import 'package:pbl5_menu/features/money_identifier.dart';
 
-const String describeEnvironmentTitle = 'Describe Environment';
-const String gpsMapTitle = 'GPS (Map)';
-const String moneyIdentifierTitle = 'Money Identifier';
-const String scannerTitle = 'Scanner (Read Texts, QRs, ...)';
-
 class GridMenu extends StatefulWidget {
   const GridMenu({super.key});
 
