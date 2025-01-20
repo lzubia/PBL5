@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/map_provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
@@ -27,8 +28,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => VoiceCommands()),
-        ChangeNotifierProvider.value(
-            value: pictureService), // Use the same instance
+        ChangeNotifierProvider.value(value: pictureService), // Use the same instance
+        ChangeNotifierProvider(create: (_) => MapProvider()), // Add MapProvider
         Provider(create: (_) => DatabaseHelper()), // Provide DatabaseHelper
         Provider<ITtsService>(create: (context) => TtsServiceGoogle(context.read<DatabaseHelper>())),// Pass DatabaseHelper to TtsServiceGoogle
         Provider(create: (_) => AppInitializer()),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/services/l10n.dart';
@@ -90,10 +89,7 @@ class GridMenuState extends State<GridMenu> {
         mapWidgetInstance ??= SizedBox(
           // Use existing instance or create new
           height: contentHeight,
-          child: MapWidget(
-            ttsService: ttsService,
-            context: context,
-          ),
+          child: MapWidget(),
         ),
       ),
       AppLocalizations.of(context).translate("scanner"): _buildDynamicWidget(
