@@ -31,21 +31,10 @@ class GridMenuState extends State<GridMenu> {
   @override
   void initState() {
     super.initState();
-    // initializeCamera();
   }
-
-  // Future<void> initializeCamera() async {
-  //   final pictureService = context.read<PictureService>();
-
-  //   await pictureService.initializeCamera();
-  //   setState(() {
-  //     isCameraInitialized = true;
-  //   });
-  // }
 
   @override
   void dispose() {
-    context.read<PictureService>().disposeCamera();
     super.dispose();
   }
 

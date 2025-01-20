@@ -27,18 +27,21 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => VoiceCommands()),
-        ChangeNotifierProvider.value(value: pictureService), // Use the same instance
-        ChangeNotifierProvider.value(value: appInitializer), // Provide appInitializer
-        Provider(create: (_) => DatabaseHelper()),
-        Provider<ITtsService>(create: (_) => TtsServiceGoogle()),
+        ChangeNotifierProvider.value(
+            value: pictureService), // Use the same instance
+        ChangeNotifierProvider.value(
+            value: appInitializer), // Provide appInitializer
+        Provider(create: (_) => DatabaseHelper()), // Provide DatabaseHelper
+        Provider<ITtsService>(
+          create: (context) => TtsServiceGoogle(context.read<
+              DatabaseHelper>()), // Pass DatabaseHelper to TtsServiceGoogle
+        ),
         Provider(create: (_) => SttService()),
       ],
       child: const MyApp(),
     ),
   );
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -81,9 +84,6 @@ class MyHomePage extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => SettingsScreen(
-                    setLocale:
-                        Provider.of<LocaleProvider>(context, listen: false)
-                            .setLocale,
                     ttsServiceGoogle: ttsService,
                     databaseHelper: databaseHelper,
                   ),

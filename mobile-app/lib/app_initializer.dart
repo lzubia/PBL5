@@ -33,14 +33,18 @@ class AppInitializer extends ChangeNotifier {
   Locale locale = const Locale('en', 'US');
 
   // Global keys
-  final GlobalKey<RiskDetectionState> riskDetectionKey = GlobalKey<RiskDetectionState>();
+  final GlobalKey<RiskDetectionState> riskDetectionKey =
+      GlobalKey<RiskDetectionState>();
   final GlobalKey<GridMenuState> gridMenuKey = GlobalKey<GridMenuState>();
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey = GlobalKey<MoneyIdentifierState>();
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey = GlobalKey<DescribeEnvironmentState>();
+  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey =
+      GlobalKey<MoneyIdentifierState>();
+  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey =
+      GlobalKey<DescribeEnvironmentState>();
   final GlobalKey<OcrWidgetState> ocrWidgetKey = GlobalKey<OcrWidgetState>();
   final GlobalKey<MapWidgetState> mapKey = GlobalKey<MapWidgetState>();
 
-  static const MethodChannel platform = MethodChannel('com.example.pbl5_menu/endSession');
+  static const MethodChannel platform =
+      MethodChannel('com.example.pbl5_menu/endSession');
 
   Future<void> initialize({required PictureService pictureService}) async {
     this.pictureService = pictureService; // Use the passed-in PictureService
@@ -63,14 +67,20 @@ class AppInitializer extends ChangeNotifier {
       // Load environment variables
       await dotenv.load(fileName: "./.env");
 
+      // Initialize database helper
+      databaseHelper = DatabaseHelper();
+
+      // Initialize TTS service with the database helper
+      ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
+
       // Initialize other services
       databaseHelper = DatabaseHelper();
-      ttsServiceGoogle = TtsServiceGoogle();
       sttService = SttService();
 
       // Initialize dependencies
       await pictureService.setupCamera(); // Use the shared PictureService
-      await pictureService.initializeCamera(); // Notify listeners on state change
+      await pictureService
+          .initializeCamera(); // Notify listeners on state change
       ttsServiceGoogle.initializeTts();
       await sttService.initializeStt();
 
@@ -106,7 +116,8 @@ class AppInitializer extends ChangeNotifier {
   }
 
   Future<void> endSession(String sessionId, {http.Client? client}) async {
-    final url = Uri.parse('https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
+    final url = Uri.parse(
+        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
     client ??= http.Client();
     try {
       final response = await client.delete(url);

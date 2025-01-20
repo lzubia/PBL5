@@ -15,15 +15,9 @@ class TtsServiceGoogle implements ITtsService {
   String languageCode = 'en-US';
   String voiceName = 'en-US-Wavenet-D';
   double speechRate = 1.6; // Default speech rate
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final DatabaseHelper _dbHelper;
 
-  // TtsServiceGoogle(this._dbHelper) {
-  //   WidgetsFlutterBinding.ensureInitialized();
-  //   audioPlayer = AudioPlayer();
-  //   _loadSettings();
-  // }
-
-  TtsServiceGoogle() {
+  TtsServiceGoogle(this._dbHelper) {
     WidgetsFlutterBinding.ensureInitialized();
     audioPlayer = AudioPlayer();
     _loadSettings();

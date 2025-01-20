@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:flutter_native_contact_picker/model/contact.dart';
-import 'package:flutter/services.dart'; // For vibration
-import 'package:pbl5_menu/locale_provider.dart';
-import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+
 import '../shared/database_helper.dart';
-import 'package:pbl5_menu/services/l10n.dart';
+import '../locale_provider.dart';
+import '../services/stt/i_tts_service.dart';
+import '../services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ITtsService ttsServiceGoogle;
   final DatabaseHelper databaseHelper;
-  final Function(Locale) setLocale;
 
   const SettingsScreen({
     required this.ttsServiceGoogle,
     required this.databaseHelper,
-    required this.setLocale,
     super.key,
   });
 
@@ -25,14 +24,14 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
+  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
+
+  // State variables
   List<String> contacts = [];
-  double _fontSize = 20.0; // Larger default font size
+  double _fontSize = 20.0;
   String _language = 'English';
   bool _isDarkTheme = false;
-  double _speechRate = 1.0; // Default speech rate
-
-  final FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
+  double _speechRate = 1.0;
 
   @override
   void initState() {
@@ -48,12 +47,25 @@ class SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _fontSize = prefs['fontSize'];
         _language = prefs['language'];
-        _isDarkTheme = prefs['isDarkTheme'] == 1 ? true : false;
+        _isDarkTheme = prefs['isDarkTheme'] == 1;
         _speechRate = prefs['speechRate'] ?? 1.0;
         contacts = savedContacts;
       });
     } catch (e) {
       debugPrint('Error loading settings: $e');
+    }
+  }
+
+  Future<void> _updatePreferences() async {
+    try {
+      await widget.databaseHelper.updatePreferences(
+        _fontSize,
+        _language,
+        _isDarkTheme,
+        _speechRate,
+      );
+    } catch (e) {
+      debugPrint('Error saving preferences: $e');
     }
   }
 
@@ -73,23 +85,13 @@ class SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       contacts.remove(contact);
     });
-    //_provideFeedback('Contact deleted');
-  }
-
-  Future<void> _savePreferences() async {
-    try {
-      await widget.databaseHelper
-          .updatePreferences(_fontSize, _language, _isDarkTheme, _speechRate);
-    } catch (e) {
-      debugPrint('Error saving preferences: $e');
-    }
   }
 
   void _changeTheme(bool isDark) {
     setState(() {
       _isDarkTheme = isDark;
     });
-    _savePreferences();
+    _updatePreferences();
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
@@ -97,10 +99,14 @@ class SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _language = languageCode;
     });
-    _savePreferences();
-    widget.databaseHelper
-        .updateTtsSettings(languageCode, voiceName); // Update the database
-    //_provideFeedback('Language changed');
+    _updatePreferences();
+  }
+
+  void _changeFontSize(double size) {
+    setState(() {
+      _fontSize = size;
+    });
+    _updatePreferences();
   }
 
   void _changeSpeechRate(double rate) {
@@ -108,57 +114,14 @@ class SettingsScreenState extends State<SettingsScreen> {
       _speechRate = rate;
     });
     widget.ttsServiceGoogle.updateSpeechRate(rate);
-    _savePreferences();
-  }
-
-  void _changeFontSize(double size) {
-    setState(() {
-      _fontSize = size;
-    });
-    _savePreferences();
-    //_provideFeedback('Font size adjusted');
-  }
-
-  void _provideFeedback(String message) {
-    // Vibrate for tactile feedback
-    HapticFeedback.vibrate();
-    // Optional: Add auditory feedback here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(fontSize: _fontSize, color: Colors.white),
-        ),
-        backgroundColor: Colors.black,
-      ),
-    );
+    _updatePreferences();
   }
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = context.watch<LocaleProvider>();
     final themeData = _isDarkTheme ? ThemeData.dark() : ThemeData.light();
     final textColor = _isDarkTheme ? Colors.white : Colors.black;
-
-    final localeProvider = context.watch<LocaleProvider>();
-
-    // Language options
-    final List<Map<String, String>> languages = [
-      {
-        "label": "English",
-        "languageCode": "en-US",
-        "voiceName": "en-US-Wavenet-D"
-      },
-      {
-        "label": "Spanish",
-        "languageCode": "es-ES",
-        "voiceName": "es-ES-Wavenet-B"
-      },
-      {
-        "label": "Basque",
-        "languageCode": "eu-ES",
-        "voiceName": "eu-ES-Wavenet-A"
-      },
-    ];
 
     return MaterialApp(
       theme: themeData,
@@ -167,204 +130,123 @@ class SettingsScreenState extends State<SettingsScreen> {
         appBar: AppBar(
           title: Text(
             AppLocalizations.of(context).translate('title'),
-            style: TextStyle(fontSize: 24.0), // Increase font size
+            style: const TextStyle(fontSize: 24.0),
           ),
           centerTitle: true,
-          backgroundColor: themeData.primaryColor,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context).translate('contacts'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: contacts.length,
-                  itemBuilder: (context, index) {
-                    return Dismissible(
-                      key: ValueKey(contacts[index]),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) async {
-                        await _deleteContact(contacts[index]);
-                      },
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
-                      ),
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          title: Text(
-                            contacts[index],
-                            style: TextStyle(
-                                fontSize: _fontSize, color: textColor),
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Colors.red,
-                              size: _fontSize + 4,
-                            ),
-                            onPressed: () async {
-                              await _deleteContact(contacts[index]);
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Contact? contact = await _contactPicker.selectContact();
-                  if (contact != null) {
-                    await _addContact(contact.fullName ?? '');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                ),
-                child: Icon(
-                  Icons.add,
-                  size: _fontSize,
-                  color: Colors.white,
-                ),
-              ),
+              _buildSectionTitle(context, 'contacts', textColor),
+              _buildContactsList(),
+              _buildAddContactButton(),
               const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('theme'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              SwitchListTile(
-                title: Text(
-                  AppLocalizations.of(context).translate('dark_theme'),
-                  style: TextStyle(fontSize: _fontSize, color: textColor),
-                ),
-                value: _isDarkTheme,
-                onChanged: _changeTheme,
-              ),
+              _buildSectionTitle(context, 'theme', textColor),
+              _buildThemeSwitch(),
               const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('language'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  // Calculate compactness dynamically based on screen width, height, and font size
-                  double screenWidth = constraints.maxWidth;
-                  double screenHeight = MediaQuery.of(context).size.height;
-                  bool isCompact = (screenWidth / _fontSize < 18.0) ||
-                      (screenHeight / _fontSize < 18.0);
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          localeProvider.setLocale(Locale('en', 'US'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'English',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          localeProvider.setLocale(Locale('es', 'ES'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'Español',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          localeProvider.setLocale(Locale('eu', 'ES'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'Euskera',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+              _buildSectionTitle(context, 'language', textColor),
+              _buildLanguageSelector(localeProvider),
               const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('font_size'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Slider(
-                value: _fontSize,
-                min: 16.0,
-                max: 38.0,
-                onChanged: _changeFontSize,
-              ),
+              _buildSectionTitle(context, 'font_size', textColor),
+              _buildFontSizeSlider(),
               const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('speech_rate'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Slider(
-                value: _speechRate,
-                min: 1,
-                max: 2.7,
-                divisions: 15,
-                label: _speechRate.toStringAsFixed(1),
-                onChanged: _changeSpeechRate,
-              ),
+              _buildSectionTitle(context, 'speech_rate', textColor),
+              _buildSpeechRateSlider(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String key, Color color) {
+    return Text(
+      AppLocalizations.of(context).translate(key),
+      style: TextStyle(fontSize: _fontSize + 4, fontWeight: FontWeight.bold, color: color),
+    );
+  }
+
+  Widget _buildContactsList() {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: contacts.length,
+        itemBuilder: (context, index) {
+          return Dismissible(
+            key: ValueKey(contacts[index]),
+            direction: DismissDirection.endToStart,
+            onDismissed: (_) => _deleteContact(contacts[index]),
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            child: ListTile(
+              title: Text(contacts[index], style: TextStyle(fontSize: _fontSize)),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAddContactButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        final contact = await _contactPicker.selectContact();
+        if (contact != null) await _addContact(contact.fullName ?? '');
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildThemeSwitch() {
+    return SwitchListTile(
+      title: const Text('Dark Theme'),
+      value: _isDarkTheme,
+      onChanged: _changeTheme,
+    );
+  }
+
+  Widget _buildLanguageSelector(LocaleProvider localeProvider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildLanguageButton(localeProvider, 'English', 'en-US', 'en-US-Wavenet-D'),
+        _buildLanguageButton(localeProvider, 'Español', 'es-ES', 'es-ES-Wavenet-B'),
+        _buildLanguageButton(localeProvider, 'Euskera', 'eu-ES', 'eu-ES-Wavenet-A'),
+      ],
+    );
+  }
+
+  Widget _buildLanguageButton(
+      LocaleProvider localeProvider, String label, String code, String voice) {
+    return ElevatedButton(
+      onPressed: () {
+        localeProvider.setLocale(Locale(code.split('-')[0], code.split('-')[1]));
+        _changeLanguage(code, voice);
+      },
+      child: Text(label),
+    );
+  }
+
+  Widget _buildFontSizeSlider() {
+    return Slider(
+      value: _fontSize,
+      min: 16.0,
+      max: 38.0,
+      onChanged: _changeFontSize,
+    );
+  }
+
+  Widget _buildSpeechRateSlider() {
+    return Slider(
+      value: _speechRate,
+      min: 1.0,
+      max: 2.7,
+      onChanged: _changeSpeechRate,
     );
   }
 }
