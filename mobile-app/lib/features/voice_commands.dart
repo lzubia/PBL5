@@ -17,7 +17,7 @@ import 'package:pbl5_menu/services/l10n.dart';
 class VoiceCommands {
   final AudioPlayer player = AudioPlayer();
   Map<String, List<String>> voiceCommands = {};
-  bool _isActivated = false;
+  static bool _isActivated = false;
   // static bool useVoiceControl = false;
   static final ValueNotifier<bool> useVoiceControlNotifier =
       ValueNotifier(false);

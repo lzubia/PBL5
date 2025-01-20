@@ -269,10 +269,6 @@ class MyHomePageState extends State<MyHomePage> {
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Voice Control: ${useVoiceControl ? "Enabled" : "Disabled"}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
                         Switch(
                           key: const Key(
                               'voiceControlSwitch'), // Add a unique Key
@@ -291,6 +287,17 @@ class MyHomePageState extends State<MyHomePage> {
                             });
                           },
                         ),
+                        Visibility(
+                          visible: _isActivated,
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: 10, right: 125),
+                            child: Image.asset(
+                              'assets/BegiaGif.gif',
+                              height: 100,
+                            ),
+                          ),
+                        )
                       ],
                     );
                   },
