@@ -94,10 +94,10 @@ class VoiceCommands {
   }
 
   void startListening() async {
-    await sttService.startListening(_handleSpeechResult);
+    await sttService.startListening(handleSpeechResult);
   }
 
-  void _handleSpeechResult(String recognizedText) {
+  void handleSpeechResult(String recognizedText) {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;

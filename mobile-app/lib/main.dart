@@ -235,77 +235,71 @@ class MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: RiskDetection(
-              key: riskDetectionKey,
-              pictureService: widget.pictureService,
-              ttsService: widget.ttsServiceGoogle,
-              sttService: widget.sttService,
-              sessionToken: sessionToken, // Pass sessionToken to RiskDetection
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Detecta toques en áreas vacías.
+        onDoubleTap: () {
+          setState(() {
+            VoiceCommands.useVoiceControlNotifier.value =
+                !VoiceCommands.useVoiceControlNotifier.value;
+            if (VoiceCommands.useVoiceControlNotifier.value) {
+              _isActivated = true;
+              widget.voiceCommands.startListening();
+              widget.voiceCommands.handleSpeechResult('begia');
+            } else {
+              _isActivated = false;
+              widget.voiceCommands.startListening();
+            }
+          });
+        },
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RiskDetection(
+                key: riskDetectionKey,
+                pictureService: widget.pictureService,
+                ttsService: widget.ttsServiceGoogle,
+                sttService: widget.sttService,
+                sessionToken:
+                    sessionToken, // Pass sessionToken to RiskDetection
+              ),
             ),
-          ),
-          Expanded(
-            child: GridMenu(
-              key: gridMenuKey,
-              pictureService: widget.pictureService,
-              ttsService: widget.ttsServiceGoogle,
-              sessionToken: sessionToken, // Pass sessionToken to GridMenu
-              moneyIdentifierKey: moneyIdentifierKey,
-              describeEnvironmentKey: describeEnvironmentKey,
-              ocrWidgetKey: ocrWidgetKey,
-              mapKey: mapKey,
+            Expanded(
+              child: GridMenu(
+                key: gridMenuKey,
+                pictureService: widget.pictureService,
+                ttsService: widget.ttsServiceGoogle,
+                sessionToken: sessionToken, // Pass sessionToken to GridMenu
+                moneyIdentifierKey: moneyIdentifierKey,
+                describeEnvironmentKey: describeEnvironmentKey,
+                ocrWidgetKey: ocrWidgetKey,
+                mapKey: mapKey,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                ValueListenableBuilder<bool>(
-                  valueListenable: VoiceCommands.useVoiceControlNotifier,
-                  builder: (context, useVoiceControl, child) {
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Switch(
-                          key: const Key(
-                              'voiceControlSwitch'), // Add a unique Key
-                          value: useVoiceControl,
-                          onChanged: (value) {
-                            setState(() {
-                              VoiceCommands.useVoiceControlNotifier.value =
-                                  value;
-                              if (value) {
-                                _isActivated = true;
-                                widget.voiceCommands.startListening();
-                              } else {
-                                _isActivated = false;
-                                widget.voiceCommands.startListening();
-                              }
-                            });
-                          },
-                        ),
-                        Visibility(
-                          visible: _isActivated,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: 10, right: 125),
-                            child: Image.asset(
-                              'assets/BegiaGif.gif',
-                              height: 100,
-                            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  ValueListenableBuilder<bool>(
+                    valueListenable: VoiceCommands.useVoiceControlNotifier,
+                    builder: (context, useVoiceControl, child) {
+                      return Visibility(
+                        visible: VoiceCommands.useVoiceControlNotifier.value,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Image.asset(
+                            'assets/BegiaGif.gif',
+                            height: 100,
                           ),
-                        )
-                      ],
-                    );
-                  },
-                ),
-              ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
