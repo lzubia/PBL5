@@ -99,6 +99,7 @@ flutter:
     - assets/lang/en.json
     - assets/lang/es.json
     - assets/lang/eu.json
+    - assets/BegiaGif.gif
 
 flutter_icons:
                 android: true
