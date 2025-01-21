@@ -5,6 +5,7 @@ on:
     branches:
       - mobile-develop
       - mobile-tests
+      - mobile-tp
   pull_request:
 
 jobs:
