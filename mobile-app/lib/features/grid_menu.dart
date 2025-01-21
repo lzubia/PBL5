@@ -38,9 +38,10 @@ class GridMenuState extends State<GridMenu> {
     final ttsService = context.read<ITtsService>();
     // Prevent showing multiple bottom sheets by ensuring state management
     if (currentWidgetTitle == title) {
-      ttsService.speakLabels([AppLocalizations.of(context).translate("opened")]);
+      ttsService
+          .speakLabels([AppLocalizations.of(context).translate("opened")]);
       return;
-    }else if (currentWidgetTitle != null) {
+    } else if (currentWidgetTitle != null) {
       Navigator.of(context).pop();
     }
 
@@ -51,7 +52,9 @@ class GridMenuState extends State<GridMenu> {
       });
 
       // If it's not the first route and the widget is already open, close it
-      if (!ModalRoute.of(context)!.isFirst && (currentWidgetTitle != 'GPS (Map)' || (currentWidgetTitle == 'GPS (Map)'))) {
+      if (!ModalRoute.of(context)!.isFirst &&
+          (currentWidgetTitle != 'GPS (Map)' ||
+              (currentWidgetTitle == 'GPS (Map)'))) {
         Navigator.of(context).pop();
       }
 
@@ -119,32 +122,37 @@ class GridMenuState extends State<GridMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<WidgetStateProvider, VoiceCommands>(
-      builder: (context, widgetStateProvider, voiceCommands, child) {
+    return Consumer<VoiceCommands>(
+      builder: (context, voiceCommands, child) {
         // If triggerVariable is set, show the dynamic widget
-        switch (voiceCommands.triggerVariable) {
-          case 1:
-            showBottomSheet(context,
-                AppLocalizations.of(context).translate("money_identifier"));
-            voiceCommands.triggerVariable = 0;
-            break;
-          case 2:
-            showBottomSheet(
-                context, AppLocalizations.of(context).translate("gps_map"));
-            voiceCommands.triggerVariable = 0;
-            break;
-          case 3:
-            showBottomSheet(context,
-                AppLocalizations.of(context).translate("describe_environment"));
-            voiceCommands.triggerVariable = 0;
-            break;
-          case 4:
-            showBottomSheet(
-                context, AppLocalizations.of(context).translate("scanner"));
-            voiceCommands.triggerVariable = 0;
-            break;
-          default:
-            break;
+        if (voiceCommands.triggerVariable != 0) {
+          final trigger = voiceCommands.triggerVariable;
+          voiceCommands.triggerVariable = 0; // Reset the trigger immediately
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            switch (trigger) {
+              case 1:
+                showBottomSheet(context,
+                    AppLocalizations.of(context).translate("money_identifier"));
+                break;
+              case 2:
+                showBottomSheet(
+                    context, AppLocalizations.of(context).translate("gps_map"));
+                break;
+              case 3:
+                showBottomSheet(
+                    context,
+                    AppLocalizations.of(context)
+                        .translate("describe_environment"));
+                break;
+              case 4:
+                showBottomSheet(
+                    context, AppLocalizations.of(context).translate("scanner"));
+                break;
+              default:
+                break;
+            }
+          });
         }
 
         final List<Map<String, dynamic>> menuOptions = [

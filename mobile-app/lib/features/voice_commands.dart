@@ -6,7 +6,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/l10n.dart';
@@ -54,15 +53,12 @@ class VoiceCommands extends ChangeNotifier {
   late ITtsService ttsServiceGoogle;
 
   // New dependency for managing widget states
-  late WidgetStateProvider widgetStateProvider;
 
   /// Initialize VoiceCommands with dependencies via Provider
   Future<void> initialize(BuildContext context) async {
     locale = Provider.of<LocaleProvider>(context, listen: false).currentLocale;
     sttService = Provider.of<SttService>(context, listen: false);
     ttsServiceGoogle = Provider.of<ITtsService>(context, listen: false);
-    widgetStateProvider =
-        Provider.of<WidgetStateProvider>(context, listen: false);
 
     await loadActivationCommands();
     await loadVoiceCommands();
@@ -124,7 +120,7 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   void _startCommandTimer() {
-    _commandTimer?.cancel(); // Cancel any existing timer
+    _cancelCommandTimer();
     _commandTimer = Timer(Duration(seconds: 10), () {
       _playDesactivationSound();
       _isActivated = false;
@@ -134,6 +130,15 @@ class VoiceCommands extends ChangeNotifier {
       startListening();
     });
   }
+
+  void _cancelCommandTimer() {
+  if (_commandTimer != null && _commandTimer!.isActive) {
+    _commandTimer!.cancel();
+  }
+
+}
+
+
 
   bool _isActivationCommand(String transcript) {
     return activationCommands.any((command) => transcript.contains(command));
@@ -223,6 +228,7 @@ class VoiceCommands extends ChangeNotifier {
     if (!matched) {
       startListening();
     } else {
+      _cancelCommandTimer();
       _isActivated = false;
       useVoiceControlNotifier.value = false;
       _command = ''; // Reset command after it's processed

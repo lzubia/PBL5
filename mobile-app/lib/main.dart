@@ -14,7 +14,6 @@ import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:pbl5_menu/theme_provider.dart';
-import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -51,8 +50,6 @@ void main() async {
         ),
         Provider(
             create: (_) => appInitializer.sttService), // Provide SttService
-        ChangeNotifierProvider(
-            create: (_) => WidgetStateProvider()), // WidgetStateProvider
       ],
       child: const MyApp(),
     ),
