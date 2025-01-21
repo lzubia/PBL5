@@ -17,9 +17,9 @@ class TtsServiceGoogle implements ITtsService {
   double speechRate = 1.6; // Default speech rate
   final DatabaseHelper _dbHelper;
 
-  TtsServiceGoogle(this._dbHelper) {
+  TtsServiceGoogle(this._dbHelper, {AudioPlayer? audioPlayer}) {
     WidgetsFlutterBinding.ensureInitialized();
-    audioPlayer = AudioPlayer();
+    this.audioPlayer = audioPlayer ?? AudioPlayer(); // Allow mock injection
     loadSettings();
   }
 
