@@ -35,18 +35,27 @@ class GridMenuState extends State<GridMenu> {
   }
 
   void showBottomSheet(BuildContext context, String title) {
-    // setState(() {
-    //   currentWidgetTitle = title; // Update the current widget title
-    // });
-
-    // If it's not the first route and the widget is already open, close it
-    if (!ModalRoute.of(context)!.isFirst &&
-        (currentWidgetTitle != 'GPS (Map)' ||
-            (currentWidgetTitle == 'GPS (Map)'))) {
-      Navigator.of(context).pop();
+    final ttsService = context.read<ITtsService>();
+    // Prevent showing multiple bottom sheets by ensuring state management
+    if (currentWidgetTitle == title) {
+      ttsService.speakLabels(['Widget already open']);
+      return;
     }
+    ;
 
+    // Use addPostFrameCallback to delay setState until after the build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        currentWidgetTitle = title; // Update the current widget title
+      });
+
+      // If it's not the first route and the widget is already open, close it
+      if (!ModalRoute.of(context)!.isFirst &&
+          (currentWidgetTitle != 'GPS (Map)' ||
+              (currentWidgetTitle == 'GPS (Map)'))) {
+        Navigator.of(context).pop();
+      }
+
       // Show the bottom sheet with the corresponding content
       showModalBottomSheet(
         context: context,
@@ -77,7 +86,6 @@ class GridMenuState extends State<GridMenu> {
   }
 
   Widget _buildContent(String title) {
-    final ttsService = context.read<ITtsService>();
     final contentMapping = {
       AppLocalizations.of(context).translate('describe_environment'):
           _buildDynamicWidget(DescribeEnvironment()),
@@ -92,7 +100,6 @@ class GridMenuState extends State<GridMenu> {
           _buildDynamicWidget(MoneyIdentifier()),
     };
 
-    // Return the corresponding content or a default text
     return contentMapping[title] ?? Text('Content for $title goes here.');
   }
 
@@ -121,25 +128,21 @@ class GridMenuState extends State<GridMenu> {
             showBottomSheet(context,
                 AppLocalizations.of(context).translate("money_identifier"));
             voiceCommands.triggerVariable = 0;
-
             break;
           case 2:
             showBottomSheet(
                 context, AppLocalizations.of(context).translate("gps_map"));
             voiceCommands.triggerVariable = 0;
-
             break;
           case 3:
             showBottomSheet(context,
                 AppLocalizations.of(context).translate("describe_environment"));
             voiceCommands.triggerVariable = 0;
-
             break;
           case 4:
             showBottomSheet(
                 context, AppLocalizations.of(context).translate("scanner"));
             voiceCommands.triggerVariable = 0;
-
             break;
           default:
             break;
@@ -174,10 +177,7 @@ class GridMenuState extends State<GridMenu> {
               margin: const EdgeInsets.all(8.0),
               child: InkWell(
                 onTap: () {
-                  // Only show the bottom sheet if the widget state is true
-                  if (widgetStateProvider.getWidgetState(title)) {
-                    showBottomSheet(context, title);
-                  }
+                  showBottomSheet(context, title);
                 },
                 child: SizedBox(
                   height: 150,
