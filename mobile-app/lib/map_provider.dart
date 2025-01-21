@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -12,7 +11,7 @@ class MapProvider extends ChangeNotifier {
   LocationData? _currentLocation;
   LatLng? _destination;
   List<LatLng> _polylineCoordinates = [];
-  List<Map<String, dynamic>> _instructions = [];
+  // List<Map<String, dynamic>> _instructions = [];
   StreamSubscription<LocationData>? _locationSubscription;
 
   LocationData? get currentLocation => _currentLocation;
