@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pbl5_menu/app_initializer.dart';
+import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
@@ -19,16 +20,15 @@ class RiskDetectionState extends State<RiskDetection> {
   Timer? _timer;
 
   @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final voiceCommands = context.watch<VoiceCommands>();
 
-  void toggleRiskDetection() {
-    if (isRiskDetectionEnabled) {
-      disableRiskDetection();
-    } else {
+    // Directly use the riskTrigger to enable/disable risk detection
+    if (voiceCommands.riskTrigger && !isRiskDetectionEnabled) {
       enableRiskDetection();
+    } else if (voiceCommands.riskTrigger && isRiskDetectionEnabled) {
+      disableRiskDetection();
     }
   }
 
@@ -39,14 +39,11 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = true;
       _timer = Timer.periodic(
         const Duration(milliseconds: 1500),
-        (timer) {
-          _takePicture();
-        },
+        (_) => _takePicture(),
       );
     });
-    ttsService.speakLabels([
-      AppLocalizations.of(context).translate("risk-on"),
-    ]);
+
+    ttsService.speakLabels(['Risk detection enabled']);
   }
 
   void disableRiskDetection() {
@@ -56,14 +53,12 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    ttsService.speakLabels([
-      AppLocalizations.of(context).translate("risk-off"),
-    ]);
+    ttsService.speakLabels(['Risk detection disabled']);
   }
 
   Future<void> _takePicture() async {
     final pictureService = Provider.of<PictureService>(context, listen: false);
-    final sessionToken = AppInitializer().sessionToken; // Shared globally
+    final sessionToken = AppInitializer().sessionToken;
 
     final endpoint =
         'https://begiapbl.duckdns.org:1880/detect?session_id=$sessionToken';
@@ -83,56 +78,43 @@ class RiskDetectionState extends State<RiskDetection> {
 
   @override
   Widget build(BuildContext context) {
-    final pictureService = Provider.of<PictureService>(context);
-
-    if (!pictureService.isCameraInitialized) {
-      return Container();
-    }
-
-    return Material(
-      child: Column(
-        children: [
-          if (responseTime != Duration.zero)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
-            ),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.red, width: 2.0),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Icon(Icons.warning,
-                              color: Colors.red, size: 40.0),
-                          Switch(
-                            value: isRiskDetectionEnabled,
-                            onChanged: (value) {
-                              if (value) {
-                                enableRiskDetection();
-                              } else {
-                                disableRiskDetection();
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+    return Column(
+      children: [
+        if (responseTime != Duration.zero)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
+          ),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red, width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.warning, color: Colors.red, size: 40.0),
+                    Switch(
+                      value: isRiskDetectionEnabled,
+                      onChanged: (value) {
+                        if (value) {
+                          enableRiskDetection();
+                        } else {
+                          disableRiskDetection();
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

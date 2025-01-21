@@ -3,54 +3,70 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path/path.dart';
+import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:pbl5_menu/features/describe_environment.dart';
-import 'package:pbl5_menu/features/grid_menu.dart';
-import 'package:pbl5_menu/features/map_widget.dart';
-import 'package:pbl5_menu/features/money_identifier.dart';
-import 'package:pbl5_menu/features/ocr_widget.dart';
-import 'package:pbl5_menu/features/risk_detection.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
-  final AudioPlayer player = AudioPlayer();
-  final Map<String, List<String>> voiceCommands = {};
-  final Map<String, bool> widgetStates = {
-    'map_command': false,
-    'money_identifier_command': false,
-    'text_command': false,
-    'photo_command': false,
-  };
+  bool _isActivated = false;
+  bool riskTrigger = false; //state of risk detection
+  int triggerVariable = 0; // trigger widget
+
+
+  final SttService _sttService;
+
+  // Constructor
+  VoiceCommands(this._sttService);
+
+  bool get isActivated => _isActivated;
+
   void toggleActivation(bool value) {
-    isActivated = value;
-    notifyListeners(); // Notify widgets to rebuild
+    _isActivated = value;
+    notifyListeners();
+
+    if (_isActivated) {
+      _sttService.startListening((result) {
+        print("Voice command detected: $result");
+      });
+    } else {
+      _sttService.stopListening();
+    }
   }
 
-  bool isActivated = false;
+  final AudioPlayer player = AudioPlayer();
+  final Map<String, List<String>> voiceCommands = {};
+
   static final ValueNotifier<bool> useVoiceControlNotifier =
       ValueNotifier(false);
+
   String _command = '';
+  String get command => _command;
   List<String> activationCommands = [];
 
+  // Dependencies fetched from Provider
   late Locale locale;
   late SttService sttService;
-  late TtsServiceGoogle ttsServiceGoogle;
+  late ITtsService ttsServiceGoogle;
 
-  VoiceCommands();
+  // New dependency for managing widget states
+  late WidgetStateProvider widgetStateProvider;
 
-  /// Initialize VoiceCommands with Locale, STT, and TTS Services
-  Future<void> initialize(
-      Locale locale, SttService stt, TtsServiceGoogle tts) async {
-    this.locale = locale;
-    this.sttService = stt;
-    this.ttsServiceGoogle = tts;
+  /// Initialize VoiceCommands with dependencies via Provider
+  Future<void> initialize(BuildContext context) async {
+    locale = Provider.of<LocaleProvider>(context, listen: false).currentLocale;
+    sttService = Provider.of<SttService>(context, listen: false);
+    ttsServiceGoogle = Provider.of<ITtsService>(context, listen: false);
+    widgetStateProvider =
+        Provider.of<WidgetStateProvider>(context, listen: false);
 
     await loadActivationCommands();
     await loadVoiceCommands();
     startListening();
-    notifyListeners();
+    // notifyListeners();
   }
 
   Future<void> loadVoiceCommands() async {
@@ -62,10 +78,8 @@ class VoiceCommands extends ChangeNotifier {
       final voiceCommandsMap = jsonContent['voice_commands'];
       if (voiceCommandsMap is Map) {
         voiceCommands.addAll(voiceCommandsMap.map(
-          (key, value) => MapEntry(
-            key,
-            List<String>.from(value.map((cmd) => cmd.trim().toLowerCase())),
-          ),
+          (key, value) => MapEntry(key,
+              List<String>.from(value.map((cmd) => cmd.trim().toLowerCase()))),
         ));
       }
     }
@@ -83,13 +97,15 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   void _handleSpeechResult(String recognizedText) {
-    if (isActivated) {
+    print('Texto reconocido: $recognizedText');
+    if (_isActivated) {
       _command = recognizedText;
       _handleCommand(_command);
     } else if (_isActivationCommand(recognizedText)) {
-      isActivated = true;
+      _isActivated = true;
       useVoiceControlNotifier.value = true;
       _playActivationSound();
+      notifyListeners();
     } else {
       startListening();
     }
@@ -99,7 +115,13 @@ class VoiceCommands extends ChangeNotifier {
     return activationCommands.any((command) => transcript.contains(command));
   }
 
+  Future<void> _playActivationSound() async {
+    await player.play(AssetSource('sounds/activation_sound.mp3'));
+  }
+
   void _handleCommand(String command) {
+    print('Activated command: $command');
+
     bool matched = false;
     const double similarityThreshold = 80.0;
 
@@ -113,37 +135,59 @@ class VoiceCommands extends ChangeNotifier {
         switch (primaryCommand) {
           case 'risk_detection_command':
             matched = true;
-            notifyListeners(); // Trigger UI updates for Risk Detection
+            riskTrigger = true;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              riskTrigger = false; // Reset riskTrigger after the delay
+            });
             break;
 
           case 'money_identifier_command':
-            matched = _handleMoneyIdentifierCommand();
+            matched = true;//_handleMoneyIdentifierCommand();
+            triggerVariable = 1;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
             break;
 
           case 'map_command':
-            matched = _handleMapCommand();
+            matched = true;//_handleMapCommand();
+             triggerVariable = 2;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
             break;
 
           case 'menu_command':
             matched = true;
             ttsServiceGoogle.speakLabels([
-              AppLocalizations.of(context as BuildContext).translate("menu"),
+              AppLocalizations.of(context as BuildContext).translate("menu")
             ]);
             break;
 
           case 'text_command':
             matched = true;
-            notifyListeners(); // Handle Text Commands UI Logic
+             triggerVariable = 3;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
             break;
 
           case 'photo_command':
-            matched = _handlePhotoCommand();
+            matched = true;//_handlePhotoCommand();
+             triggerVariable = 4;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
             break;
 
           default:
             break;
         }
-
         break;
       }
     }
@@ -151,15 +195,18 @@ class VoiceCommands extends ChangeNotifier {
     if (!matched) {
       startListening();
     } else {
-      isActivated = false;
+      _isActivated = false;
       useVoiceControlNotifier.value = false;
+      _command = ''; // Reset command after it's processed
+      _sttService.stopListening(); // Stop listening to prevent repeat
+      startListening(); // Restart listening for the next command
     }
   }
 
   bool _handleMoneyIdentifierCommand() {
-    if (!widgetStates['money_identifier_command']!) {
-      widgetStates['money_identifier_command'] = true;
-      notifyListeners();
+    if (!widgetStateProvider.getWidgetState('Money Identifier')) {
+      widgetStateProvider.setWidgetState('Money Identifier', true);
+      // notifyListeners();
       return true;
     } else {
       ttsServiceGoogle.speakLabels(['Money Identifier is already open']);
@@ -168,8 +215,8 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   bool _handleMapCommand() {
-    if (!widgetStates['map_command']!) {
-      widgetStates['map_command'] = true;
+    if (!widgetStateProvider.getWidgetState('GPS (Map)')) {
+      widgetStateProvider.setWidgetState('GPS (Map)', true);
       notifyListeners();
       return true;
     } else {
@@ -179,7 +226,7 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   bool _handlePhotoCommand() {
-    notifyListeners(); // Handle photo logic here if needed
+    notifyListeners();
     return true;
   }
 
@@ -225,9 +272,5 @@ class VoiceCommands extends ChangeNotifier {
     }
 
     return dp[len1][len2];
-  }
-
-  Future<void> _playActivationSound() async {
-    await player.play(AssetSource('sounds/activation_sound.mp3'));
   }
 }
