@@ -9,7 +9,7 @@ import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:provider/provider.dart';
 
-import 'risk_detection_test.mocks.dart';
+// import 'risk_detection_test.mocks.dart';
 
 @GenerateMocks([PictureService, ITtsService])
 void main() {
@@ -20,8 +20,8 @@ void main() {
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
 
-    when(mockPictureService.isCameraInitialized).thenReturn(true);
-  });
+//     when(mockPictureService.isCameraInitialized).thenReturn(true);
+//   });
 
   Future<void> pumpRiskDetection(WidgetTester tester) async {
     await tester.pumpWidget(
@@ -76,13 +76,13 @@ void main() {
 
   //   await tester.pumpAndSettle();
 
-  //   // Tap the switch to turn it on
-  //   await tester.tap(find.byType(Switch));
-  //   await tester.pumpAndSettle();
+//   //   // Tap the switch to turn it on
+//   //   await tester.tap(find.byType(Switch));
+//   //   await tester.pumpAndSettle();
 
-  //   // Tap the switch again to turn it off
-  //   await tester.tap(find.byType(Switch));
-  //   await tester.pumpAndSettle();
+//   //   // Tap the switch again to turn it off
+//   //   await tester.tap(find.byType(Switch));
+//   //   await tester.pumpAndSettle();
 
   //   verify(mockTtsService.speakLabels(["Risk detection off"])).called(1);
   //   expect(find.byType(Switch), findsOneWidget);

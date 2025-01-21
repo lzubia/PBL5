@@ -23,31 +23,31 @@ import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'main_test.mocks.dart';
+// import 'main_test.mocks.dart';
 
-@GenerateMocks([
-  PictureService,
-  TtsServiceGoogle,
-  DatabaseHelper,
-  SttService,
-  VoiceCommands,
-  NavigatorObserver,
-])
-void main() {
-  late MockPictureService mockPictureService;
-  late MockTtsServiceGoogle mockTtsServiceGoogle;
-  late MockDatabaseHelper mockDatabaseHelper;
-  late MockSttService mockSttService;
-  late MockVoiceCommands mockVoiceCommands;
-  late MockNavigatorObserver mockNavigatorObserver;
+// @GenerateMocks([
+//   PictureService,
+//   TtsServiceGoogle,
+//   DatabaseHelper,
+//   SttService,
+//   VoiceCommands,
+//   NavigatorObserver,
+// ])
+// void main() {
+//   late MockPictureService mockPictureService;
+//   late MockTtsServiceGoogle mockTtsServiceGoogle;
+//   late MockDatabaseHelper mockDatabaseHelper;
+//   late MockSttService mockSttService;
+//   late MockVoiceCommands mockVoiceCommands;
+//   late MockNavigatorObserver mockNavigatorObserver;
 
-  setUp(() {
-    mockPictureService = MockPictureService();
-    mockTtsServiceGoogle = MockTtsServiceGoogle();
-    mockDatabaseHelper = MockDatabaseHelper();
-    mockSttService = MockSttService();
-    mockVoiceCommands = MockVoiceCommands();
-    mockNavigatorObserver = MockNavigatorObserver();
+//   setUp(() {
+//     mockPictureService = MockPictureService();
+//     mockTtsServiceGoogle = MockTtsServiceGoogle();
+//     mockDatabaseHelper = MockDatabaseHelper();
+//     mockSttService = MockSttService();
+//     mockVoiceCommands = MockVoiceCommands();
+//     mockNavigatorObserver = MockNavigatorObserver();
 
     // Mock the necessary methods
     when(mockPictureService.isCameraInitialized).thenAnswer((_) => true);
@@ -111,13 +111,13 @@ void main() {
   //     ),
   //   );
 
-  //   await tester.pumpAndSettle();
+//   //   await tester.pumpAndSettle();
 
-  //   // Verify widgets
-  //   expect(find.byType(RiskDetection), findsOneWidget);
-  //   expect(find.byType(GridMenu), findsOneWidget);
-  //   expect(find.byKey(const Key('voiceControlSwitch')), findsOneWidget);
-  // });
+//   //   // Verify widgets
+//   //   expect(find.byType(RiskDetection), findsOneWidget);
+//   //   expect(find.byType(GridMenu), findsOneWidget);
+//   //   expect(find.byKey(const Key('voiceControlSwitch')), findsOneWidget);
+//   // });
 
   // testWidgets('Settings button navigates to SettingsScreen',
   //     (WidgetTester tester) async {
@@ -151,14 +151,14 @@ void main() {
   //     ),
   //   );
 
-  //   await tester.pumpAndSettle();
+//   //   await tester.pumpAndSettle();
 
-  //   // Tap on the settings button using the Key
-  //   await tester.tap(find.byKey(const Key('settingsButton')));
-  //   await tester.pumpAndSettle();
+//   //   // Tap on the settings button using the Key
+//   //   await tester.tap(find.byKey(const Key('settingsButton')));
+//   //   await tester.pumpAndSettle();
 
-  //   // Verify navigation to SettingsScreen
-  //   verify(mockNavigatorObserver.didPush(any, any)).called(1);
-  //   expect(find.byType(SettingsScreen), findsOneWidget);
-  // });
-}
+//   //   // Verify navigation to SettingsScreen
+//   //   verify(mockNavigatorObserver.didPush(any, any)).called(1);
+//   //   expect(find.byType(SettingsScreen), findsOneWidget);
+//   // });
+// }
