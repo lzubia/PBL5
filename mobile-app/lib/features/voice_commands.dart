@@ -11,6 +11,7 @@ import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
+  VoidCallback? onMenuCommand;
   bool _isActivated = false;
   bool riskTrigger = false; //state of risk detection
   int triggerVariable = 0; // trigger widget
@@ -94,6 +95,8 @@ class VoiceCommands extends ChangeNotifier {
     if (useVoiceControlNotifier.value) {
       _handleSpeechResult('begia');
     } else {
+      _desactivateBegia();
+      _playDesactivationSound();
       _sttService.stopListening();
       startListening();
     }
@@ -119,26 +122,26 @@ class VoiceCommands extends ChangeNotifier {
     }
   }
 
+  void _desactivateBegia() {
+    _isActivated = false;
+    useVoiceControlNotifier.value = false;
+    notifyListeners();
+    sttService.stopListening();
+    startListening();
+  }
+
   void _startCommandTimer() {
     _cancelCommandTimer();
     _commandTimer = Timer(Duration(seconds: 10), () {
-      _playDesactivationSound();
-      _isActivated = false;
-      useVoiceControlNotifier.value = false;
-      notifyListeners();
-      sttService.stopListening();
-      startListening();
+      _desactivateBegia();
     });
   }
 
   void _cancelCommandTimer() {
-  if (_commandTimer != null && _commandTimer!.isActive) {
-    _commandTimer!.cancel();
+    if (_commandTimer != null && _commandTimer!.isActive) {
+      _commandTimer!.cancel();
+    }
   }
-
-}
-
-
 
   bool _isActivationCommand(String transcript) {
     return activationCommands.any((command) => transcript.contains(command));
@@ -176,51 +179,34 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'money_identifier_command':
-            matched = true; //_handleMoneyIdentifierCommand();
-            triggerVariable = 1;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(1);
             break;
 
           case 'map_command':
-            matched = true; //_handleMapCommand();
-            triggerVariable = 2;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(2);
             break;
 
           case 'menu_command':
             matched = true;
-            ttsServiceGoogle.speakLabels([
-              AppLocalizations.of(context as BuildContext).translate("menu")
-            ]);
+            if (onMenuCommand != null) {
+              onMenuCommand!(); // Trigger the callback
+            }
+            _cancelCommandTimer();
+            _desactivateBegia();
             break;
 
           case 'text_command':
-            matched = true;
-            triggerVariable = 3;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(3);
             break;
 
           case 'photo_command':
-            matched = true; //_handlePhotoCommand();
-            triggerVariable = 4;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(4);
             break;
 
           default:
             break;
         }
+
         break;
       }
     }
@@ -235,6 +221,17 @@ class VoiceCommands extends ChangeNotifier {
       _sttService.stopListening(); // Stop listening to prevent repeat
       startListening(); // Restart listening for the next command
     }
+  }
+
+  bool _executeCommand(int triggerVariable) {
+    this.triggerVariable = triggerVariable;
+    notifyListeners();
+    _cancelCommandTimer();
+    Future.delayed(Duration(seconds: 2), () {
+      triggerVariable = 0; // Reset riskTrigger after the delay
+    });
+
+    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {

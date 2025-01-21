@@ -45,11 +45,11 @@
             "teks"
         ],
         "photo_command": [
-            "foto",
-            "phóto",
-            "fóto",
-            "photto",
-            "fotto"
+            "describir",
+            "deskribir",
+            "escribir",
+            "eskribir",
+            "describi"
         ],
         "back_command": [
             "atrás",

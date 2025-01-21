@@ -51,11 +51,13 @@
             "tehst"
         ],
         "photo_command": [
-            "photo",
-            "foto",
-            "fotto",
-            "fohtoh",
-            "photto"
+            "describe",
+            "deskribe",
+            "discribe",
+            "descrybe",
+            "diskribe",
+            "discrib",
+            "describ"
         ],
         "back_command": [
             "back",

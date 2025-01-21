@@ -124,6 +124,10 @@ class GridMenuState extends State<GridMenu> {
   Widget build(BuildContext context) {
     return Consumer<VoiceCommands>(
       builder: (context, voiceCommands, child) {
+        voiceCommands.onMenuCommand = () {
+          // Close all bottom sheets or widgets
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        };
         // If triggerVariable is set, show the dynamic widget
         if (voiceCommands.triggerVariable != 0) {
           final trigger = voiceCommands.triggerVariable;

@@ -92,16 +92,11 @@
             "test uá"
         ],
         "photo_command": [
-            "foto",
-            "photo",
-            "photto",
-            "fotó",
-            "fóto",
-            "fotto",
-            "phóto",
-            "phottó",
-            "fo'to",
-            "fótto"
+            "deskribatu",
+            "describatu",
+            "deskibatu",
+            "diskribatu",
+            "describatu"
         ],
         "back_command": [
             "atzera",
