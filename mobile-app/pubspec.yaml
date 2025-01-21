@@ -94,18 +94,20 @@ flutter:
     # - images/a_dot_ham.jpeg
     - assets/tts-english.json
     - ./.env
-    - assets/sounds/activation_sound.mp3
+    - assets/sounds/Begia-on.mp3
+    - assets/sounds/Begia-off.mp3
     - assets/voice_commands.txt
     - assets/activation_commands.txt
     - assets/icons/app_icon.png
     - assets/lang/en.json
     - assets/lang/es.json
     - assets/lang/eu.json
+    - assets/BegiaGif.gif
 
 flutter_icons:
-                android: true
-                ios: true
-                image_path: "assets/icons/app_icon.png"
+    android: true
+    ios: true
+    image_path: "assets/icons/app_icon.png"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

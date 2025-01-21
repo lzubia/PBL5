@@ -24,7 +24,8 @@ void main() async {
   final pictureService = PictureService();
   final sttService = SttService();
   final dbHelper = DatabaseHelper(); // Create an instance of DatabaseHelper
-  final ttsService = TtsServiceGoogle(dbHelper); // Initialize TtsServiceGoogle with DatabaseHelper
+  final ttsService = TtsServiceGoogle(
+      dbHelper); // Initialize TtsServiceGoogle with DatabaseHelper
   final appInitializer = AppInitializer();
   await appInitializer.initialize(pictureService: pictureService);
 
@@ -32,21 +33,26 @@ void main() async {
     MultiProvider(
       providers: [
         Provider(create: (_) => appInitializer), // Provide AppInitializer
-        ChangeNotifierProvider(create: (_) => LocaleProvider()), // LocaleProvider
+        ChangeNotifierProvider(
+            create: (_) => LocaleProvider()), // LocaleProvider
         ChangeNotifierProvider(create: (_) => ThemeProvider()), // ThemeProvider
         ChangeNotifierProvider.value(value: pictureService), // PictureService
         ChangeNotifierProvider(
-          create: (_) => MapProvider(ttsService: ttsService), // MapProvider with TtsServiceGoogle
+          create: (_) => MapProvider(
+              ttsService: ttsService), // MapProvider with TtsServiceGoogle
         ),
         ChangeNotifierProvider(
-          create: (_) => VoiceCommands(sttService), // VoiceCommands with SttService
+          create: (_) =>
+              VoiceCommands(sttService), // VoiceCommands with SttService
         ),
         Provider(create: (_) => dbHelper), // Provide DatabaseHelper
         Provider<ITtsService>(
           create: (_) => ttsService, // Provide TtsServiceGoogle as ITtsService
         ),
-        Provider(create: (_) => appInitializer.sttService), // Provide SttService
-        ChangeNotifierProvider(create: (_) => WidgetStateProvider()), // WidgetStateProvider
+        Provider(
+            create: (_) => appInitializer.sttService), // Provide SttService
+        ChangeNotifierProvider(
+            create: (_) => WidgetStateProvider()), // WidgetStateProvider
       ],
       child: const MyApp(),
     ),
@@ -102,43 +108,41 @@ class MyHomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: RiskDetection(),
-          ),
-          Expanded(
-            child: GridMenu(),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Consumer<PictureService>(
-              builder: (context, pictureService, child) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Camera: ${pictureService.isCameraInitialized ? "Enabled" : "Disabled"}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    Consumer<VoiceCommands>(
-                      builder: (context, voiceCommands, child) {
-                        return Switch(
-                          key: const Key('voiceControlSwitch'),
-                          value: voiceCommands.isActivated,
-                          onChanged: (value) {
-                            voiceCommands.toggleActivation(value);
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                );
-              },
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Detecta toques en áreas vacías.
+        onDoubleTap: () {
+          // Toggle state using Provider
+          final voiceCommands = context.read<VoiceCommands>();
+          voiceCommands.toggleVoiceControl();
+        },
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RiskDetection(),
             ),
-          ),
-        ],
+            Expanded(
+              child: GridMenu(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Consumer<VoiceCommands>(
+                builder: (context, voiceCommands, child) {
+                  return Visibility(
+                    visible: VoiceCommands.useVoiceControlNotifier.value,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Image.asset(
+                        'assets/BegiaGif.gif',
+                        height: 100,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

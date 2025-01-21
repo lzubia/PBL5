@@ -78,5 +78,6 @@
     "start_trip": "Starting your trip to",
     "first": "Firstly",
     "now": "Now",
-    "reached": "And you will get to"
+    "reached": "And you will get to",
+    "opened": "Widget already open"
 }

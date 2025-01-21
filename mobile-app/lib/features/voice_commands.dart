@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ class VoiceCommands extends ChangeNotifier {
   bool riskTrigger = false; //state of risk detection
   int triggerVariable = 0; // trigger widget
 
+  Timer? _commandTimer;
 
   final SttService _sttService;
 
@@ -91,6 +93,16 @@ class VoiceCommands extends ChangeNotifier {
         fileContent.split('\n').map((cmd) => cmd.trim().toLowerCase()).toList();
   }
 
+  void toggleVoiceControl() {
+    useVoiceControlNotifier.value = !useVoiceControlNotifier.value;
+    if (useVoiceControlNotifier.value) {
+      _handleSpeechResult('begia');
+    } else {
+      _sttService.stopListening();
+      startListening();
+    }
+  }
+
   void startListening() async {
     await sttService.startListening(_handleSpeechResult);
   }
@@ -105,9 +117,22 @@ class VoiceCommands extends ChangeNotifier {
       useVoiceControlNotifier.value = true;
       _playActivationSound();
       notifyListeners();
+      _startCommandTimer();
     } else {
       startListening();
     }
+  }
+
+  void _startCommandTimer() {
+    _commandTimer?.cancel(); // Cancel any existing timer
+    _commandTimer = Timer(Duration(seconds: 10), () {
+      _playDesactivationSound();
+      _isActivated = false;
+      useVoiceControlNotifier.value = false;
+      notifyListeners();
+      sttService.stopListening();
+      startListening();
+    });
   }
 
   bool _isActivationCommand(String transcript) {
@@ -115,7 +140,11 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   Future<void> _playActivationSound() async {
-    await player.play(AssetSource('sounds/activation_sound.mp3'));
+    await player.play(AssetSource('sounds/Begia-on.mp3'));
+  }
+
+  Future<void> _playDesactivationSound() async {
+    await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
   void _handleCommand(String command) {
@@ -142,7 +171,7 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'money_identifier_command':
-            matched = true;//_handleMoneyIdentifierCommand();
+            matched = true; //_handleMoneyIdentifierCommand();
             triggerVariable = 1;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
@@ -151,8 +180,8 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'map_command':
-            matched = true;//_handleMapCommand();
-             triggerVariable = 2;
+            matched = true; //_handleMapCommand();
+            triggerVariable = 2;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
               triggerVariable = 0; // Reset riskTrigger after the delay
@@ -168,7 +197,7 @@ class VoiceCommands extends ChangeNotifier {
 
           case 'text_command':
             matched = true;
-             triggerVariable = 3;
+            triggerVariable = 3;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
               triggerVariable = 0; // Reset riskTrigger after the delay
@@ -176,8 +205,8 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'photo_command':
-            matched = true;//_handlePhotoCommand();
-             triggerVariable = 4;
+            matched = true; //_handlePhotoCommand();
+            triggerVariable = 4;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
               triggerVariable = 0; // Reset riskTrigger after the delay
@@ -200,33 +229,6 @@ class VoiceCommands extends ChangeNotifier {
       _sttService.stopListening(); // Stop listening to prevent repeat
       startListening(); // Restart listening for the next command
     }
-  }
-
-  bool _handleMoneyIdentifierCommand() {
-    if (!widgetStateProvider.getWidgetState('Money Identifier')) {
-      widgetStateProvider.setWidgetState('Money Identifier', true);
-      // notifyListeners();
-      return true;
-    } else {
-      ttsServiceGoogle.speakLabels(['Money Identifier is already open']);
-      return false;
-    }
-  }
-
-  bool _handleMapCommand() {
-    if (!widgetStateProvider.getWidgetState('GPS (Map)')) {
-      widgetStateProvider.setWidgetState('GPS (Map)', true);
-      notifyListeners();
-      return true;
-    } else {
-      ttsServiceGoogle.speakLabels(['Map is already open']);
-      return false;
-    }
-  }
-
-  bool _handlePhotoCommand() {
-    notifyListeners();
-    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {
