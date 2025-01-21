@@ -23,26 +23,30 @@ void main() async {
   // Initialize dependencies
   final pictureService = PictureService();
   final sttService = SttService();
+  final dbHelper = DatabaseHelper(); // Create an instance of DatabaseHelper
+  final ttsService = TtsServiceGoogle(dbHelper); // Initialize TtsServiceGoogle with DatabaseHelper
   final appInitializer = AppInitializer();
   await appInitializer.initialize(pictureService: pictureService);
 
   runApp(
     MultiProvider(
       providers: [
-        Provider(create: (_) => AppInitializer()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider.value(value: pictureService), // Share instance
-        ChangeNotifierProvider(create: (_) => MapProvider()),
-        ChangeNotifierProvider(create: (_) => VoiceCommands(sttService)), // Wrap in ChangeNotifierProvider
-        Provider(create: (_) => DatabaseHelper()), // Provide DatabaseHelper
-        Provider<ITtsService>(
-          create: (context) =>
-              TtsServiceGoogle(context.read<DatabaseHelper>()), // Pass dependency
+        Provider(create: (_) => appInitializer), // Provide AppInitializer
+        ChangeNotifierProvider(create: (_) => LocaleProvider()), // LocaleProvider
+        ChangeNotifierProvider(create: (_) => ThemeProvider()), // ThemeProvider
+        ChangeNotifierProvider.value(value: pictureService), // PictureService
+        ChangeNotifierProvider(
+          create: (_) => MapProvider(ttsService: ttsService), // MapProvider with TtsServiceGoogle
         ),
-        // Provider(create: (_) => SttService()),
-        Provider(create: (_) => appInitializer.sttService),
-        ChangeNotifierProvider(create: (_) => WidgetStateProvider()), // Provide WidgetStateProvider
+        ChangeNotifierProvider(
+          create: (_) => VoiceCommands(sttService), // VoiceCommands with SttService
+        ),
+        Provider(create: (_) => dbHelper), // Provide DatabaseHelper
+        Provider<ITtsService>(
+          create: (_) => ttsService, // Provide TtsServiceGoogle as ITtsService
+        ),
+        Provider(create: (_) => appInitializer.sttService), // Provide SttService
+        ChangeNotifierProvider(create: (_) => WidgetStateProvider()), // WidgetStateProvider
       ],
       child: const MyApp(),
     ),
@@ -91,7 +95,7 @@ class MyHomePage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SettingsScreen(),
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },

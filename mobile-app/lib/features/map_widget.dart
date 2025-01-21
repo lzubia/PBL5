@@ -40,7 +40,7 @@ class _MapWidgetState extends State<MapWidget> {
             child: TextField(
               controller: _destinationController,
               decoration: InputDecoration(
-                hintText: 'Enter destination',
+                hintText: "Enter destination",
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.search),
                   onPressed: () => _searchDestination(context),
@@ -51,8 +51,12 @@ class _MapWidgetState extends State<MapWidget> {
           Expanded(
             child: Consumer<MapProvider>(
               builder: (context, mapProvider, child) {
+                if (mapProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
                 if (mapProvider.currentLocation == null) {
-                  return const Center(child: Text("Loading..."));
+                  return const Center(child: Text("Loading current location..."));
                 }
 
                 return GoogleMap(
@@ -65,7 +69,7 @@ class _MapWidgetState extends State<MapWidget> {
                   ),
                   polylines: {
                     Polyline(
-                      polylineId: const PolylineId('route'),
+                      polylineId: const PolylineId("route"),
                       points: mapProvider.polylineCoordinates,
                       color: const Color(0xFF7B61FF),
                       width: 6,
@@ -73,7 +77,7 @@ class _MapWidgetState extends State<MapWidget> {
                   },
                   markers: {
                     Marker(
-                      markerId: const MarkerId('currentLocation'),
+                      markerId: const MarkerId("currentLocation"),
                       position: LatLng(
                         mapProvider.currentLocation!.latitude!,
                         mapProvider.currentLocation!.longitude!,
@@ -81,7 +85,7 @@ class _MapWidgetState extends State<MapWidget> {
                     ),
                     if (mapProvider.destination != null)
                       Marker(
-                        markerId: const MarkerId('destination'),
+                        markerId: const MarkerId("destination"),
                         position: mapProvider.destination!,
                       ),
                   },
