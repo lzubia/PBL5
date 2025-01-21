@@ -38,10 +38,11 @@ class GridMenuState extends State<GridMenu> {
     final ttsService = context.read<ITtsService>();
     // Prevent showing multiple bottom sheets by ensuring state management
     if (currentWidgetTitle == title) {
-      ttsService.speakLabels(['Widget already open']);
+      ttsService.speakLabels([AppLocalizations.of(context).translate("opened")]);
       return;
+    }else if (currentWidgetTitle != null) {
+      Navigator.of(context).pop();
     }
-    ;
 
     // Use addPostFrameCallback to delay setState until after the build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -50,9 +51,7 @@ class GridMenuState extends State<GridMenu> {
       });
 
       // If it's not the first route and the widget is already open, close it
-      if (!ModalRoute.of(context)!.isFirst &&
-          (currentWidgetTitle != 'GPS (Map)' ||
-              (currentWidgetTitle == 'GPS (Map)'))) {
+      if (!ModalRoute.of(context)!.isFirst && (currentWidgetTitle != 'GPS (Map)' || (currentWidgetTitle == 'GPS (Map)'))) {
         Navigator.of(context).pop();
       }
 

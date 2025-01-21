@@ -1,19 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../services/picture_service.dart';
 import '../shared/database_helper.dart';
 import '../services/tts/tts_service_google.dart';
 import '../services/stt/stt_service.dart';
-import '../features/map_widget.dart';
-import '../features/describe_environment.dart';
-import '../features/money_identifier.dart';
-import '../features/ocr_widget.dart';
-import '../features/risk_detection.dart';
-import '../features/grid_menu.dart';
 import '../features/voice_commands.dart';
 
 class AppInitializer {

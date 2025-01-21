@@ -724,6 +724,15 @@ class MockVoiceCommands extends _i1.Mock implements _i14.VoiceCommands {
       ) as _i12.Future<void>);
 
   @override
+  void toggleVoiceControl() => super.noSuchMethod(
+        Invocation.method(
+          #toggleVoiceControl,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void startListening() => super.noSuchMethod(
         Invocation.method(
           #startListening,
@@ -731,25 +740,6 @@ class MockVoiceCommands extends _i1.Mock implements _i14.VoiceCommands {
         ),
         returnValueForMissingStub: null,
       );
-
-  @override
-  bool isActivationCommand(String? transcript) => (super.noSuchMethod(
-        Invocation.method(
-          #isActivationCommand,
-          [transcript],
-        ),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  _i12.Future<void> playActivationSound() => (super.noSuchMethod(
-        Invocation.method(
-          #playActivationSound,
-          [],
-        ),
-        returnValue: _i12.Future<void>.value(),
-        returnValueForMissingStub: _i12.Future<void>.value(),
-      ) as _i12.Future<void>);
 
   @override
   void handleCommand(String? command) => super.noSuchMethod(

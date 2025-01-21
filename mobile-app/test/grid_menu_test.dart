@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,6 +107,8 @@ void main() {
     when(mockMapProvider.destination).thenReturn(
       LatLng(1.0, 1.0),
     ); // Stub destination
+
+    when(mockMapProvider.isLoading).thenReturn(false); // Stub isLoading
   });
 
   Future<void> pumpGridMenu(WidgetTester tester) async {

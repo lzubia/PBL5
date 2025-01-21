@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/widgetState_provider.dart';
@@ -11,8 +13,10 @@ import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
   bool _isActivated = false;
-  bool riskTrigger = false;
-  int triggerVariable = 0;
+  bool riskTrigger = false; //state of risk detection
+  int triggerVariable = 0; // trigger widget
+
+  Timer? _commandTimer;
 
   final SttService _sttService;
   late AudioPlayer player;
@@ -91,6 +95,16 @@ class VoiceCommands extends ChangeNotifier {
         fileContent.split('\n').map((cmd) => cmd.trim().toLowerCase()).toList();
   }
 
+  void toggleVoiceControl() {
+    useVoiceControlNotifier.value = !useVoiceControlNotifier.value;
+    if (useVoiceControlNotifier.value) {
+      _handleSpeechResult('begia');
+    } else {
+      _sttService.stopListening();
+      startListening();
+    }
+  }
+
   void startListening() async {
     await sttService.startListening(_handleSpeechResult);
   }
@@ -105,9 +119,22 @@ class VoiceCommands extends ChangeNotifier {
       useVoiceControlNotifier.value = true;
       playActivationSound();
       notifyListeners();
+      _startCommandTimer();
     } else {
       startListening();
     }
+  }
+
+  void _startCommandTimer() {
+    _commandTimer?.cancel(); // Cancel any existing timer
+    _commandTimer = Timer(Duration(seconds: 10), () {
+      _playDesactivationSound();
+      _isActivated = false;
+      useVoiceControlNotifier.value = false;
+      notifyListeners();
+      sttService.stopListening();
+      startListening();
+    });
   }
 
   bool isActivationCommand(String transcript) {
@@ -115,7 +142,11 @@ class VoiceCommands extends ChangeNotifier {
   }
 
   Future<void> playActivationSound() async {
-    await player.play(AssetSource('sounds/activation_sound.mp3'));
+    await player.play(AssetSource('sounds/Begia-on.mp3'));
+  }
+
+  Future<void> _playDesactivationSound() async {
+    await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
   void handleCommand(String command) {
@@ -148,11 +179,45 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'money_identifier_command':
-            matched = true;
+            matched = true; //_handleMoneyIdentifierCommand();
             triggerVariable = 1;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0;
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
+            break;
+
+          case 'map_command':
+            matched = true; //_handleMapCommand();
+            triggerVariable = 2;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
+            break;
+
+          case 'menu_command':
+            matched = true;
+            ttsServiceGoogle.speakLabels([
+              AppLocalizations.of(context as BuildContext).translate("menu")
+            ]);
+            break;
+
+          case 'text_command':
+            matched = true;
+            triggerVariable = 3;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
+            });
+            break;
+
+          case 'photo_command':
+            matched = true; //_handlePhotoCommand();
+            triggerVariable = 4;
+            notifyListeners();
+            Future.delayed(Duration(seconds: 2), () {
+              triggerVariable = 0; // Reset riskTrigger after the delay
             });
             break;
 

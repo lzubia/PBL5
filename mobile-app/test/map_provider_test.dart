@@ -8,10 +8,16 @@ import 'package:location/location.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pbl5_menu/map_provider.dart';
+import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 
 import 'map_provider_test.mocks.dart';
 
-@GenerateMocks([Location, http.Client, PolylinePoints])
+@GenerateMocks([
+  Location,
+  http.Client,
+  PolylinePoints,
+  TtsServiceGoogle,
+])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -25,7 +31,9 @@ void main() {
     mockHttpClient = MockClient();
     mockPolylinePoints = MockPolylinePoints();
     mapProvider = MapProvider(
-        httpClient: mockHttpClient, polylinePoints: mockPolylinePoints)
+        httpClient: mockHttpClient,
+        polylinePoints: mockPolylinePoints,
+        ttsService: MockTtsServiceGoogle())
       ..location = mockLocation;
   });
 
