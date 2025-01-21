@@ -20,7 +20,7 @@ class TtsServiceGoogle implements ITtsService {
   TtsServiceGoogle(this._dbHelper) {
     WidgetsFlutterBinding.ensureInitialized();
     audioPlayer = AudioPlayer();
-    _loadSettings();
+    loadSettings();
   }
 
   @override
@@ -28,7 +28,7 @@ class TtsServiceGoogle implements ITtsService {
     print("Google TTS Service Initialized");
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
     languageCode = settings['languageCode']!;
     voiceName = settings['voiceName']!;
@@ -49,7 +49,7 @@ class TtsServiceGoogle implements ITtsService {
     print("Speech rate updated to $speechRate");
   }
 
-  Future<String> _getAccessToken() async {
+  Future<String> getAccessToken() async {
     final serviceAccount =
         json.decode(await rootBundle.loadString(_authFilePath));
     final now = DateTime.now();
@@ -86,7 +86,7 @@ class TtsServiceGoogle implements ITtsService {
 
   @override
   Future<void> speakLabels(List<dynamic> detectedObjects) async {
-    final token = await _getAccessToken();
+    final token = await getAccessToken();
 
     for (var obj in detectedObjects) {
       String label = obj;

@@ -2,25 +2,26 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
   bool _isActivated = false;
-  bool riskTrigger = false; //state of risk detection
-  int triggerVariable = 0; // trigger widget
-
+  bool riskTrigger = false;
+  int triggerVariable = 0;
 
   final SttService _sttService;
+  late AudioPlayer player;
 
-  // Constructor
-  VoiceCommands(this._sttService);
+  final AppLocalizations? appLocalizations; // Injected for testing
+
+  VoiceCommands(this._sttService,
+      {AudioPlayer? audioPlayer, this.appLocalizations})
+      : player = audioPlayer ?? AudioPlayer();
 
   bool get isActivated => _isActivated;
 
@@ -37,7 +38,6 @@ class VoiceCommands extends ChangeNotifier {
     }
   }
 
-  final AudioPlayer player = AudioPlayer();
   final Map<String, List<String>> voiceCommands = {};
 
   static final ValueNotifier<bool> useVoiceControlNotifier =
@@ -66,7 +66,6 @@ class VoiceCommands extends ChangeNotifier {
     await loadActivationCommands();
     await loadVoiceCommands();
     startListening();
-    // notifyListeners();
   }
 
   Future<void> loadVoiceCommands() async {
@@ -100,26 +99,26 @@ class VoiceCommands extends ChangeNotifier {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;
-      _handleCommand(_command);
-    } else if (_isActivationCommand(recognizedText)) {
+      handleCommand(_command);
+    } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
-      _playActivationSound();
+      playActivationSound();
       notifyListeners();
     } else {
       startListening();
     }
   }
 
-  bool _isActivationCommand(String transcript) {
+  bool isActivationCommand(String transcript) {
     return activationCommands.any((command) => transcript.contains(command));
   }
 
-  Future<void> _playActivationSound() async {
+  Future<void> playActivationSound() async {
     await player.play(AssetSource('sounds/activation_sound.mp3'));
   }
 
-  void _handleCommand(String command) {
+  void handleCommand(String command) {
     print('Activated command: $command');
 
     bool matched = false;
@@ -133,55 +132,27 @@ class VoiceCommands extends ChangeNotifier {
         final primaryCommand = commandGroup.key;
 
         switch (primaryCommand) {
+          case 'menu_command':
+            matched = true;
+            final label = appLocalizations?.translate("menu") ?? "menu";
+            ttsServiceGoogle.speakLabels([label]);
+            break;
+
           case 'risk_detection_command':
             matched = true;
             riskTrigger = true;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
-              riskTrigger = false; // Reset riskTrigger after the delay
+              riskTrigger = false;
             });
             break;
 
           case 'money_identifier_command':
-            matched = true;//_handleMoneyIdentifierCommand();
+            matched = true;
             triggerVariable = 1;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
-            break;
-
-          case 'map_command':
-            matched = true;//_handleMapCommand();
-             triggerVariable = 2;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
-            break;
-
-          case 'menu_command':
-            matched = true;
-            ttsServiceGoogle.speakLabels([
-              AppLocalizations.of(context as BuildContext).translate("menu")
-            ]);
-            break;
-
-          case 'text_command':
-            matched = true;
-             triggerVariable = 3;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
-            break;
-
-          case 'photo_command':
-            matched = true;//_handlePhotoCommand();
-             triggerVariable = 4;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
+              triggerVariable = 0;
             });
             break;
 
@@ -197,37 +168,10 @@ class VoiceCommands extends ChangeNotifier {
     } else {
       _isActivated = false;
       useVoiceControlNotifier.value = false;
-      _command = ''; // Reset command after it's processed
-      _sttService.stopListening(); // Stop listening to prevent repeat
-      startListening(); // Restart listening for the next command
+      _command = '';
+      _sttService.stopListening();
+      startListening();
     }
-  }
-
-  bool _handleMoneyIdentifierCommand() {
-    if (!widgetStateProvider.getWidgetState('Money Identifier')) {
-      widgetStateProvider.setWidgetState('Money Identifier', true);
-      // notifyListeners();
-      return true;
-    } else {
-      ttsServiceGoogle.speakLabels(['Money Identifier is already open']);
-      return false;
-    }
-  }
-
-  bool _handleMapCommand() {
-    if (!widgetStateProvider.getWidgetState('GPS (Map)')) {
-      widgetStateProvider.setWidgetState('GPS (Map)', true);
-      notifyListeners();
-      return true;
-    } else {
-      ttsServiceGoogle.speakLabels(['Map is already open']);
-      return false;
-    }
-  }
-
-  bool _handlePhotoCommand() {
-    notifyListeners();
-    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {

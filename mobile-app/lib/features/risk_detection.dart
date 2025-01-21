@@ -24,10 +24,9 @@ class RiskDetectionState extends State<RiskDetection> {
     super.didChangeDependencies();
     final voiceCommands = context.watch<VoiceCommands>();
 
-    // Directly use the riskTrigger to enable/disable risk detection
     if (voiceCommands.riskTrigger && !isRiskDetectionEnabled) {
       enableRiskDetection();
-    } else if (voiceCommands.riskTrigger && isRiskDetectionEnabled) {
+    } else if (!voiceCommands.riskTrigger && isRiskDetectionEnabled) {
       disableRiskDetection();
     }
   }
@@ -53,6 +52,7 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
+
     ttsService.speakLabels(['Risk detection disabled']);
   }
 
@@ -77,44 +77,53 @@ class RiskDetectionState extends State<RiskDetection> {
   }
 
   @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (responseTime != Duration.zero)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
-          ),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red, width: 2.0),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Icon(Icons.warning, color: Colors.red, size: 40.0),
-                    Switch(
-                      value: isRiskDetectionEnabled,
-                      onChanged: (value) {
-                        if (value) {
-                          enableRiskDetection();
-                        } else {
-                          disableRiskDetection();
-                        }
-                      },
-                    ),
-                  ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (responseTime != Duration.zero)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
+            ),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red, width: 2.0),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Icon(Icons.warning, color: Colors.red, size: 40.0),
+                      Switch(
+                        value: isRiskDetectionEnabled,
+                        onChanged: (value) {
+                          if (value) {
+                            enableRiskDetection();
+                          } else {
+                            disableRiskDetection();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

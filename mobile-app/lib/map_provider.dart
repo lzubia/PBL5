@@ -20,6 +20,21 @@ class MapProvider extends ChangeNotifier {
   List<LatLng> get polylineCoordinates => _polylineCoordinates;
 
   final Location _location = Location();
+  final http.Client httpClient;
+  final PolylinePoints polylinePoints;
+
+  MapProvider({http.Client? httpClient, PolylinePoints? polylinePoints})
+      : httpClient = httpClient ?? http.Client(),
+        polylinePoints = polylinePoints ?? PolylinePoints();
+
+  set location(_location) {}
+
+  set locationSubscription(
+      StreamSubscription<LocationData> _locationSubscription) {}
+
+  set destination(LatLng? _destination) {}
+
+  set currentLocation(LocationData? _currentLocation) {}
 
   Future<void> getCurrentLocation() async {
     _currentLocation = await _location.getLocation();
@@ -33,7 +48,7 @@ class MapProvider extends ChangeNotifier {
 
   Future<void> setDestination(String destinationAddress) async {
     final apiKey = dotenv.env['GEOCODING_API_KEY'];
-    final response = await http.get(
+    final response = await httpClient.get(
       Uri.parse(
           'https://maps.googleapis.com/maps/api/geocode/json?address=$destinationAddress&key=$apiKey'),
     );
@@ -47,30 +62,32 @@ class MapProvider extends ChangeNotifier {
       _destination = LatLng(location['lat'], location['lng']);
       notifyListeners();
 
-      await _fetchPolylineCoordinates();
+      await fetchPolylineCoordinates();
     } else {
       throw Exception('Failed to fetch destination.');
     }
   }
 
-  Future<void> _fetchPolylineCoordinates() async {
+  Future<void> fetchPolylineCoordinates() async {
     if (_currentLocation == null || _destination == null) return;
 
-    PolylinePoints polylinePoints = PolylinePoints();
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
 
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+    final result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: apiKey!,
       request: PolylineRequest(
-        origin: PointLatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
-        destination: PointLatLng(_destination!.latitude, _destination!.longitude),
+        origin: PointLatLng(
+            _currentLocation!.latitude!, _currentLocation!.longitude!),
+        destination:
+            PointLatLng(_destination!.latitude, _destination!.longitude),
         mode: TravelMode.walking,
       ),
     );
 
     if (result.points.isNotEmpty) {
-      _polylineCoordinates =
-          result.points.map((point) => LatLng(point.latitude, point.longitude)).toList();
+      _polylineCoordinates = result.points
+          .map((point) => LatLng(point.latitude, point.longitude))
+          .toList();
       notifyListeners();
     } else {
       throw Exception('No polyline found.');

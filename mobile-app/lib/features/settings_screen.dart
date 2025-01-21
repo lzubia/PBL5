@@ -7,14 +7,16 @@ import '../services/stt/i_tts_service.dart';
 import '../services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final FlutterNativeContactPicker? contactPicker;
+
+  const SettingsScreen({super.key, this.contactPicker});
 
   @override
   SettingsScreenState createState() => SettingsScreenState();
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
+  late final FlutterNativeContactPicker _contactPicker;
 
   // State variables
   List<String> contacts = [];
@@ -26,6 +28,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _contactPicker = widget.contactPicker ?? FlutterNativeContactPicker();
     _loadSettings();
   }
 
@@ -130,27 +133,29 @@ class SettingsScreenState extends State<SettingsScreen> {
           ),
           centerTitle: true,
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle(context, 'contacts', textColor),
-              _buildContactsList(),
-              _buildAddContactButton(),
-              const Divider(),
-              _buildSectionTitle(context, 'theme', textColor),
-              _buildThemeSwitch(),
-              const Divider(),
-              _buildSectionTitle(context, 'language', textColor),
-              _buildLanguageSelector(localeProvider),
-              const Divider(),
-              _buildSectionTitle(context, 'font_size', textColor),
-              _buildFontSizeSlider(),
-              const Divider(),
-              _buildSectionTitle(context, 'speech_rate', textColor),
-              _buildSpeechRateSlider(),
-            ],
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle(context, 'contacts', textColor),
+                _buildContactsList(),
+                _buildAddContactButton(),
+                const Divider(),
+                _buildSectionTitle(context, 'theme', textColor),
+                _buildThemeSwitch(),
+                const Divider(),
+                _buildSectionTitle(context, 'language', textColor),
+                _buildLanguageSelector(localeProvider),
+                const Divider(),
+                _buildSectionTitle(context, 'font_size', textColor),
+                _buildFontSizeSlider(),
+                const Divider(),
+                _buildSectionTitle(context, 'speech_rate', textColor),
+                _buildSpeechRateSlider(),
+              ],
+            ),
           ),
         ),
       ),
@@ -169,31 +174,32 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildContactsList() {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: contacts.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: ValueKey(contacts[index]),
-            direction: DismissDirection.endToStart,
-            onDismissed: (_) => _deleteContact(contacts[index]),
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            child: ListTile(
-              title: Text(contacts[index], style: TextStyle(fontSize: _fontSize)),
-            ),
-          );
-        },
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: contacts.length,
+      itemBuilder: (context, index) {
+        return Dismissible(
+          key: ValueKey(contacts[index]),
+          direction: DismissDirection.endToStart,
+          onDismissed: (_) => _deleteContact(contacts[index]),
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          child: ListTile(
+            title: Text(contacts[index], style: TextStyle(fontSize: _fontSize)),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildAddContactButton() {
     return ElevatedButton(
+      key: const Key('addContactButton'), // Add a unique key
       onPressed: () async {
         final contact = await _contactPicker.selectContact();
         if (contact != null) await _addContact(contact.fullName ?? '');
@@ -214,9 +220,12 @@ class SettingsScreenState extends State<SettingsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildLanguageButton(localeProvider, 'English', 'en-US', 'en-US-Wavenet-D'),
-        _buildLanguageButton(localeProvider, 'Español', 'es-ES', 'es-ES-Wavenet-B'),
-        _buildLanguageButton(localeProvider, 'Euskera', 'eu-ES', 'eu-ES-Wavenet-A'),
+        _buildLanguageButton(
+            localeProvider, 'English', 'en-US', 'en-US-Wavenet-D'),
+        _buildLanguageButton(
+            localeProvider, 'Español', 'es-ES', 'es-ES-Wavenet-B'),
+        _buildLanguageButton(
+            localeProvider, 'Euskera', 'eu-ES', 'eu-ES-Wavenet-A'),
       ],
     );
   }
@@ -225,7 +234,8 @@ class SettingsScreenState extends State<SettingsScreen> {
       LocaleProvider localeProvider, String label, String code, String voice) {
     return ElevatedButton(
       onPressed: () {
-        localeProvider.setLocale(Locale(code.split('-')[0], code.split('-')[1]));
+        localeProvider
+            .setLocale(Locale(code.split('-')[0], code.split('-')[1]));
         _changeLanguage(code, voice);
       },
       child: Text(label),

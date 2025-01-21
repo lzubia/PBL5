@@ -117,7 +117,11 @@ void main() {
           .thenAnswer((_) async => http.Response('Error', 500));
 
       final appInitializer = AppInitializer();
-      await appInitializer.startSession(client: mockHttpClient);
+
+      expect(
+        () async => await appInitializer.startSession(client: mockHttpClient),
+        throwsA(isA<Exception>()),
+      );
 
       verify(mockHttpClient.get(any)).called(1);
       expect(appInitializer.sessionToken, equals(''));
@@ -139,7 +143,12 @@ void main() {
           .thenAnswer((_) async => http.Response('Error', 500));
 
       final appInitializer = AppInitializer();
-      await appInitializer.endSession('testSession', client: mockHttpClient);
+
+      expect(
+        () async => await appInitializer.endSession('testSession',
+            client: mockHttpClient),
+        throwsA(isA<Exception>()),
+      );
 
       verify(mockHttpClient.delete(any)).called(1);
       expect(appInitializer.sessionToken, isNot(equals('testSession')));

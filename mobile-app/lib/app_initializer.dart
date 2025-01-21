@@ -42,24 +42,26 @@ class AppInitializer {
       WidgetsFlutterBinding.ensureInitialized();
       HttpOverrides.global = MyHttpOverrides();
 
+//esto komentau
       // MethodChannel setup
       // platform.setMethodCallHandler((call) async {
       //   if (call.method == 'endSession') {
-      //     // await endSession(sessionToken);
+      //     await endSession(sessionToken);
       //   } else if (call.method == 'startSession') {
-      //     // await startSession();
+      //     await startSession();
       //   }
       // }
       // );
+//esto komentau
 
       // Load environment variables
       await dotenv.load(fileName: "./.env");
 
       // Initialize database helper
-      databaseHelper = DatabaseHelper();
+      databaseHelper ??= DatabaseHelper();
 
       // Initialize TTS service with the database helper
-      ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
+      ttsServiceGoogle ??= TtsServiceGoogle(databaseHelper!);
       ttsServiceGoogle.initializeTts();
 
       // Initialize dependencies
@@ -67,11 +69,11 @@ class AppInitializer {
       await pictureService
           .initializeCamera(); // Notify listeners on state change
 
-      sttService = SttService();
+      sttService ??= SttService();
       await sttService.initializeStt();
 
       // Initialize VoiceCommands
-      voiceCommands = VoiceCommands(sttService);
+      voiceCommands ??= VoiceCommands(sttService!);
 
       isInitialized = true; // Mark as initialized
     } catch (e) {
@@ -81,38 +83,42 @@ class AppInitializer {
   }
 
   Future<void> startSession({http.Client? client}) async {
-    // final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
-    // client ??= http.Client();
-    // try {
-    //   final response = await client.get(url);
-    //   if (response.statusCode == 200) {
-    //     sessionToken = jsonDecode(response.body)['session_id'];
-    //     print('Session started successfully. Token: $sessionToken');
-    //   } else {
-    //     sessionToken = '';
-    //     throw Exception('Failed to start session: ${response.statusCode}');
-    //   }
-    // } catch (e) {
-    //   sessionToken = '';
-    //   throw Exception('Error starting session: $e');
-    // }
+    //esto komentau
+    final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
+    client ??= http.Client();
+    try {
+      final response = await client.get(url);
+      if (response.statusCode == 200) {
+        sessionToken = jsonDecode(response.body)['session_id'];
+        print('Session started successfully. Token: $sessionToken');
+      } else {
+        sessionToken = '';
+        throw Exception('Failed to start session: ${response.statusCode}');
+      }
+    } catch (e) {
+      sessionToken = '';
+      throw Exception('Error starting session: $e');
+    }
+    //esto komentau
   }
 
   Future<void> endSession(String sessionId, {http.Client? client}) async {
-    // final url = Uri.parse(
-    //     'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
-    // client ??= http.Client();
-    // try {
-    //   final response = await client.delete(url);
-    //   if (response.statusCode == 200) {
-    //     print('Session ended successfully');
-    //     sessionToken = '';
-    //   } else {
-    //     throw Exception('Failed to end session: ${response.statusCode}');
-    //   }
-    // } catch (e) {
-    //   throw Exception('Error ending session: $e');
-    // }
+    //esto komentau
+    final url = Uri.parse(
+        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
+    client ??= http.Client();
+    try {
+      final response = await client.delete(url);
+      if (response.statusCode == 200) {
+        print('Session ended successfully');
+        sessionToken = '';
+      } else {
+        throw Exception('Failed to end session: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error ending session: $e');
+    }
+    //esto komentau
   }
 }
 

@@ -38,30 +38,31 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
     super.dispose();
   }
 
+  void cancelTimer() {
+    _timer?.cancel();
+  }
 
   void _startPeriodicPictureTaking() {
-
     final ttsService = context.read<ITtsService>();
-    
+
     ttsService
         .speakLabels([AppLocalizations.of(context).translate("money-on")]);
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      _takeAndSendImage();
+      takeAndSendImage();
     });
   }
 
-  Future<void> _takeAndSendImage() async {
+  Future<void> takeAndSendImage() async {
     final pictureService = context.read<PictureService>();
     final ttsService = context.read<ITtsService>();
     final sessionToken = context.read<AppInitializer>().sessionToken;
-    
+
     await pictureService.takePicture(
       endpoint:
           'https://begiapbl.duckdns.org:1880/money?session_id=${sessionToken}', // Pass the endpoint here
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
-        ttsService
-            .speakLabels(labels); // Use ttsService to speak the labels
+        ttsService.speakLabels(labels); // Use ttsService to speak the labels
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Money Identified: $labels')),
         );
