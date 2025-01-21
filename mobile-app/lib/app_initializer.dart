@@ -64,7 +64,8 @@ class AppInitializer {
 
       // Initialize dependencies
       await pictureService.setupCamera(); // Use the shared PictureService
-      await pictureService.initializeCamera(); // Notify listeners on state change
+      await pictureService
+          .initializeCamera(); // Notify listeners on state change
 
       sttService = SttService();
       await sttService.initializeStt();
@@ -72,15 +73,12 @@ class AppInitializer {
       // Initialize VoiceCommands
       voiceCommands = VoiceCommands(sttService);
 
-
       isInitialized = true; // Mark as initialized
     } catch (e) {
       initializationError = 'Initialization failed: $e';
       isInitialized = false;
     }
   }
-}
-
 
   Future<void> startSession({http.Client? client}) async {
     // final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
@@ -116,7 +114,7 @@ class AppInitializer {
     //   throw Exception('Error ending session: $e');
     // }
   }
-
+}
 
 class MyHttpOverrides extends HttpOverrides {
   @override

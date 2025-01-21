@@ -8,7 +8,7 @@ import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:provider/provider.dart';
 
-// import 'describe_environment_test.mocks.dart';
+import 'describe_environment_test.mocks.dart';
 
 @GenerateMocks([ITtsService, PictureService, AppInitializer])
 void main() {
@@ -22,9 +22,9 @@ void main() {
       mockPictureService = MockPictureService();
       mockAppInitializer = MockAppInitializer();
 
-//       // Stub `getCameraPreview`
-//       when(mockPictureService.getCameraPreview())
-//           .thenReturn(Container()); // Return a placeholder widget
+      // Stub `getCameraPreview`
+      when(mockPictureService.getCameraPreview())
+          .thenReturn(Container()); // Return a placeholder widget
 
       // Stub `isCameraInitialized`
       when(mockPictureService.isCameraInitialized).thenReturn(true);
@@ -51,9 +51,9 @@ void main() {
         ),
       );
 
-//       // Simulate button press
-//       await tester.tap(find.byType(ElevatedButton));
-//       await tester.pump(); // Wait for UI updates
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
 
       // Verify picture service is called
       verify(mockPictureService.takePicture(
@@ -82,16 +82,16 @@ void main() {
         ),
       );
 
-//       // Simulate button press
-//       await tester.tap(find.byType(ElevatedButton));
-//       await tester.pump(); // Wait for UI updates
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
 
-//       // Capture the onLabelsDetected callback
-//       final captured = verify(mockPictureService.takePicture(
-//         endpoint: anyNamed('endpoint'),
-//         onLabelsDetected: captureAnyNamed('onLabelsDetected'),
-//         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
-//       )).captured;
+      // Capture the onLabelsDetected callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: captureAnyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+      )).captured;
 
       // Simulate the `onLabelsDetected` callback being invoked
       final onLabelsDetected = captured.first as Function(List<String>);
@@ -119,23 +119,23 @@ void main() {
         ),
       );
 
-//       // Simulate button press
-//       await tester.tap(find.byType(ElevatedButton));
-//       await tester.pump(); // Wait for UI updates
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
 
-//       // Capture the onLabelsDetected callback
-//       final captured = verify(mockPictureService.takePicture(
-//         endpoint: anyNamed('endpoint'),
-//         onLabelsDetected: captureAnyNamed('onLabelsDetected'),
-//         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
-//       )).captured;
+      // Capture the onLabelsDetected callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: captureAnyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+      )).captured;
 
       // Simulate the `onLabelsDetected` callback being invoked
       final onLabelsDetected = captured.first as Function(List<String>);
       onLabelsDetected(['Label1', 'Label2']);
 
-//       // Allow time for SnackBar to appear
-//       await tester.pumpAndSettle();
+      // Allow time for SnackBar to appear
+      await tester.pumpAndSettle();
 
       // Verify that the SnackBar shows the correct description
       expect(find.text('Description: [Label1, Label2]'), findsOneWidget);
@@ -159,23 +159,23 @@ void main() {
         ),
       );
 
-//       // Simulate button press
-//       await tester.tap(find.byType(ElevatedButton));
-//       await tester.pump(); // Wait for UI updates
+      // Simulate button press
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump(); // Wait for UI updates
 
-//       // Capture the onResponseTimeUpdated callback
-//       final captured = verify(mockPictureService.takePicture(
-//         endpoint: anyNamed('endpoint'),
-//         onLabelsDetected: anyNamed('onLabelsDetected'),
-//         onResponseTimeUpdated: captureAnyNamed('onResponseTimeUpdated'),
-//       )).captured;
+      // Capture the onResponseTimeUpdated callback
+      final captured = verify(mockPictureService.takePicture(
+        endpoint: anyNamed('endpoint'),
+        onLabelsDetected: anyNamed('onLabelsDetected'),
+        onResponseTimeUpdated: captureAnyNamed('onResponseTimeUpdated'),
+      )).captured;
 
       // Simulate the `onResponseTimeUpdated` callback being invoked
       final onResponseTimeUpdated = captured.first as Function(Duration);
       onResponseTimeUpdated(Duration(seconds: 2));
 
 //       // Allow time for SnackBar to appear
-//       await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
       // Verify that the SnackBar shows the correct response time
       expect(find.text('Response time: 0:00:02.000000'), findsOneWidget);

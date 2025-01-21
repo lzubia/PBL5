@@ -9,7 +9,7 @@ import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:provider/provider.dart';
 
-// import 'risk_detection_test.mocks.dart';
+import 'risk_detection_test.mocks.dart';
 
 @GenerateMocks([PictureService, ITtsService])
 void main() {
@@ -20,8 +20,8 @@ void main() {
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
 
-//     when(mockPictureService.isCameraInitialized).thenReturn(true);
-//   });
+    when(mockPictureService.isCameraInitialized).thenReturn(true);
+  });
 
   Future<void> pumpRiskDetection(WidgetTester tester) async {
     await tester.pumpWidget(
@@ -49,58 +49,58 @@ void main() {
     );
   }
 
-  // testWidgets('should display widgets when camera is initialized',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  testWidgets('should display widgets when camera is initialized',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
 
-  //   expect(find.byType(Switch), findsOneWidget);
-  //   expect(find.byIcon(Icons.warning), findsOneWidget);
-  // });
+    expect(find.byType(Switch), findsOneWidget);
+    expect(find.byIcon(Icons.warning), findsOneWidget);
+  });
 
-  // testWidgets('should enable risk detection when switch is turned on',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  testWidgets('should enable risk detection when switch is turned on',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
 
-  //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-  //   await tester.tap(find.byType(Switch));
-  //   await tester.pump();
+    await tester.tap(find.byType(Switch));
+    await tester.pump();
 
-  //   verify(mockTtsService.speakLabels(["Risk detection on"])).called(1);
-  //   expect(find.byType(Switch), findsOneWidget);
-  // });
+    verify(mockTtsService.speakLabels(["Risk detection on"])).called(1);
+    expect(find.byType(Switch), findsOneWidget);
+  });
 
-  // testWidgets('should disable risk detection when switch is turned off',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  testWidgets('should disable risk detection when switch is turned off',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
 
-  //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-//   //   // Tap the switch to turn it on
-//   //   await tester.tap(find.byType(Switch));
-//   //   await tester.pumpAndSettle();
+    // Tap the switch to turn it on
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
 
-//   //   // Tap the switch again to turn it off
-//   //   await tester.tap(find.byType(Switch));
-//   //   await tester.pumpAndSettle();
+    // Tap the switch again to turn it off
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
 
-  //   verify(mockTtsService.speakLabels(["Risk detection off"])).called(1);
-  //   expect(find.byType(Switch), findsOneWidget);
-  // });
+    verify(mockTtsService.speakLabels(["Risk detection off"])).called(1);
+    expect(find.byType(Switch), findsOneWidget);
+  });
 
-  // testWidgets('should show response time when available',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  testWidgets('should show response time when available',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
 
-  //   // Simulate response time update
-  //   final riskDetectionState =
-  //       tester.state<RiskDetectionState>(find.byType(RiskDetection));
-  //   riskDetectionState.setState(() {
-  //     riskDetectionState.responseTime = const Duration(milliseconds: 500);
-  //   });
+    // Simulate response time update
+    final riskDetectionState =
+        tester.state<RiskDetectionState>(find.byType(RiskDetection));
+    riskDetectionState.setState(() {
+      riskDetectionState.responseTime = const Duration(milliseconds: 500);
+    });
 
-  //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-  //   expect(find.text('Response Time: 500 ms'), findsOneWidget);
-  // });
+    expect(find.text('Response Time: 500 ms'), findsOneWidget);
+  });
 }

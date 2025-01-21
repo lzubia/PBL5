@@ -23,31 +23,31 @@ import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-// import 'main_test.mocks.dart';
+import 'main_test.mocks.dart';
 
-// @GenerateMocks([
-//   PictureService,
-//   TtsServiceGoogle,
-//   DatabaseHelper,
-//   SttService,
-//   VoiceCommands,
-//   NavigatorObserver,
-// ])
-// void main() {
-//   late MockPictureService mockPictureService;
-//   late MockTtsServiceGoogle mockTtsServiceGoogle;
-//   late MockDatabaseHelper mockDatabaseHelper;
-//   late MockSttService mockSttService;
-//   late MockVoiceCommands mockVoiceCommands;
-//   late MockNavigatorObserver mockNavigatorObserver;
+@GenerateMocks([
+  PictureService,
+  TtsServiceGoogle,
+  DatabaseHelper,
+  SttService,
+  VoiceCommands,
+  NavigatorObserver,
+])
+void main() {
+  late MockPictureService mockPictureService;
+  late MockTtsServiceGoogle mockTtsServiceGoogle;
+  late MockDatabaseHelper mockDatabaseHelper;
+  late MockSttService mockSttService;
+  late MockVoiceCommands mockVoiceCommands;
+  late MockNavigatorObserver mockNavigatorObserver;
 
-//   setUp(() {
-//     mockPictureService = MockPictureService();
-//     mockTtsServiceGoogle = MockTtsServiceGoogle();
-//     mockDatabaseHelper = MockDatabaseHelper();
-//     mockSttService = MockSttService();
-//     mockVoiceCommands = MockVoiceCommands();
-//     mockNavigatorObserver = MockNavigatorObserver();
+  setUp(() {
+    mockPictureService = MockPictureService();
+    mockTtsServiceGoogle = MockTtsServiceGoogle();
+    mockDatabaseHelper = MockDatabaseHelper();
+    mockSttService = MockSttService();
+    mockVoiceCommands = MockVoiceCommands();
+    mockNavigatorObserver = MockNavigatorObserver();
 
     // Mock the necessary methods
     when(mockPictureService.isCameraInitialized).thenAnswer((_) => true);
@@ -57,108 +57,108 @@ import 'package:provider/provider.dart';
     when(mockDatabaseHelper.getPreferences()).thenAnswer((_) async => {});
   });
 
-  // testWidgets('MyApp initializes and displays MyHomePage',
-  //     (WidgetTester tester) async {
-  //   await tester.pumpWidget(
-  //     MultiProvider(
-  //       providers: [
-  //         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-  //         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-  //         ChangeNotifierProvider(create: (_) => mockVoiceCommands),
-  //         ChangeNotifierProvider.value(value: mockPictureService),
-  //         Provider(create: (_) => mockDatabaseHelper),
-  //         Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
-  //         Provider(create: (_) => AppInitializer()),
-  //         Provider(create: (_) => mockSttService),
-  //       ],
-  //       child: const MyApp(),
-  //     ),
-  //   );
+  testWidgets('MyApp initializes and displays MyHomePage',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => LocaleProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => mockVoiceCommands),
+          ChangeNotifierProvider.value(value: mockPictureService),
+          Provider(create: (_) => mockDatabaseHelper),
+          Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
+          Provider(create: (_) => AppInitializer()),
+          Provider(create: (_) => mockSttService),
+        ],
+        child: const MyApp(),
+      ),
+    );
 
-  //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-  //   expect(find.byType(MyHomePage), findsOneWidget);
-  // });
+    expect(find.byType(MyHomePage), findsOneWidget);
+  });
 
-  // testWidgets('MyHomePage displays the correct widgets',
-  //     (WidgetTester tester) async {
-  //   await tester.pumpWidget(
-  //     MultiProvider(
-  //       providers: [
-  //         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-  //         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-  //         ChangeNotifierProvider(create: (_) => mockVoiceCommands),
-  //         ChangeNotifierProvider.value(value: mockPictureService),
-  //         Provider(create: (_) => mockDatabaseHelper),
-  //         Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
-  //         Provider(create: (_) => AppInitializer()),
-  //         Provider(create: (_) => mockSttService),
-  //       ],
-  //       child: MaterialApp(
-  //         localizationsDelegates: [
-  //           AppLocalizations.delegate,
-  //           GlobalMaterialLocalizations.delegate,
-  //           GlobalCupertinoLocalizations.delegate,
-  //           GlobalWidgetsLocalizations.delegate,
-  //         ],
-  //         supportedLocales: const [
-  //           Locale('en', 'US'),
-  //           Locale('es', 'ES'),
-  //           Locale('eu', 'ES'),
-  //         ],
-  //         home: const MyHomePage(),
-  //       ),
-  //     ),
-  //   );
+  testWidgets('MyHomePage displays the correct widgets',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => LocaleProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => mockVoiceCommands),
+          ChangeNotifierProvider.value(value: mockPictureService),
+          Provider(create: (_) => mockDatabaseHelper),
+          Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
+          Provider(create: (_) => AppInitializer()),
+          Provider(create: (_) => mockSttService),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', 'US'),
+            Locale('es', 'ES'),
+            Locale('eu', 'ES'),
+          ],
+          home: const MyHomePage(),
+        ),
+      ),
+    );
 
-//   //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-//   //   // Verify widgets
-//   //   expect(find.byType(RiskDetection), findsOneWidget);
-//   //   expect(find.byType(GridMenu), findsOneWidget);
-//   //   expect(find.byKey(const Key('voiceControlSwitch')), findsOneWidget);
-//   // });
+    // Verify widgets
+    expect(find.byType(RiskDetection), findsOneWidget);
+    expect(find.byType(GridMenu), findsOneWidget);
+    expect(find.byKey(const Key('voiceControlSwitch')), findsOneWidget);
+  });
 
-  // testWidgets('Settings button navigates to SettingsScreen',
-  //     (WidgetTester tester) async {
-  //   await tester.pumpWidget(
-  //     MultiProvider(
-  //       providers: [
-  //         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-  //         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-  //         ChangeNotifierProvider(create: (_) => mockVoiceCommands),
-  //         ChangeNotifierProvider.value(value: mockPictureService),
-  //         Provider(create: (_) => mockDatabaseHelper),
-  //         Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
-  //         Provider(create: (_) => AppInitializer()),
-  //         Provider(create: (_) => mockSttService),
-  //       ],
-  //       child: MaterialApp(
-  //         navigatorObservers: [mockNavigatorObserver], // Add the observer
-  //         localizationsDelegates: [
-  //           AppLocalizations.delegate, // Localization delegate
-  //           GlobalMaterialLocalizations.delegate,
-  //           GlobalCupertinoLocalizations.delegate,
-  //           GlobalWidgetsLocalizations.delegate,
-  //         ],
-  //         supportedLocales: const [
-  //           Locale('en', 'US'),
-  //           Locale('es', 'ES'),
-  //           Locale('eu', 'ES'),
-  //         ],
-  //         home: const MyHomePage(),
-  //       ),
-  //     ),
-  //   );
+  testWidgets('Settings button navigates to SettingsScreen',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => LocaleProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => mockVoiceCommands),
+          ChangeNotifierProvider.value(value: mockPictureService),
+          Provider(create: (_) => mockDatabaseHelper),
+          Provider<ITtsService>(create: (_) => mockTtsServiceGoogle),
+          Provider(create: (_) => AppInitializer()),
+          Provider(create: (_) => mockSttService),
+        ],
+        child: MaterialApp(
+          navigatorObservers: [mockNavigatorObserver], // Add the observer
+          localizationsDelegates: [
+            AppLocalizations.delegate, // Localization delegate
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', 'US'),
+            Locale('es', 'ES'),
+            Locale('eu', 'ES'),
+          ],
+          home: const MyHomePage(),
+        ),
+      ),
+    );
 
-//   //   await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-//   //   // Tap on the settings button using the Key
-//   //   await tester.tap(find.byKey(const Key('settingsButton')));
-//   //   await tester.pumpAndSettle();
+    // Tap on the settings button using the Key
+    await tester.tap(find.byKey(const Key('settingsButton')));
+    await tester.pumpAndSettle();
 
-//   //   // Verify navigation to SettingsScreen
-//   //   verify(mockNavigatorObserver.didPush(any, any)).called(1);
-//   //   expect(find.byType(SettingsScreen), findsOneWidget);
-//   // });
-// }
+    // Verify navigation to SettingsScreen
+    verify(mockNavigatorObserver.didPush(any, any)).called(1);
+    expect(find.byType(SettingsScreen), findsOneWidget);
+  });
+}

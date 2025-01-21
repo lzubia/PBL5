@@ -55,26 +55,26 @@ class MockAppLocalizationsDelegate
       false;
 }
 
-// @GenerateMocks([
-//   PictureService,
-//   DescribeEnvironment,
-//   MapWidget,
-//   OcrWidget,
-//   MoneyIdentifier,
-//   TtsServiceGoogle,
-//   SttService,
-// ])
-// void main() {
-//   late MockPictureService mockPictureService;
-//   late MockTtsServiceGoogle mockTtsService;
-//   late MockSttService mockSttService;
+@GenerateMocks([
+  PictureService,
+  DescribeEnvironment,
+  MapWidget,
+  OcrWidget,
+  MoneyIdentifier,
+  TtsServiceGoogle,
+  SttService,
+])
+void main() {
+  late MockPictureService mockPictureService;
+  late MockTtsServiceGoogle mockTtsService;
+  late MockSttService mockSttService;
 
-//   setUp(() {
-//     mockPictureService = MockPictureService();
-//     mockTtsService = MockTtsServiceGoogle();
-//     mockSttService = MockSttService();
+  setUp(() {
+    mockPictureService = MockPictureService();
+    mockTtsService = MockTtsServiceGoogle();
+    mockSttService = MockSttService();
 
-    // Provide stubs for the methods that will be called
+    //Provide stubs for the methods that will be called
     when(mockPictureService.isCameraInitialized).thenReturn(true);
     when(mockPictureService.getCameraPreview())
         .thenReturn(Container()); // Stub getCameraPreview
@@ -108,14 +108,14 @@ class MockAppLocalizationsDelegate
     await tester.pumpAndSettle(); // Wait for the widget tree to settle
   }
 
-//   testWidgets('should display all menu options', (WidgetTester tester) async {
-//     await pumpGridMenu(tester);
+  testWidgets('should display all menu options', (WidgetTester tester) async {
+    await pumpGridMenu(tester);
 
-//     expect(find.text('Describe Environment'), findsOneWidget);
-//     expect(find.text('GPS (Map)'), findsOneWidget);
-//     expect(find.text('Money Identifier'), findsOneWidget);
-//     expect(find.text('Scanner (Read Texts, QRs, ...)'), findsOneWidget);
-//   });
+    expect(find.text('Describe Environment'), findsOneWidget);
+    expect(find.text('GPS (Map)'), findsOneWidget);
+    expect(find.text('Money Identifier'), findsOneWidget);
+    expect(find.text('Scanner (Read Texts, QRs, ...)'), findsOneWidget);
+  });
 
   testWidgets('should open bottom sheet for Describe Environment',
       (WidgetTester tester) async {
@@ -137,42 +137,42 @@ class MockAppLocalizationsDelegate
     expect(find.byType(MapWidget), findsOneWidget);
   });
 
-//   // testWidgets('should open bottom sheet for Money Identifier',
-//   //     (WidgetTester tester) async {
-//   //   await pumpGridMenu(tester);
+  testWidgets('should open bottom sheet for Money Identifier',
+      (WidgetTester tester) async {
+    await pumpGridMenu(tester);
 
-  //   // Ensure the widget is visible before tapping it
-  //   await tester.ensureVisible(find.text('Money Identifier'));
-  //   await tester.tap(find.text('Money Identifier'));
-  //   await tester.pumpAndSettle();
+    // Ensure the widget is visible before tapping it
+    await tester.ensureVisible(find.text('Money Identifier'));
+    await tester.tap(find.text('Money Identifier'));
+    await tester.pumpAndSettle();
 
-//   //   expect(find.byType(MoneyIdentifier), findsOneWidget);
-//   // });
+    expect(find.byType(MoneyIdentifier), findsOneWidget);
+  });
 
-//   // testWidgets('should open bottom sheet for Scanner',
-//   //     (WidgetTester tester) async {
-//   //   await pumpGridMenu(tester);
+  testWidgets('should open bottom sheet for Scanner',
+      (WidgetTester tester) async {
+    await pumpGridMenu(tester);
 
-//   //   await tester.tap(find.text('Scanner (Read Texts, QRs, ...)'));
-//   //   await tester.pumpAndSettle();
+    await tester.tap(find.text('Scanner (Read Texts, QRs, ...)'));
+    await tester.pumpAndSettle();
 
-//   //   expect(find.byType(OcrWidget), findsOneWidget);
-//   // });
+    expect(find.byType(OcrWidget), findsOneWidget);
+  });
 
-//   // testWidgets(
-//   //     'should show CircularProgressIndicator if camera is not initialized',
-//   //     (WidgetTester tester) async {
-//   //   when(mockPictureService.isCameraInitialized).thenReturn(false);
+  testWidgets(
+      'should show CircularProgressIndicator if camera is not initialized',
+      (WidgetTester tester) async {
+    when(mockPictureService.isCameraInitialized).thenReturn(false);
 
-//   //   await pumpGridMenu(tester);
+    await pumpGridMenu(tester);
 
-  //   // Tap on a menu option to trigger the bottom sheet
-  //   await tester.tap(find.text('Describe Environment'));
-  //   await tester.pumpAndSettle();
+    // Tap on a menu option to trigger the bottom sheet
+    await tester.tap(find.text('Describe Environment'));
+    await tester.pumpAndSettle();
 
-  //   // Increase the timeout for pumpAndSettle
-  //   await tester.pumpAndSettle(const Duration(seconds: 5));
+    // Increase the timeout for pumpAndSettle
+    await tester.pumpAndSettle(const Duration(seconds: 5));
 
-  //   expect(find.byType(CircularProgressIndicator), findsOneWidget);
-  // });
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
 }
