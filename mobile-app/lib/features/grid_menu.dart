@@ -155,7 +155,7 @@ class GridMenuState extends State<GridMenu> {
 
             // Send SOS request
             await sosService
-                .sendSosRequest(contacts.cast<Map<String, String>>());
+                .sendSosRequest(contacts.cast<Map<String, String>>(), context);
           } catch (e) {
             print('Error calling SOS service: $e');
           }
@@ -185,12 +185,12 @@ class GridMenuState extends State<GridMenu> {
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
               await ttsService
-                  .speakLabels(["Navigating to your home location."]);
+                  .speakLabels([AppLocalizations.of(context).translate("going-home")]);
             } else {
               // Handle case when no home location is saved
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
-              await ttsService.speakLabels(["Home location not set."]);
+              await ttsService.speakLabels([AppLocalizations.of(context).translate("home-not-set")]);
             }
           } catch (e) {
             print('Error setting home destination: $e');

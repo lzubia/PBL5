@@ -77,6 +77,11 @@
     "first": "Primero",
     "now": "Ahora",
     "reached": "Y llegarás a",
-    "opened": "La página ya está abierto",
-    "Map-active": "Mapa abierto"
+    "opened": "La página ya está abierta",
+    "Map-active": "Mapa abierto",
+    "destination-not-found": "Destino no encontrado",
+    "going-home": "Regresando a casa",
+    "home-not-set": "Casa no establecida",
+    "Sos-sent-successfully": "SOS enviado con éxito"
+
 }

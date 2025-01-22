@@ -48,7 +48,7 @@ class MapProvider extends ChangeNotifier {
     });
 
     // Speak a message to indicate the map is active.
-    await ttsService.speakLabels([AppLocalizations.of(context).translate("Map-active")]);
+    await ttsService.speakLabels([AppLocalizations.of(context).translate("mapa-on")]);
   }
 
   /// Set the destination and calculate route + instructions.
@@ -83,7 +83,7 @@ Future<void> setDestination({
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'ZERO_RESULTS') {
-          await ttsService.speakLabels(["Destination not found."]);
+          await ttsService.speakLabels([AppLocalizations.of(context).translate("destination-not-found")]);
           return;
         }
 
@@ -102,7 +102,7 @@ Future<void> setDestination({
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'ZERO_RESULTS') {
-          await ttsService.speakLabels(["Destination not found."]);
+          await ttsService.speakLabels([AppLocalizations.of(context).translate("destination-not-found")]);
           return;
         }
 
@@ -241,7 +241,7 @@ Future<void> setDestination({
       final instruction = _instructions[closestIndex]['instruction'];
       final translatedInstruction = await Provider.of<TranslationProvider>(context, listen: false)
           .translateText(instruction, Localizations.localeOf(context).languageCode);
-      ttsService.speakLabels(["Now: $translatedInstruction"]);
+      ttsService.speakLabels([AppLocalizations.of(context).translate("Now"), translatedInstruction]);
       _instructions = _instructions.sublist(closestIndex + 1);
       notifyListeners();
     }
@@ -249,7 +249,7 @@ Future<void> setDestination({
     // Notify the user if they've reached the destination.
     if (_instructions.isEmpty) {
       ttsService.speakLabels(
-          ["You have reached your destination: $_destinationName"]);
+          [AppLocalizations.of(context).translate("Destination-reached"), _destinationName]);
     }
   }
 

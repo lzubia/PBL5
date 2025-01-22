@@ -87,5 +87,9 @@
     "now": "Now",
     "reached": "And you will get to",
     "opened": "Widget already open",
-    "Map-active" : "Map is already active"
+    "Map-active" : "Map is already active",
+    "destination-not-found": "Destination not found",
+    "going-home": "Going home",
+    "home-not-set": "Home not set",
+    "Sos-sent-successfully": "SOS sent successfully"
 }
