@@ -9,6 +9,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/translation_provider.dart';
+import 'package:provider/provider.dart';
 
 class MapProvider extends ChangeNotifier {
   final Location _location = Location();
@@ -49,18 +51,33 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Set the destination and calculate route + instructions.
-  Future<void> setDestination(String destinationAddress) async {
-    final apiKey = dotenv.env['GEOCODING_API_KEY'];
-    if (apiKey == null) {
-      throw Exception("Missing Google API Key in .env");
-    }
+/// Set the destination using either a String address or a LatLng object.
+/// `address` and `location` are mutually exclusive; provide only one.
+Future<void> setDestination({
+  required BuildContext context,
+  String? address,
+  LatLng? location,
+}) async {
+  final apiKey = dotenv.env['GEOCODING_API_KEY'];
+  if (apiKey == null) {
+    throw Exception("Missing Google API Key in .env");
+  }
 
-    _loading = true;
-    notifyListeners();
+  if (address == null && location == null) {
+    throw ArgumentError("Either `address` or `location` must be provided.");
+  }
 
-    try {
+  _loading = true;
+  notifyListeners();
+
+  try {
+    String? destinationName;
+    LatLng? destination;
+
+    if (address != null) {
+      // Fetch destination from address
       final response = await http.get(Uri.parse(
-          'https://maps.googleapis.com/maps/api/geocode/json?address=$destinationAddress&key=$apiKey'));
+          'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=$apiKey'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -70,38 +87,16 @@ class MapProvider extends ChangeNotifier {
         }
 
         final location = data['results'][0]['geometry']['location'];
-        _destinationName = destinationAddress;
-        _destination = LatLng(location['lat'], location['lng']);
-        notifyListeners();
-
-        await _fetchPolylineCoordinates();
-        await _fetchNavigationInstructions();
+        destinationName = address;
+        destination = LatLng(location['lat'], location['lng']);
       } else {
         throw Exception("Failed to fetch destination.");
       }
-    } finally {
-      _loading = false;
-      notifyListeners();
-    }
-  }
-
-  /// Set the destination using a LatLng object and calculate the route + instructions.
-  Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
-    final apiKey = dotenv.env['GEOCODING_API_KEY'];
-    if (apiKey == null) {
-      throw Exception("Missing Google API Key in .env");
-    }
-
-    _loading = true;
-    notifyListeners();
-
-    try {
-      // Construct the destination address using LatLng by converting to a string representation
-      final destinationAddress =
-          '${destinationLocation.latitude},${destinationLocation.longitude}';
-
+    } else if (location != null) {
+      // Fetch destination from LatLng
+      final latLngString = '${location.latitude},${location.longitude}';
       final response = await http.get(Uri.parse(
-          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$destinationAddress&key=$apiKey'));
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latLngString&key=$apiKey'));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -110,20 +105,30 @@ class MapProvider extends ChangeNotifier {
           return;
         }
 
-        _destinationName = 'home';
-        _destination = destinationLocation; // Directly use the LatLng object
-        notifyListeners();
-
-        await _fetchPolylineCoordinates();
-        await _fetchNavigationInstructions();
+        destinationName = 'home'; // You can modify this to a meaningful name
+        destination = location;
       } else {
         throw Exception("Failed to fetch destination.");
       }
-    } finally {
-      _loading = false;
-      notifyListeners();
     }
+
+    if (destination == null) {
+      throw Exception("Failed to determine destination.");
+    }
+
+    // Set the destination and fetch routes and instructions
+    _destinationName = destinationName;
+    _destination = destination;
+    notifyListeners();
+
+    await _fetchPolylineCoordinates();
+    await fetchNavigationInstructions(context); // Pass context for translation
+  } finally {
+    _loading = false;
+    notifyListeners();
   }
+}
+
 
   /// Fetch polyline coordinates for the route.
   Future<void> _fetchPolylineCoordinates() async {
@@ -157,41 +162,50 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Fetch navigation instructions (steps).
-  Future<void> _fetchNavigationInstructions() async {
-    if (_currentLocation == null || _destination == null) return;
+  Future<void> fetchNavigationInstructions(BuildContext context) async {
+  if (_currentLocation == null || _destination == null) return;
 
-    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-    final origin =
-        "${_currentLocation!.latitude},${_currentLocation!.longitude}";
-    final dest = "${_destination!.latitude},${_destination!.longitude}";
+  final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+  final origin = "${_currentLocation!.latitude},${_currentLocation!.longitude}";
+  final dest = "${_destination!.latitude},${_destination!.longitude}";
 
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$dest&mode=walking&key=$apiKey'));
+  final response = await http.get(Uri.parse(
+      'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$dest&mode=walking&key=$apiKey'));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final steps = data['routes'][0]['legs'][0]['steps'] as List;
-      _instructions = steps.map((step) {
-        final instruction = step['html_instructions'] as String;
-        final startLocation = step['start_location'];
-        return {
-          'instruction': removeHtmlTags(instruction),
-          'start_location': LatLng(startLocation['lat'], startLocation['lng']),
-        };
-      }).toList();
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    final steps = data['routes'][0]['legs'][0]['steps'] as List;
+    _instructions = steps.map((step) {
+      final instruction = step['html_instructions'] as String;
+      final startLocation = step['start_location'];
+      return {
+        'instruction': removeHtmlTags(instruction),
+        'start_location': LatLng(startLocation['lat'], startLocation['lng']),
+      };
+    }).toList();
 
-      if (_instructions.isNotEmpty) {
-        final firstInstruction = _instructions[0]['instruction'];
-        await ttsService.speakLabels([
-          "Start your trip to $_destinationName. First instruction: $firstInstruction"
-        ]);
-      }
+    if (_instructions.isNotEmpty) {
+      final firstInstruction = _instructions[0]['instruction'];
 
-      notifyListeners();
-    } else {
-      throw Exception("Failed to fetch navigation instructions.");
+      // Use context to get the TranslationProvider
+      final translationProvider =
+          Provider.of<TranslationProvider>(context, listen: false);
+
+      // Translate the instruction
+      final translatedInstruction = await translationProvider.translateText(
+          firstInstruction, 'es'); // Replace 'es' with the desired language
+
+      await ttsService.speakLabels([
+        "Start your trip to $_destinationName. First instruction: $translatedInstruction"
+      ]);
     }
+
+    notifyListeners();
+  } else {
+    throw Exception("Failed to fetch navigation instructions.");
   }
+}
+
 
   /// Remove HTML tags from instructions.
   String removeHtmlTags(String htmlText) {

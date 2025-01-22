@@ -28,7 +28,13 @@ class _MapWidgetState extends State<MapWidget> {
   Future<void> _searchDestination(BuildContext context) async {
     final mapProvider = Provider.of<MapProvider>(context, listen: false);
     try {
-      await mapProvider.setDestination(_destinationController.text);
+      await mapProvider.setDestination(
+        context: context,
+        address: _destinationController.text, // Provide the address here
+      );
+
+      await mapProvider
+          .fetchNavigationInstructions(context); // Pass context here
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),

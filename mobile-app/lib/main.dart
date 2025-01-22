@@ -14,6 +14,7 @@ import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:pbl5_menu/theme_provider.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -44,13 +45,16 @@ void main() async {
           create: (_) =>
               VoiceCommands(sttService), // VoiceCommands with SttService
         ),
+        ChangeNotifierProvider(create: (_) => TranslationProvider()),
+
         Provider(create: (_) => dbHelper), // Provide DatabaseHelper
         Provider<ITtsService>(
           create: (_) => ttsService, // Provide TtsServiceGoogle as ITtsService
         ),
         Provider(
             create: (_) => appInitializer.sttService), // Provide SttService
-        Provider(create: (_)=> appInitializer.sosService), // Provide SosService
+        Provider(
+            create: (_) => appInitializer.sosService), // Provide SosService
       ],
       child: const MyApp(),
     ),

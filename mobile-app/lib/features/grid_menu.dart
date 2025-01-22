@@ -62,8 +62,12 @@ class GridMenuState extends State<GridMenu> {
             Provider.of<VoiceCommands>(context, listen: false);
 
         voiceCommands.onMapSearchHome = (LatLng latLng) {
-          final mapProvider = context.read<MapProvider>();
-          mapProvider.setDestinationFromLatLng(latLng);
+          final mapProvider = Provider.of<MapProvider>(context, listen: false);
+
+          mapProvider.setDestination(
+            context: context,
+            location: latLng, // Provide the `LatLng` object
+          );
         };
       }
 
@@ -172,7 +176,10 @@ class GridMenuState extends State<GridMenu> {
                   Provider.of<MapProvider>(context, listen: false);
 
               // Use MapProvider to set the destination as the saved home location
-              await mapProvider.setDestinationFromLatLng(homeLocation);
+              await mapProvider.setDestination(
+                context: context,
+                location: homeLocation, // Provide the `LatLng` object
+              );
 
               // Optionally, use TTS to confirm to the user
               final ttsService =
