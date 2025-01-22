@@ -4,14 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
-import 'package:pbl5_menu/services/sos.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
   VoidCallback? onMenuCommand;
@@ -243,7 +239,7 @@ class VoiceCommands extends ChangeNotifier {
     notifyListeners();
     _cancelCommandTimer();
     Future.delayed(Duration(seconds: 2), () {
-      triggerVariable = 0; // Reset riskTrigger after the delay
+      triggerVariable = 0; // Reset Trigger after the delay
     });
 
     return true;

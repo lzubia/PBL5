@@ -15,13 +15,18 @@ class MapWidget extends StatefulWidget {
 
 class _MapWidgetState extends State<MapWidget> {
   final TextEditingController _destinationController = TextEditingController();
-
-  // Store the selected location
   LatLng? _selectedLocation;
 
   @override
   void initState() {
     super.initState();
+    // Do not use context-dependent logic here
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Safe to use context here
     Provider.of<MapProvider>(context, listen: false).getCurrentLocation(context);
   }
 
@@ -30,11 +35,9 @@ class _MapWidgetState extends State<MapWidget> {
     try {
       await mapProvider.setDestination(
         context: context,
-        address: _destinationController.text, // Provide the address here
+        address: _destinationController.text,
       );
-
-      await mapProvider
-          .fetchNavigationInstructions(context); // Pass context here
+      await mapProvider.fetchNavigationInstructions(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
@@ -46,25 +49,23 @@ class _MapWidgetState extends State<MapWidget> {
     setState(() {
       _selectedLocation = latLng;
     });
-
     if (widget.title == 'save') {
-      // You can add a marker at the selected location
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Location Selected: ${latLng.latitude}, ${latLng.longitude}')),
+          content: Text('Location Selected: ${latLng.latitude}, ${latLng.longitude}'),
+        ),
       );
     }
   }
 
   void _saveSelectedLocation() {
     if (_selectedLocation != null) {
-      // Here you would save the selected location to the database
-      // For example, call the insertHome method
       final dbHelper = DatabaseHelper();
       dbHelper.insertHome(
-          _selectedLocation!.latitude, _selectedLocation!.longitude);
-      Navigator.pop(context); // Close the map screen after saving
+        _selectedLocation!.latitude,
+        _selectedLocation!.longitude,
+      );
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a location on the map')),
@@ -78,8 +79,7 @@ class _MapWidgetState extends State<MapWidget> {
         children: [
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 30.0), // Add space on the right
+              padding: const EdgeInsets.only(left: 30.0),
               child: TextField(
                 controller: _destinationController,
                 decoration: const InputDecoration(
@@ -109,63 +109,61 @@ class _MapWidgetState extends State<MapWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 80.0, // Set the toolbar height
-          title: Text(widget.title), // Dynamically set the title from widget
-          actions: [
-            Flexible(
-              child: Padding(
-                padding:
-                    const EdgeInsets.all(8.0), // Add padding to the search bar
-                child: _buildSearchBar(context),
-              ),
+      appBar: AppBar(
+        toolbarHeight: 80.0,
+        title: Text(widget.title),
+        actions: [
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _buildSearchBar(context),
             ),
-          ],
-        ),
-        body: Consumer<MapProvider>(
-          builder: (context, mapProvider, child) {
-            if (mapProvider.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (mapProvider.currentLocation == null) {
-              return const Center(child: Text("Loading current location..."));
-            }
-
-            return GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                    mapProvider.currentLocation!.latitude!,
-                    mapProvider.currentLocation!.longitude!,
-                  ),
-                  zoom: 13.5,
-                ),
-                onTap:
-                    _onLocationSelected, // Allow the user to select location on tap
-                polylines: {
-                  Polyline(
-                    polylineId: const PolylineId("route"),
-                    points: mapProvider.polylineCoordinates,
-                    color: const Color(0xFF7B61FF),
-                    width: 6,
-                  ),
-                },
-                markers: {
-                  if (_selectedLocation != null)
-                    if (widget.title == 'save')
-                      Marker(
-                        markerId: const MarkerId("selectedLocation"),
-                        position: _selectedLocation!,
-                      ),
+          ),
+        ],
+      ),
+      body: Consumer<MapProvider>(
+        builder: (context, mapProvider, child) {
+          if (mapProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (mapProvider.currentLocation == null) {
+            return const Center(child: Text("Loading current location..."));
+          }
+          return GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: LatLng(
+                mapProvider.currentLocation!.latitude!,
+                mapProvider.currentLocation!.longitude!,
+              ),
+              zoom: 13.5,
+            ),
+            onTap: _onLocationSelected,
+            polylines: {
+              Polyline(
+                polylineId: const PolylineId("route"),
+                points: mapProvider.polylineCoordinates,
+                color: const Color(0xFF7B61FF),
+                width: 6,
+              ),
+            },
+            markers: {
+              if (_selectedLocation != null)
+                if (widget.title == 'save')
                   Marker(
-                    markerId: const MarkerId("currentLocation"),
-                    position: LatLng(
-                      mapProvider.currentLocation!.latitude!,
-                      mapProvider.currentLocation!.longitude!,
-                    ),
+                    markerId: const MarkerId("selectedLocation"),
+                    position: _selectedLocation!,
                   ),
-                });
-          },
-        ));
+              Marker(
+                markerId: const MarkerId("currentLocation"),
+                position: LatLng(
+                  mapProvider.currentLocation!.latitude!,
+                  mapProvider.currentLocation!.longitude!,
+                ),
+              ),
+            },
+          );
+        },
+      ),
+    );
   }
 }

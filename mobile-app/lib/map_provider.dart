@@ -38,98 +38,106 @@ class MapProvider extends ChangeNotifier {
 
   /// Get current location and start listening to updates.
   Future<void> getCurrentLocation(BuildContext context) async {
+    // Use context safely within this method
+    final localizationMessage =
+        AppLocalizations.of(context).translate("mapa-on");
+    ttsService.speakLabels([localizationMessage]);
+
     _currentLocation = await _location.getLocation();
     notifyListeners();
 
     _locationSubscription = _location.onLocationChanged.listen((newLoc) {
       _currentLocation = newLoc;
       notifyListeners();
-      _updateCurrentInstruction(context); // Dynamically update instructions
+      if (_instructions.isNotEmpty) {
+        _updateCurrentInstruction(context);
+      }
     });
-
-    // Speak a message to indicate the map is active.
-    await ttsService.speakLabels([AppLocalizations.of(context).translate("mapa-on")]);
   }
 
   /// Set the destination and calculate route + instructions.
-/// Set the destination using either a String address or a LatLng object.
-/// `address` and `location` are mutually exclusive; provide only one.
-Future<void> setDestination({
-  required BuildContext context,
-  String? address,
-  LatLng? location,
-}) async {
-  final apiKey = dotenv.env['GEOCODING_API_KEY'];
-  if (apiKey == null) {
-    throw Exception("Missing Google API Key in .env");
-  }
-
-  if (address == null && location == null) {
-    throw ArgumentError("Either `address` or `location` must be provided.");
-  }
-
-  _loading = true;
-  notifyListeners();
-
-  try {
-    String? destinationName;
-    LatLng? destination;
-
-    if (address != null) {
-      // Fetch destination from address
-      final response = await http.get(Uri.parse(
-          'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=$apiKey'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'ZERO_RESULTS') {
-          await ttsService.speakLabels([AppLocalizations.of(context).translate("destination-not-found")]);
-          return;
-        }
-
-        final location = data['results'][0]['geometry']['location'];
-        destinationName = address;
-        destination = LatLng(location['lat'], location['lng']);
-      } else {
-        throw Exception("Failed to fetch destination.");
-      }
-    } else if (location != null) {
-      // Fetch destination from LatLng
-      final latLngString = '${location.latitude},${location.longitude}';
-      final response = await http.get(Uri.parse(
-          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latLngString&key=$apiKey'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'ZERO_RESULTS') {
-          await ttsService.speakLabels([AppLocalizations.of(context).translate("destination-not-found")]);
-          return;
-        }
-
-        destinationName = 'home'; // You can modify this to a meaningful name
-        destination = location;
-      } else {
-        throw Exception("Failed to fetch destination.");
-      }
+  /// Set the destination using either a String address or a LatLng object.
+  /// `address` and `location` are mutually exclusive; provide only one.
+  Future<void> setDestination({
+    required BuildContext context,
+    String? address,
+    LatLng? location,
+  }) async {
+    final apiKey = dotenv.env['GEOCODING_API_KEY'];
+    if (apiKey == null) {
+      throw Exception("Missing Google API Key in .env");
     }
 
-    if (destination == null) {
-      throw Exception("Failed to determine destination.");
+    if (address == null && location == null) {
+      throw ArgumentError("Either `address` or `location` must be provided.");
     }
 
-    // Set the destination and fetch routes and instructions
-    _destinationName = destinationName;
-    _destination = destination;
+    _loading = true;
     notifyListeners();
 
-    await _fetchPolylineCoordinates();
-    await fetchNavigationInstructions(context); // Pass context for translation
-  } finally {
-    _loading = false;
-    notifyListeners();
+    try {
+      String? destinationName;
+      LatLng? destination;
+
+      if (address != null) {
+        // Fetch destination from address
+        final response = await http.get(Uri.parse(
+            'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=$apiKey'));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['status'] == 'ZERO_RESULTS') {
+            await ttsService.speakLabels([
+              AppLocalizations.of(context).translate("destination-not-found")
+            ]);
+            return;
+          }
+
+          final location = data['results'][0]['geometry']['location'];
+          destinationName = address;
+          destination = LatLng(location['lat'], location['lng']);
+        } else {
+          throw Exception("Failed to fetch destination.");
+        }
+      } else if (location != null) {
+        // Fetch destination from LatLng
+        final latLngString = '${location.latitude},${location.longitude}';
+        final response = await http.get(Uri.parse(
+            'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latLngString&key=$apiKey'));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data['status'] == 'ZERO_RESULTS') {
+            await ttsService.speakLabels([
+              AppLocalizations.of(context).translate("destination-not-found")
+            ]);
+            return;
+          }
+
+          destinationName = 'home'; // You can modify this to a meaningful name
+          destination = location;
+        } else {
+          throw Exception("Failed to fetch destination.");
+        }
+      }
+
+      if (destination == null) {
+        throw Exception("Failed to determine destination.");
+      }
+
+      // Set the destination and fetch routes and instructions
+      _destinationName = destinationName;
+      _destination = destination;
+      notifyListeners();
+
+      await _fetchPolylineCoordinates();
+      await fetchNavigationInstructions(
+          context); // Pass context for translation
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
   }
-}
-
 
   /// Fetch polyline coordinates for the route.
   Future<void> _fetchPolylineCoordinates() async {
@@ -164,50 +172,49 @@ Future<void> setDestination({
 
   /// Fetch navigation instructions (steps).
   Future<void> fetchNavigationInstructions(BuildContext context) async {
-  if (_currentLocation == null || _destination == null) return;
+    if (_currentLocation == null || _destination == null) return;
 
-  final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-  final origin = "${_currentLocation!.latitude},${_currentLocation!.longitude}";
-  final dest = "${_destination!.latitude},${_destination!.longitude}";
+    final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
+    final origin =
+        "${_currentLocation!.latitude},${_currentLocation!.longitude}";
+    final dest = "${_destination!.latitude},${_destination!.longitude}";
 
-  final response = await http.get(Uri.parse(
-      'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$dest&mode=walking&key=$apiKey'));
+    final response = await http.get(Uri.parse(
+        'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$dest&mode=walking&key=$apiKey'));
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    final steps = data['routes'][0]['legs'][0]['steps'] as List;
-    _instructions = steps.map((step) {
-      final instruction = step['html_instructions'] as String;
-      final startLocation = step['start_location'];
-      return {
-        'instruction': removeHtmlTags(instruction),
-        'start_location': LatLng(startLocation['lat'], startLocation['lng']),
-      };
-    }).toList();
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final steps = data['routes'][0]['legs'][0]['steps'] as List;
+      _instructions = steps.map((step) {
+        final instruction = step['html_instructions'] as String;
+        final startLocation = step['start_location'];
+        return {
+          'instruction': removeHtmlTags(instruction),
+          'start_location': LatLng(startLocation['lat'], startLocation['lng']),
+        };
+      }).toList();
 
-    if (_instructions.isNotEmpty) {
-      final firstInstruction = _instructions[0]['instruction'];
+      if (_instructions.isNotEmpty) {
+        final firstInstruction = _instructions[0]['instruction'];
 
-      // Use context to get the TranslationProvider
-      final translationProvider =
-          Provider.of<TranslationProvider>(context, listen: false);
+        // Use context to get the TranslationProvider
+        final translationProvider =
+            Provider.of<TranslationProvider>(context, listen: false);
 
-      // Translate the instruction
-      final translatedInstruction = await translationProvider.translateText(
-                  "Start your trip to $_destinationName. First instruction: $firstInstruction"
-, Localizations.localeOf(context).languageCode); // Replace 'es' with the desired language
+        // Translate the instruction
+        final translatedInstruction = await translationProvider.translateText(
+            "Start your trip to $_destinationName. First instruction: $firstInstruction",
+            Localizations.localeOf(context)
+                .languageCode); // Replace 'es' with the desired language
 
-      await ttsService.speakLabels([
-        translatedInstruction
-      ]);
+        await ttsService.speakLabels([translatedInstruction]);
+      }
+
+      notifyListeners();
+    } else {
+      throw Exception("Failed to fetch navigation instructions.");
     }
-
-    notifyListeners();
-  } else {
-    throw Exception("Failed to fetch navigation instructions.");
   }
-}
-
 
   /// Remove HTML tags from instructions.
   String removeHtmlTags(String htmlText) {
@@ -217,41 +224,48 @@ Future<void> setDestination({
 
   /// Update the current instruction based on proximity.
   void _updateCurrentInstruction(BuildContext context) async {
-    if (_instructions.isEmpty || _currentLocation == null) return;
+  if (_instructions.isEmpty || _currentLocation == null) return;
 
-    final currentLatLng = LatLng(
-      _currentLocation!.latitude!,
-      _currentLocation!.longitude!,
-    );
+  final currentLatLng = LatLng(
+    _currentLocation!.latitude!,
+    _currentLocation!.longitude!,
+  );
 
-    int closestIndex = -1;
-    double closestDistance = double.infinity;
+  int closestIndex = -1;
+  double closestDistance = double.infinity;
 
-    for (int i = 0; i < _instructions.length; i++) {
-      final instructionLatLng = _instructions[i]['start_location'] as LatLng;
-      final distance = _calculateDistance(currentLatLng, instructionLatLng);
+  for (int i = 0; i < _instructions.length; i++) {
+    final instructionLatLng = _instructions[i]['start_location'] as LatLng;
+    final distance = _calculateDistance(currentLatLng, instructionLatLng);
 
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = i;
-      }
-    }
-
-    if (closestDistance < 10) {
-      final instruction = _instructions[closestIndex]['instruction'];
-      final translatedInstruction = await Provider.of<TranslationProvider>(context, listen: false)
-          .translateText(instruction, Localizations.localeOf(context).languageCode);
-      ttsService.speakLabels([AppLocalizations.of(context).translate("Now"), translatedInstruction]);
-      _instructions = _instructions.sublist(closestIndex + 1);
-      notifyListeners();
-    }
-
-    // Notify the user if they've reached the destination.
-    if (_instructions.isEmpty) {
-      ttsService.speakLabels(
-          [AppLocalizations.of(context).translate("Destination-reached"), _destinationName]);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestIndex = i;
     }
   }
+
+  if (closestDistance < 10) {
+    final instruction = _instructions[closestIndex]['instruction'];
+    final translationProvider = Provider.of<TranslationProvider>(context, listen: false);
+    final translatedInstruction = await translationProvider.translateText(
+        instruction, Localizations.localeOf(context).languageCode);
+
+    ttsService.speakLabels([
+      AppLocalizations.of(context).translate("Now"),
+      translatedInstruction,
+    ]);
+
+    _instructions = _instructions.sublist(closestIndex + 1);
+    notifyListeners();
+  }
+
+  if (_instructions.isEmpty) {
+    ttsService.speakLabels([
+      AppLocalizations.of(context).translate("Destination-reached"),
+      _destinationName ?? "",
+    ]);
+  }
+}
 
   /// Calculate distance between two points in meters.
   double _calculateDistance(LatLng start, LatLng end) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:provider/provider.dart';
 import '../shared/database_helper.dart';

@@ -7,7 +7,6 @@ import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/sos.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
-import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
 import 'describe_environment.dart';
 import '../services/picture_service.dart';
