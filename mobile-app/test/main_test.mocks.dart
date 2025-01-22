@@ -1338,6 +1338,16 @@ class MockVoiceCommands extends _i1.Mock implements _i5.VoiceCommands {
       ) as _i21.Future<void>);
 
   @override
+  _i21.Future<void> handleCommand(String? command) => (super.noSuchMethod(
+        Invocation.method(
+          #handleCommand,
+          [command],
+        ),
+        returnValue: _i21.Future<void>.value(),
+        returnValueForMissingStub: _i21.Future<void>.value(),
+      ) as _i21.Future<void>);
+
+  @override
   double calculateSimilarity(
     String? s1,
     String? s2,

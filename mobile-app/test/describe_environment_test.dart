@@ -7,6 +7,7 @@ import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'describe_environment_test.mocks.dart';
 
@@ -17,10 +18,13 @@ void main() {
     late MockPictureService mockPictureService;
     late MockAppInitializer mockAppInitializer;
 
-    setUp(() {
+    setUp(() async {
       mockTtsService = MockITtsService();
       mockPictureService = MockPictureService();
       mockAppInitializer = MockAppInitializer();
+
+      // Initialize dotenv
+      await dotenv.load(fileName: ".env");
 
       // Stub `getCameraPreview`
       when(mockPictureService.getCameraPreview())
@@ -57,8 +61,9 @@ void main() {
 
       // Verify picture service is called
       verify(mockPictureService.takePicture(
+        httpClient: anyNamed('httpClient'),
         endpoint:
-            'https://begiapbl.duckdns.org:1880/describe?session_id=testSessionToken',
+            'https://begiapbl.duckdns.org:1880/API?id=4&session_id=testSessionToken',
         onLabelsDetected: anyNamed('onLabelsDetected'),
         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
       )).called(1);
@@ -88,6 +93,7 @@ void main() {
 
       // Capture the onLabelsDetected callback
       final captured = verify(mockPictureService.takePicture(
+        httpClient: anyNamed('httpClient'),
         endpoint: anyNamed('endpoint'),
         onLabelsDetected: captureAnyNamed('onLabelsDetected'),
         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
@@ -125,6 +131,7 @@ void main() {
 
       // Capture the onLabelsDetected callback
       final captured = verify(mockPictureService.takePicture(
+        httpClient: anyNamed('httpClient'),
         endpoint: anyNamed('endpoint'),
         onLabelsDetected: captureAnyNamed('onLabelsDetected'),
         onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
@@ -165,6 +172,7 @@ void main() {
 
       // Capture the onResponseTimeUpdated callback
       final captured = verify(mockPictureService.takePicture(
+        httpClient: anyNamed('httpClient'),
         endpoint: anyNamed('endpoint'),
         onLabelsDetected: anyNamed('onLabelsDetected'),
         onResponseTimeUpdated: captureAnyNamed('onResponseTimeUpdated'),
@@ -174,7 +182,7 @@ void main() {
       final onResponseTimeUpdated = captured.first as Function(Duration);
       onResponseTimeUpdated(Duration(seconds: 2));
 
-//       // Allow time for SnackBar to appear
+      // Allow time for SnackBar to appear
       await tester.pumpAndSettle();
 
       // Verify that the SnackBar shows the correct response time

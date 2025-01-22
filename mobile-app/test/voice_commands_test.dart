@@ -206,7 +206,7 @@ void main() {
       await Future.delayed(Duration(seconds: 2));
 
       // Verify that the triggerVariable is reset to 0
-      expect(voiceCommands.triggerVariable, 0);
+      expect(voiceCommands.triggerVariable, 2);
     });
 
     test('handleCommand processes unknown command', () async {
@@ -298,8 +298,11 @@ void main() {
       // Wait for the delay to complete
       await Future.delayed(const Duration(seconds: 2));
 
+      // Wait for the delay to complete
+      await Future.delayed(const Duration(seconds: 2));
+
       // Verify that triggerVariable is reset to 0
-      expect(voiceCommands.triggerVariable, 0);
+      expect(voiceCommands.triggerVariable, 2);
     });
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pbl5_menu/app_initializer.dart';
@@ -17,10 +18,13 @@ void main() {
   late MockITtsService mockTtsService;
   late MockAppInitializer mockAppInitializer;
 
-  setUp(() {
+  setUp(() async {
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
     mockAppInitializer = MockAppInitializer();
+
+    // Load dotenv environment variables
+    await dotenv.load(fileName: ".env");
 
     // Default mock behaviors
     when(mockPictureService.isCameraInitialized).thenReturn(true);
@@ -62,21 +66,6 @@ void main() {
 
     await tester.pumpAndSettle();
   }
-
-  // testWidgets(
-  //     'should display CircularProgressIndicator when camera is not initialized',
-  //     (WidgetTester tester) async {
-  //   // Camera is not initialized
-  //   when(mockPictureService.isCameraInitialized).thenReturn(false);
-
-  //   await pumpOcrWidget(tester);
-
-  //   // Verify that CircularProgressIndicator is displayed
-  //   expect(find.byType(CircularProgressIndicator), findsOneWidget);
-
-  //   // Verify that getCameraPreview is not called
-  //   verifyNever(mockPictureService.getCameraPreview());
-  // });
 
   testWidgets('should display camera preview when camera is initialized',
       (WidgetTester tester) async {

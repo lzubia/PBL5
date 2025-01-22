@@ -14,7 +14,7 @@ import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 
 class MapProvider extends ChangeNotifier {
-  Location location = Location();
+  Location location;
   final ITtsService ttsService;
   final http.Client httpClient;
   final PolylinePoints polylinePoints;
@@ -48,9 +48,11 @@ class MapProvider extends ChangeNotifier {
 
   MapProvider({
     required this.ttsService,
+    Location? location,
     http.Client? httpClient,
     PolylinePoints? polylinePoints,
-  })  : httpClient = httpClient ?? http.Client(),
+  })  : location = location ?? Location(),
+        httpClient = httpClient ?? http.Client(),
         polylinePoints = polylinePoints ?? PolylinePoints();
 
   /// Get current location and start listening to updates.
@@ -240,48 +242,49 @@ class MapProvider extends ChangeNotifier {
 
   /// Update the current instruction based on proximity.
   void _updateCurrentInstruction(BuildContext context) async {
-  if (_instructions.isEmpty || _currentLocation == null) return;
+    if (_instructions.isEmpty || _currentLocation == null) return;
 
-  final currentLatLng = LatLng(
-    _currentLocation!.latitude!,
-    _currentLocation!.longitude!,
-  );
+    final currentLatLng = LatLng(
+      _currentLocation!.latitude!,
+      _currentLocation!.longitude!,
+    );
 
-  int closestIndex = -1;
-  double closestDistance = double.infinity;
+    int closestIndex = -1;
+    double closestDistance = double.infinity;
 
-  for (int i = 0; i < _instructions.length; i++) {
-    final instructionLatLng = _instructions[i]['start_location'] as LatLng;
-    final distance = _calculateDistance(currentLatLng, instructionLatLng);
+    for (int i = 0; i < _instructions.length; i++) {
+      final instructionLatLng = _instructions[i]['start_location'] as LatLng;
+      final distance = _calculateDistance(currentLatLng, instructionLatLng);
 
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestIndex = i;
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    if (closestDistance < 10) {
+      final instruction = _instructions[closestIndex]['instruction'];
+      final translationProvider =
+          Provider.of<TranslationProvider>(context, listen: false);
+      final translatedInstruction = await translationProvider.translateText(
+          instruction, Localizations.localeOf(context).languageCode);
+
+      ttsService.speakLabels([
+        AppLocalizations.of(context).translate("Now"),
+        translatedInstruction,
+      ]);
+
+      _instructions = _instructions.sublist(closestIndex + 1);
+      notifyListeners();
+    }
+
+    if (_instructions.isEmpty) {
+      ttsService.speakLabels([
+        AppLocalizations.of(context).translate("Destination-reached"),
+        _destinationName ?? "",
+      ]);
     }
   }
-
-  if (closestDistance < 10) {
-    final instruction = _instructions[closestIndex]['instruction'];
-    final translationProvider = Provider.of<TranslationProvider>(context, listen: false);
-    final translatedInstruction = await translationProvider.translateText(
-        instruction, Localizations.localeOf(context).languageCode);
-
-    ttsService.speakLabels([
-      AppLocalizations.of(context).translate("Now"),
-      translatedInstruction,
-    ]);
-
-    _instructions = _instructions.sublist(closestIndex + 1);
-    notifyListeners();
-  }
-
-  if (_instructions.isEmpty) {
-    ttsService.speakLabels([
-      AppLocalizations.of(context).translate("Destination-reached"),
-      _destinationName ?? "",
-    ]);
-  }
-}
 
   /// Calculate distance between two points in meters.
   double _calculateDistance(LatLng start, LatLng end) {

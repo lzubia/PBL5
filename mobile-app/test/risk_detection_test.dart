@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pbl5_menu/features/risk_detection.dart';
@@ -53,13 +54,16 @@ void main() {
   late MockVoiceCommands mockVoiceCommands;
   late MockAppLocalizations mockAppLocalizations;
 
-  setUp(() {
+  setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
 
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
     mockVoiceCommands = MockVoiceCommands();
     mockAppLocalizations = MockAppLocalizations();
+
+    // Load dotenv environment variables
+    await dotenv.load(fileName: ".env");
 
     when(mockPictureService.isCameraInitialized).thenReturn(true);
     when(mockVoiceCommands.riskTrigger).thenReturn(false);
@@ -169,29 +173,6 @@ void main() {
     // Verify that risk detection was enabled
     verify(mockTtsService.speakLabels(["Risk detection enabled"])).called(1);
   });
-
-  // testWidgets(
-  //     'should trigger disableRiskDetection when VoiceCommands disables risk',
-  //     (WidgetTester tester) async {
-  //   // Set riskTrigger to true initially
-  //   when(mockVoiceCommands.riskTrigger).thenReturn(true);
-
-  //   // Pump the widget
-  //   await pumpRiskDetection(tester);
-
-  //   // Verify that risk detection was enabled
-  //   verify(mockTtsService.speakLabels(["Risk detection enabled"])).called(1);
-
-  //   // Change riskTrigger to false and notify listeners
-  //   when(mockVoiceCommands.riskTrigger).thenReturn(false);
-  //   mockVoiceCommands.notifyListeners();
-
-  //   // Pump the widget again to ensure it rebuilds
-  //   await tester.pumpAndSettle();
-
-  //   // Verify that risk detection was disabled
-  //   verify(mockTtsService.speakLabels(["Risk detection disabled"])).called(1);
-  // });
 
   testWidgets(
       'should call PictureService takePicture periodically when enabled',
