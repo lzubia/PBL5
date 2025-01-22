@@ -20,16 +20,20 @@ class LocaleProvider extends ChangeNotifier {
     notifyListeners();
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('locale', locale.languageCode);
+    prefs.setString('locale', locale.toString());
   }
 
   void _loadLocale() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? languageCode = prefs.getString('locale');
-    if (languageCode != null) {
-      _locale = Locale(languageCode);
+    String? localeString = prefs.getString('locale');
+    if (localeString != null) {
+      List<String> localeParts = localeString.split('_');
+      if (localeParts.length == 2) {
+        _locale = Locale(localeParts[0], localeParts[1]);
+      } else {
+        _locale = Locale(localeParts[0]);
+      }
       notifyListeners();
     }
   }
-
 }

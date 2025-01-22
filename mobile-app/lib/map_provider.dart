@@ -14,14 +14,16 @@ import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 
 class MapProvider extends ChangeNotifier {
-  final Location _location = Location();
+  Location location = Location();
   final ITtsService ttsService;
+  final http.Client httpClient;
+  final PolylinePoints polylinePoints;
 
   LocationData? _currentLocation;
   LatLng? _destination;
   List<LatLng> _polylineCoordinates = [];
   List<Map<String, dynamic>> _instructions = [];
-  StreamSubscription<LocationData>? _locationSubscription;
+  StreamSubscription<LocationData>? locationSubscription;
 
   bool _loading = false;
   bool get isLoading => _loading;
@@ -30,11 +32,26 @@ class MapProvider extends ChangeNotifier {
   String? get destinationName => _destinationName;
 
   LocationData? get currentLocation => _currentLocation;
+  set currentLocation(LocationData? location) {
+    _currentLocation = location;
+    notifyListeners();
+  }
+
   LatLng? get destination => _destination;
+  set destination(LatLng? destination) {
+    _destination = destination;
+    notifyListeners();
+  }
+
   List<LatLng> get polylineCoordinates => _polylineCoordinates;
   List<Map<String, dynamic>> get instructions => _instructions;
 
-  MapProvider({required this.ttsService});
+  MapProvider({
+    required this.ttsService,
+    http.Client? httpClient,
+    PolylinePoints? polylinePoints,
+  })  : httpClient = httpClient ?? http.Client(),
+        polylinePoints = polylinePoints ?? PolylinePoints();
 
   /// Get current location and start listening to updates.
   Future<void> getCurrentLocation(BuildContext context) async {
@@ -43,10 +60,10 @@ class MapProvider extends ChangeNotifier {
         AppLocalizations.of(context).translate("mapa-on");
     ttsService.speakLabels([localizationMessage]);
 
-    _currentLocation = await _location.getLocation();
+    _currentLocation = await location.getLocation();
     notifyListeners();
 
-    _locationSubscription = _location.onLocationChanged.listen((newLoc) {
+    locationSubscription = location.onLocationChanged.listen((newLoc) {
       _currentLocation = newLoc;
       notifyListeners();
       if (_instructions.isNotEmpty) {
@@ -130,7 +147,7 @@ class MapProvider extends ChangeNotifier {
       _destination = destination;
       notifyListeners();
 
-      await _fetchPolylineCoordinates();
+      await fetchPolylineCoordinates();
       await fetchNavigationInstructions(
           context); // Pass context for translation
     } finally {
@@ -140,7 +157,7 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Fetch polyline coordinates for the route.
-  Future<void> _fetchPolylineCoordinates() async {
+  Future<void> fetchPolylineCoordinates() async {
     if (_currentLocation == null || _destination == null) return;
 
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
@@ -148,7 +165,6 @@ class MapProvider extends ChangeNotifier {
       throw Exception("Missing Google API Key in .env");
     }
 
-    final polylinePoints = PolylinePoints();
     final result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: apiKey,
       request: PolylineRequest(
@@ -179,7 +195,7 @@ class MapProvider extends ChangeNotifier {
         "${_currentLocation!.latitude},${_currentLocation!.longitude}";
     final dest = "${_destination!.latitude},${_destination!.longitude}";
 
-    final response = await http.get(Uri.parse(
+    final response = await httpClient.get(Uri.parse(
         'https://maps.googleapis.com/maps/api/directions/json?origin=$origin&destination=$dest&mode=walking&key=$apiKey'));
 
     if (response.statusCode == 200) {
@@ -281,7 +297,8 @@ class MapProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _locationSubscription?.cancel();
+    locationSubscription?.cancel();
+    locationSubscription = null; // Explicitly set it to null after canceling
     super.dispose();
   }
 }

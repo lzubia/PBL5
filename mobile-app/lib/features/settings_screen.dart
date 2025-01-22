@@ -8,14 +8,16 @@ import '../services/stt/i_tts_service.dart';
 import '../services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final FlutterNativeContactPicker? contactPicker;
+
+  const SettingsScreen({super.key, this.contactPicker});
 
   @override
   SettingsScreenState createState() => SettingsScreenState();
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  final FlutterNativeContactPicker _contactPicker =
+  FlutterNativeContactPicker _contactPicker =
       FlutterNativeContactPicker();
 
   // State variables
@@ -29,6 +31,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    _contactPicker = widget.contactPicker ?? FlutterNativeContactPicker();
     _loadSettings();
   }
 
@@ -261,6 +264,7 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAddContactButton() {
     return ElevatedButton(
+      key: const Key('addContactButton'), // Add a unique key
       onPressed: () async {
         try {
           final contact = await _contactPicker.selectContact();

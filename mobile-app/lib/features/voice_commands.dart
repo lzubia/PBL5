@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
@@ -22,9 +23,13 @@ class VoiceCommands extends ChangeNotifier {
   Timer? _commandTimer;
 
   final SttService _sttService;
+  late AudioPlayer player;
 
-  // Constructor
-  VoiceCommands(this._sttService);
+  final AppLocalizations? appLocalizations; // Injected for testing
+
+  VoiceCommands(this._sttService,
+      {AudioPlayer? audioPlayer, this.appLocalizations})
+      : player = audioPlayer ?? AudioPlayer();
 
   bool get isActivated => _isActivated;
 
@@ -41,7 +46,6 @@ class VoiceCommands extends ChangeNotifier {
     }
   }
 
-  final AudioPlayer player = AudioPlayer();
   final Map<String, List<String>> voiceCommands = {};
 
   static final ValueNotifier<bool> useVoiceControlNotifier =
@@ -67,7 +71,6 @@ class VoiceCommands extends ChangeNotifier {
     await loadActivationCommands();
     await loadVoiceCommands();
     startListening();
-    // notifyListeners();
   }
 
   Future<void> loadVoiceCommands() async {
@@ -113,11 +116,11 @@ class VoiceCommands extends ChangeNotifier {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;
-      _handleCommand(_command);
-    } else if (_isActivationCommand(recognizedText)) {
+      handleCommand(_command);
+    } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
-      _playActivationSound();
+      playActivationSound();
       notifyListeners();
       _startCommandTimer();
     } else {
@@ -147,11 +150,11 @@ class VoiceCommands extends ChangeNotifier {
     }
   }
 
-  bool _isActivationCommand(String transcript) {
+  bool isActivationCommand(String transcript) {
     return activationCommands.any((command) => transcript.contains(command));
   }
 
-  Future<void> _playActivationSound() async {
+  Future<void> playActivationSound() async {
     await player.play(AssetSource('sounds/Begia-on.mp3'));
   }
 
@@ -159,7 +162,7 @@ class VoiceCommands extends ChangeNotifier {
     await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
-  Future<void> _handleCommand(String command) async {
+  Future<void> handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
@@ -173,12 +176,18 @@ class VoiceCommands extends ChangeNotifier {
         final primaryCommand = commandGroup.key;
 
         switch (primaryCommand) {
+          case 'menu_command':
+            matched = true;
+            final label = appLocalizations?.translate("menu") ?? "menu";
+            ttsServiceGoogle.speakLabels([label]);
+            break;
+
           case 'risk_detection_command':
             matched = true;
             riskTrigger = true;
             notifyListeners();
             Future.delayed(Duration(seconds: 2), () {
-              riskTrigger = false; // Reset riskTrigger after the delay
+              riskTrigger = false;
             });
             break;
 

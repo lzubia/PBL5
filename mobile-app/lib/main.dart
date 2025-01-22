@@ -66,11 +66,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Ensure VoiceCommands initializes dependencies after the app starts
-      Provider.of<VoiceCommands>(context, listen: false).initialize(context);
-    });
-
     final localeProvider = Provider.of<LocaleProvider>(context);
 
     return MaterialApp(
@@ -92,6 +87,11 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Ensure VoiceCommands initializes dependencies after the app starts
+      Provider.of<VoiceCommands>(context, listen: false).initialize(context);
+    });
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 100.0,
@@ -113,6 +113,7 @@ class MyHomePage extends StatelessWidget {
         ],
       ),
       body: GestureDetector(
+        key: const Key('voiceControlGesture'),
         behavior: HitTestBehavior.opaque, // Detecta toques en áreas vacías.
         onDoubleTap: () {
           // Toggle state using Provider

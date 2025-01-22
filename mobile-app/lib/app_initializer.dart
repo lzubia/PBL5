@@ -57,12 +57,10 @@ class AppInitializer {
       });
 
       // Initialize database helper
-      databaseHelper = DatabaseHelper();
-      // await databaseHelper
-      //     .resetDatabase(); // Clear and reinitialize the database
+      databaseHelper ??= DatabaseHelper();
 
       // Initialize TTS service with the database helper
-      ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
+      ttsServiceGoogle ??= TtsServiceGoogle(databaseHelper!);
       ttsServiceGoogle.initializeTts();
 
       // Initialize dependencies
@@ -70,12 +68,11 @@ class AppInitializer {
       await pictureService
           .initializeCamera(); // Notify listeners on state change
 
-      sttService = SttService();
+      sttService ??= SttService();
       await sttService.initializeStt();
 
       // Initialize VoiceCommands
-      voiceCommands = VoiceCommands(sttService);
-
+      voiceCommands ??= VoiceCommands(sttService!);
       sosService = SosService(ttsServiceGoogle: ttsServiceGoogle);
 
       isInitialized = true; // Mark as initialized

@@ -26,10 +26,9 @@ class RiskDetectionState extends State<RiskDetection> {
     super.didChangeDependencies();
     final voiceCommands = context.watch<VoiceCommands>();
 
-    // Directly use the riskTrigger to enable/disable risk detection
     if (voiceCommands.riskTrigger && !isRiskDetectionEnabled) {
       enableRiskDetection();
-    } else if (voiceCommands.riskTrigger && isRiskDetectionEnabled) {
+    } else if (!voiceCommands.riskTrigger && isRiskDetectionEnabled) {
       disableRiskDetection();
     }
   }
@@ -77,6 +76,12 @@ class RiskDetectionState extends State<RiskDetection> {
         });
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override

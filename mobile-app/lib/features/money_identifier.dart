@@ -16,7 +16,7 @@ class MoneyIdentifier extends StatefulWidget {
 }
 
 class MoneyIdentifierState extends State<MoneyIdentifier> {
-  Timer? _timer;
+  Timer? timer;
   Duration responseTime = Duration.zero;
 
   @override
@@ -29,15 +29,19 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
     super.didChangeDependencies();
 
     // Start the periodic picture-taking process here
-    if (_timer == null) {
+    if (timer == null) {
       _startPeriodicPictureTaking();
     }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    timer?.cancel();
     super.dispose();
+  }
+
+  void cancelTimer() {
+    timer?.cancel();
   }
 
   void _startPeriodicPictureTaking() {
@@ -45,12 +49,12 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
 
     ttsService
         .speakLabels([AppLocalizations.of(context).translate("money-on")]);
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      _takeAndSendImage();
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      takeAndSendImage();
     });
   }
 
-  Future<void> _takeAndSendImage({http.Client? client}) async {
+  Future<void> takeAndSendImage({http.Client? client}) async {
     final pictureService = context.read<PictureService>();
     final ttsService = context.read<ITtsService>();
     final sessionToken = context.read<AppInitializer>().sessionToken;
