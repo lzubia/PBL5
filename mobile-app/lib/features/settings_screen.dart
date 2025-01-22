@@ -146,14 +146,13 @@ class SettingsScreenState extends State<SettingsScreen> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
-            AppLocalizations.of(context).translate('title'),
-            style: const TextStyle(fontSize: 24.0),
-          ),
-          centerTitle: true,
+          toolbarHeight: 100.0,
+          title: const Text('BEGIA',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, bottom: 16.0), // Exclude top padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -162,13 +161,14 @@ class SettingsScreenState extends State<SettingsScreen> {
                 'contacts',
                 textColor,
                 actionButton: ElevatedButton(
-                  
                   onPressed: () async {
                     // Navigate to the map screen to select the home location
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => MapWidget(title: 'save',)),
+                          builder: (context) => MapWidget(
+                                title: 'save',
+                              )),
                     );
                   },
                   child: Icon(Icons.home, size: _fontSize),
@@ -235,7 +235,12 @@ class SettingsScreenState extends State<SettingsScreen> {
               child: ListTile(
                 title: Text(
                   contacts[index]['name'] ?? '',
-                  style: TextStyle(fontSize: _fontSize, color: Colors.black),
+                  style: TextStyle(
+                    fontSize: _fontSize,
+                    color: _isDarkTheme
+                        ? Colors.white
+                        : Colors.black, // Changes based on theme
+                  ),
                 ),
                 trailing: IconButton(
                   icon: Icon(

@@ -94,11 +94,13 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
+        toolbarHeight: 100.0,
+        title: const Text('BEGIA',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             key: const Key('settingsButton'),
-            icon: const Icon(Icons.settings, size: 50),
+            icon: const Icon(Icons.settings, size: 70),
             onPressed: () {
               Navigator.push(
                 context,
@@ -136,7 +138,7 @@ class MyHomePage extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Image.asset(
                         'assets/BegiaGif.gif',
-                        height: 100,
+                        height: 120,
                       ),
                     ),
                   );

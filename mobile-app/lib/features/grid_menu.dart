@@ -155,6 +155,7 @@ class GridMenuState extends State<GridMenu> {
 
             // Send SOS request
             await sosService
+                
                 .sendSosRequest(contacts.cast<Map<String, String>>(), context);
           } catch (e) {
             print('Error calling SOS service: $e');
@@ -254,6 +255,7 @@ class GridMenuState extends State<GridMenu> {
           crossAxisCount: 2,
           children: List.generate(menuOptions.length, (index) {
             final title = menuOptions[index]['title'];
+            final ttsService = context.read<ITtsService>();
 
             return Card(
               margin: const EdgeInsets.all(8.0),
@@ -261,19 +263,18 @@ class GridMenuState extends State<GridMenu> {
                 onTap: () {
                   showBottomSheet(context, title);
                 },
+                onDoubleTap: () {
+                  ttsService.speakLabels(
+                      [AppLocalizations.of(context).translate(title)]);
+                },
                 child: SizedBox(
                   height: 150,
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(menuOptions[index]['icon'], size: 50),
+                        Icon(menuOptions[index]['icon'], size: 100),
                         const SizedBox(height: 10),
-                        Text(
-                          menuOptions[index]['title'],
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 20),
-                        ),
                       ],
                     ),
                   ),
