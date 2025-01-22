@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pbl5_menu/services/sos.dart';
@@ -15,6 +17,10 @@ class AppInitializer {
   late TtsServiceGoogle ttsServiceGoogle;
   late SttService sttService;
   late VoiceCommands voiceCommands;
+
+  List<String> _widgetStates = [];
+
+  List<String> get widgetStates => _widgetStates;
   late SosService sosService;
 
   // External dependency
@@ -26,28 +32,30 @@ class AppInitializer {
   String sessionToken = '';
   Locale locale = const Locale('en', 'US');
 
-  // static const MethodChannel platform = MethodChannel('com.example.pbl5_menu/endSession');
+  static const MethodChannel platform =
+      MethodChannel('com.example.pbl5_menu/endSession');
 
   Future<void> initialize({required PictureService pictureService}) async {
-    this.pictureService = pictureService; // Use the passed-in PictureService
+    this.pictureService = pictureService; // Use the passed-in PictureService´
 
     try {
       // Ensure Flutter bindings
-      WidgetsFlutterBinding.ensureInitialized();
-      HttpOverrides.global = MyHttpOverrides();
-
-      // MethodChannel setup
-      // platform.setMethodCallHandler((call) async {
-      //   if (call.method == 'endSession') {
-      //     // await endSession(sessionToken);
-      //   } else if (call.method == 'startSession') {
-      //     // await startSession();
-      //   }
-      // }
-      // );
+      // WidgetsFlutterBinding.ensureInitialized();
 
       // Load environment variables
       await dotenv.load(fileName: "./.env");
+
+      HttpOverrides.global = MyHttpOverrides();
+
+      // MethodChannel setup
+      platform.setMethodCallHandler((call) async {
+        print("Method call received: ${call.method}");
+        if (call.method == 'endSession') {
+          await endSession(sessionToken);
+        } else if (call.method == 'startSession') {
+          await startSession();
+        }
+      });
 
       // Initialize database helper
       databaseHelper = DatabaseHelper();
@@ -77,41 +85,41 @@ class AppInitializer {
       isInitialized = false;
     }
   }
-}
 
-Future<void> startSession({http.Client? client}) async {
-  // final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
-  // client ??= http.Client();
-  // try {
-  //   final response = await client.get(url);
-  //   if (response.statusCode == 200) {
-  //     sessionToken = jsonDecode(response.body)['session_id'];
-  //     print('Session started successfully. Token: $sessionToken');
-  //   } else {
-  //     sessionToken = '';
-  //     throw Exception('Failed to start session: ${response.statusCode}');
-  //   }
-  // } catch (e) {
-  //   sessionToken = '';
-  //   throw Exception('Error starting session: $e');
-  // }
-}
 
-Future<void> endSession(String sessionId, {http.Client? client}) async {
-  // final url = Uri.parse(
-  //     'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
-  // client ??= http.Client();
-  // try {
-  //   final response = await client.delete(url);
-  //   if (response.statusCode == 200) {
-  //     print('Session ended successfully');
-  //     sessionToken = '';
-  //   } else {
-  //     throw Exception('Failed to end session: ${response.statusCode}');
-  //   }
-  // } catch (e) {
-  //   throw Exception('Error ending session: $e');
-  // }
+  Future<void> startSession({http.Client? client}) async {
+    final url = Uri.parse(dotenv.env["API_URL"]! + '1');
+    client ??= http.Client();
+    try {
+      final response = await client.get(url);
+      if (response.statusCode == 200) {
+        sessionToken = jsonDecode(response.body)['session_id'];
+        print('Session started successfully. Token: $sessionToken');
+      } else {
+        sessionToken = '';
+        throw Exception('Failed to start session: ${response.statusCode}');
+      }
+    } catch (e) {
+      sessionToken = '';
+      throw Exception('Error starting session: $e');
+    }
+  }
+
+  Future<void> endSession(String sessionId, {http.Client? client}) async {
+    final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
+    client ??= http.Client();
+    try {
+      final response = await client.delete(url);
+      if (response.statusCode == 200) {
+        print('Session ended successfully');
+        sessionToken = '';
+      } else {
+        throw Exception('Failed to end session: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error ending session: $e');
+    }
+  }
 }
 
 class MyHttpOverrides extends HttpOverrides {

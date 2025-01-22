@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:pbl5_menu/services/l10n.dart';
@@ -53,15 +54,15 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    ttsService.speakLabels([AppLocalizations.of(context).translate("risk-off")]);
+    ttsService
+        .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
   }
 
   Future<void> _takePicture() async {
     final pictureService = Provider.of<PictureService>(context, listen: false);
     final sessionToken = AppInitializer().sessionToken;
 
-    final endpoint =
-        'https://begiapbl.duckdns.org:1880/detect?session_id=$sessionToken';
+    final endpoint = dotenv.env["API_URL"]! + '3&session_id=${sessionToken}';
 
     await pictureService.takePicture(
       endpoint: endpoint,
