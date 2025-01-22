@@ -313,7 +313,7 @@ class SettingsScreenState extends State<SettingsScreen> {
       children: [
         _buildLanguageButton(localeProvider, 'ENG', 'en-US', 'en-US-Wavenet-D'),
         _buildLanguageButton(localeProvider, 'ESP', 'es-ES', 'es-ES-Wavenet-B'),
-        _buildLanguageButton(localeProvider, 'EUS', 'eu-ES', 'eu-ES-Wavenet-A'),
+        _buildLanguageButton(localeProvider, 'EUS', 'eu-ES', 'eu-ES-Standard-A'),
       ],
     );
   }
