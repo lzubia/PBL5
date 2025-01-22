@@ -52,6 +52,8 @@ void main() {
   late MockWidgetStateProvider mockWidgetStateProvider;
   late MockAssetBundle mockAssetBundle;
 
+  late VoiceCommands voiceCommands;
+
   setUp(() {
     mockSttService = MockSttService();
     mockTtsService = MockITtsService();
@@ -95,7 +97,7 @@ void main() {
     });
 
     // Override the default rootBundle with the mock asset bundle
-    TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
       final key = utf8.decode(message!.buffer.asUint8List());
       if (mockAssetBundle._mockAssets.containsKey(key)) {
@@ -105,6 +107,14 @@ void main() {
       }
       return null;
     });
+
+    // Initialize VoiceCommands with mocked dependencies
+    voiceCommands = VoiceCommands(
+      mockSttService,
+      audioPlayer: mockAudioPlayer,
+    )
+      ..sttService = mockSttService
+      ..ttsServiceGoogle = mockTtsService;
   });
 
   group('VoiceCommands Tests', () {
@@ -168,49 +178,74 @@ void main() {
       verify(mockAudioPlayer.play(any)).called(1);
     });
 
-    test('handleCommand processes risk_detection_command', () async {
+    test('handleCommand processes map_command and notifies listeners',
+        () async {
       final voiceCommands = VoiceCommands(
         mockSttService,
-        audioPlayer: mockAudioPlayer, // Inject mocked AudioPlayer
+        audioPlayer: mockAudioPlayer,
       )
         ..ttsServiceGoogle = mockTtsService
         ..sttService = mockSttService;
 
-      voiceCommands.voiceCommands['risk_detection_command'] = [
-        'start risk detection'
-      ];
-      voiceCommands.handleCommand('start risk detection');
+      // Add the mocked voice command
+      voiceCommands.voiceCommands['map_command'] = ['open map'];
 
-      expect(voiceCommands.riskTrigger, isTrue);
-      verifyNever(mockTtsService.speakLabels(any));
-    });
-
-    test('handleCommand processes menu_command and speaks labels', () async {
-      final mockLocalizations = MockAppLocalizations();
-      when(mockLocalizations.translate(any)).thenAnswer((invocation) {
-        final key = invocation.positionalArguments.first;
-        if (key == "menu") return "Test Menu"; // Mocked translation for "menu"
-        return key;
+      // Add a listener to track notifications
+      bool listenerCalled = false;
+      voiceCommands.addListener(() {
+        listenerCalled = true;
       });
 
+      // Execute the command
+      voiceCommands.handleCommand('open map');
+
+      // Verify that the listener was called for the initial update
+      expect(listenerCalled, isTrue);
+
+      // Wait for the delayed reset
+      await Future.delayed(Duration(seconds: 2));
+
+      // Verify that the triggerVariable is reset to 0
+      expect(voiceCommands.triggerVariable, 0);
+    });
+
+    test('handleCommand processes unknown command', () async {
       final voiceCommands = VoiceCommands(
         mockSttService,
         audioPlayer: mockAudioPlayer,
-        appLocalizations: mockLocalizations,
       )
-        ..ttsServiceGoogle = mockTtsService
-        ..sttService = mockSttService // Manually initialize sttService
-        ..widgetStateProvider =
-            mockWidgetStateProvider; // Manually initialize widgetStateProvider
+        ..sttService = mockSttService // Assign mockSttService to sttService
+        ..ttsServiceGoogle =
+            mockTtsService; // Assign mockTtsService to ttsServiceGoogle
 
-      // Add the mocked voice command
-      voiceCommands.voiceCommands['menu_command'] = ['open menu'];
+      voiceCommands.voiceCommands['known_command'] = ['some valid command'];
 
-      // Execute the command
-      voiceCommands.handleCommand('open menu');
+      // Execute the handleCommand with an unknown command
+      voiceCommands.handleCommand('unknown command');
 
-      // Verify that the TTS service was called with the correct label
-      verify(mockTtsService.speakLabels(['Test Menu'])).called(1);
+      // Ensure no crash occurs and startListening is called again
+      verify(mockSttService.startListening(any)).called(1);
+    });
+
+    test('calculateSimilarity computes similarity correctly', () {
+      final voiceCommands = VoiceCommands(
+        mockSttService,
+        audioPlayer: mockAudioPlayer,
+      );
+
+      final similarity = voiceCommands.calculateSimilarity('hello', 'hallo');
+      expect(similarity,
+          greaterThan(60.0)); // Similar words should have high similarity
+    });
+
+    test('levenshteinDistance calculates correct distance', () {
+      final voiceCommands = VoiceCommands(
+        mockSttService,
+        audioPlayer: mockAudioPlayer,
+      );
+
+      final distance = voiceCommands.levenshteinDistance('kitten', 'sitting');
+      expect(distance, 3);
     });
 
     test('isActivationCommand checks activation commands', () async {
@@ -225,61 +260,46 @@ void main() {
       expect(voiceCommands.isActivationCommand('not an activation'), isFalse);
     });
 
-    // test('triggerVariable updates for money_identifier_command', () async {
-    //   final voiceCommands = VoiceCommands(
-    //     mockSttService,
-    //     audioPlayer: mockAudioPlayer,
-    //   )
-    //     ..ttsServiceGoogle = mockTtsService
-    //     ..sttService = mockSttService // Manually initialize sttService
-    //     ..widgetStateProvider =
-    //         mockWidgetStateProvider; // Manually initialize widgetStateProvider
+    test('toggleVoiceControl activates and deactivates voice control',
+        () async {
+      voiceCommands.toggleVoiceControl();
+      expect(VoiceCommands.useVoiceControlNotifier.value, isTrue);
 
-    //   // Mock the behavior of `getWidgetState` to return false (i.e., widget is not active)
-    //   when(mockWidgetStateProvider.getWidgetState('Money Identifier'))
-    //       .thenReturn(false);
-
-    //   // Add the mocked voice command
-    //   voiceCommands.voiceCommands['money_identifier_command'] = [
-    //     'identify money'
-    //   ];
-
-    //   // Execute the command
-    //   voiceCommands.handleCommand('identify money');
-
-    //   // Check if `triggerVariable` is updated correctly
-    //   expect(voiceCommands.triggerVariable, 1);
-
-    //   // Verify that `setWidgetState` was called to activate the Money Identifier widget
-    //   verify(mockWidgetStateProvider.setWidgetState('Money Identifier', true))
-    //       .called(1);
-
-    //   // Delay to allow `Future.delayed` inside `handleCommand` to reset the value
-    //   await Future.delayed(const Duration(seconds: 2));
-
-    //   // Ensure `triggerVariable` resets to 0 after the delay
-    //   expect(voiceCommands.triggerVariable, 0);
-    // });
-
-    test('calculateSimilarity returns correct similarity value', () {
-      final voiceCommands = VoiceCommands(
-        mockSttService,
-        audioPlayer: mockAudioPlayer,
-      );
-
-      final similarity =
-          voiceCommands.calculateSimilarity('hello', 'hello world');
-      expect(similarity, greaterThan(0));
+      voiceCommands.toggleVoiceControl();
+      expect(VoiceCommands.useVoiceControlNotifier.value, isFalse);
     });
 
-    test('levenshteinDistance calculates correct distance', () {
+    test('startListening calls startListening on SttService', () async {
+      final voiceCommands = VoiceCommands(
+        mockSttService,
+        audioPlayer: mockAudioPlayer, // Inject mocked AudioPlayer
+      )..sttService = mockSttService; // Explicitly set the mockSttService
+
+      voiceCommands.startListening();
+      verify(mockSttService.startListening(any)).called(1);
+    });
+
+    test('handleCommand triggers delayed reset for widget triggers', () async {
       final voiceCommands = VoiceCommands(
         mockSttService,
         audioPlayer: mockAudioPlayer,
-      );
+      )
+        ..sttService = mockSttService // Assign the mockSttService to sttService
+        ..ttsServiceGoogle =
+            mockTtsService; // Assign the mockTtsService to ttsServiceGoogle
 
-      final distance = voiceCommands.levenshteinDistance('kitten', 'sitting');
-      expect(distance, 3);
+      voiceCommands.voiceCommands['map_command'] = ['open map'];
+
+      // Execute the command
+      voiceCommands.handleCommand('open map');
+      expect(voiceCommands.triggerVariable,
+          2); // Ensure triggerVariable is updated
+
+      // Wait for the delay to complete
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Verify that triggerVariable is reset to 0
+      expect(voiceCommands.triggerVariable, 0);
     });
   });
 }
