@@ -65,9 +65,6 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
         setState(() {
           responseTime = duration;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Response time: $duration')),
-        );
       },
     );
   }

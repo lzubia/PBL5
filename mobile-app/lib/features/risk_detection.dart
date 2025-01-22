@@ -61,7 +61,9 @@ class RiskDetectionState extends State<RiskDetection> {
 
   Future<void> _takePicture({http.Client? client}) async {
     final pictureService = Provider.of<PictureService>(context, listen: false);
-    final sessionToken = AppInitializer().sessionToken;
+    final appInitializer = Provider.of<AppInitializer>(context, listen: false);
+
+    final sessionToken = appInitializer.sessionToken;
 
     final endpoint = dotenv.env["API_URL"]! + '3&session_id=${sessionToken}';
 
