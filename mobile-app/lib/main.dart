@@ -14,7 +14,7 @@ import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:pbl5_menu/theme_provider.dart';
-import 'package:pbl5_menu/widgetState_provider.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -45,14 +45,16 @@ void main() async {
           create: (_) =>
               VoiceCommands(sttService), // VoiceCommands with SttService
         ),
+        ChangeNotifierProvider(create: (_) => TranslationProvider()),
+
         Provider(create: (_) => dbHelper), // Provide DatabaseHelper
         Provider<ITtsService>(
           create: (_) => ttsService, // Provide TtsServiceGoogle as ITtsService
         ),
         Provider(
             create: (_) => appInitializer.sttService), // Provide SttService
-        ChangeNotifierProvider(
-            create: (_) => WidgetStateProvider()), // WidgetStateProvider
+        Provider(
+            create: (_) => appInitializer.sosService), // Provide SosService
       ],
       child: const MyApp(),
     ),
@@ -92,11 +94,13 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
+        toolbarHeight: 100.0,
+        title: const Text('BEGIA',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             key: const Key('settingsButton'),
-            icon: const Icon(Icons.settings, size: 50),
+            icon: const Icon(Icons.settings, size: 70),
             onPressed: () {
               Navigator.push(
                 context,
@@ -135,7 +139,7 @@ class MyHomePage extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Image.asset(
                         'assets/BegiaGif.gif',
-                        height: 100,
+                        height: 120,
                       ),
                     ),
                   );

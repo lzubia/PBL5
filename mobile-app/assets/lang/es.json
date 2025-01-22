@@ -35,7 +35,8 @@
         "menu_command": [
             "menú",
             "menua",
-            "menúa"
+            "menúa",
+            "menu"
         ],
         "text_command": [
             "texto",
@@ -45,11 +46,16 @@
             "teks"
         ],
         "photo_command": [
-            "foto",
-            "phóto",
-            "fóto",
-            "photto",
-            "fotto"
+            "describir",
+            "deskribir",
+            "escribir",
+            "eskribir",
+            "describi"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "atrás",
@@ -72,5 +78,11 @@
     "first": "Primero",
     "now": "Ahora",
     "reached": "Y llegarás a",
-    "opened": "La página ya está abierto"
+    "opened": "La página ya está abierta",
+    "Map-active": "Mapa abierto",
+    "destination-not-found": "Destino no encontrado",
+    "going-home": "Regresando a casa",
+    "home-not-set": "Casa no establecida",
+    "Sos-sent-successfully": "SOS enviado con éxito"
+
 }

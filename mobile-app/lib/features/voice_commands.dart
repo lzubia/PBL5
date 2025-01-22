@@ -3,15 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:path/path.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/widgetState_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
+  VoidCallback? onMenuCommand;
+  ValueChanged<LatLng>? onMapSearchHome; // Updated to accept LatLng
+
+  VoidCallback? onSosCommand;
+  VoidCallback? onHomeCommand;
   bool _isActivated = false;
   bool riskTrigger = false; //state of risk detection
   int triggerVariable = 0; // trigger widget
@@ -57,15 +61,12 @@ class VoiceCommands extends ChangeNotifier {
   late ITtsService ttsServiceGoogle;
 
   // New dependency for managing widget states
-  late WidgetStateProvider widgetStateProvider;
 
   /// Initialize VoiceCommands with dependencies via Provider
   Future<void> initialize(BuildContext context) async {
     locale = Provider.of<LocaleProvider>(context, listen: false).currentLocale;
     sttService = Provider.of<SttService>(context, listen: false);
     ttsServiceGoogle = Provider.of<ITtsService>(context, listen: false);
-    widgetStateProvider =
-        Provider.of<WidgetStateProvider>(context, listen: false);
 
     await loadActivationCommands();
     await loadVoiceCommands();
@@ -100,6 +101,8 @@ class VoiceCommands extends ChangeNotifier {
     if (useVoiceControlNotifier.value) {
       _handleSpeechResult('begia');
     } else {
+      _desactivateBegia();
+      _playDesactivationSound();
       _sttService.stopListening();
       startListening();
     }
@@ -113,7 +116,7 @@ class VoiceCommands extends ChangeNotifier {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;
-      handleCommand(_command);
+      _handleCommand(_command);
     } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
@@ -125,16 +128,26 @@ class VoiceCommands extends ChangeNotifier {
     }
   }
 
+  void _desactivateBegia() {
+    _isActivated = false;
+    useVoiceControlNotifier.value = false;
+    _command = '';
+    notifyListeners();
+    sttService.stopListening();
+    startListening();
+  }
+
   void _startCommandTimer() {
-    _commandTimer?.cancel(); // Cancel any existing timer
+    _cancelCommandTimer();
     _commandTimer = Timer(Duration(seconds: 10), () {
-      _playDesactivationSound();
-      _isActivated = false;
-      useVoiceControlNotifier.value = false;
-      notifyListeners();
-      sttService.stopListening();
-      startListening();
+      _desactivateBegia();
     });
+  }
+
+  void _cancelCommandTimer() {
+    if (_commandTimer != null && _commandTimer!.isActive) {
+      _commandTimer!.cancel();
+    }
   }
 
   bool isActivationCommand(String transcript) {
@@ -149,7 +162,7 @@ class VoiceCommands extends ChangeNotifier {
     await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
-  void handleCommand(String command) {
+  Future<void> _handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
@@ -179,51 +192,45 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'money_identifier_command':
-            matched = true; //_handleMoneyIdentifierCommand();
-            triggerVariable = 1;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(1);
             break;
 
           case 'map_command':
-            matched = true; //_handleMapCommand();
-            triggerVariable = 2;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(2);
             break;
 
           case 'menu_command':
             matched = true;
-            ttsServiceGoogle.speakLabels([
-              AppLocalizations.of(context as BuildContext).translate("menu")
-            ]);
+            if (onMenuCommand != null) {
+              onMenuCommand!(); // Trigger the callback
+            }
+            _cancelCommandTimer();
+            _desactivateBegia();
             break;
 
           case 'text_command':
-            matched = true;
-            triggerVariable = 3;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(3);
             break;
 
           case 'photo_command':
-            matched = true; //_handlePhotoCommand();
-            triggerVariable = 4;
-            notifyListeners();
-            Future.delayed(Duration(seconds: 2), () {
-              triggerVariable = 0; // Reset riskTrigger after the delay
-            });
+            matched = _executeCommand(4);
             break;
-
+          case 'sos_command':
+            matched = true;
+            if (onSosCommand != null) {
+              onSosCommand!(); // Trigger the callback
+            }
+            break;
+          case 'home_command':
+            matched = true;
+            if (onHomeCommand != null) {
+              onHomeCommand!(); // Trigger the callback
+            }
+            break;
           default:
             break;
         }
+
         break;
       }
     }
@@ -231,12 +238,20 @@ class VoiceCommands extends ChangeNotifier {
     if (!matched) {
       startListening();
     } else {
-      _isActivated = false;
-      useVoiceControlNotifier.value = false;
-      _command = '';
-      _sttService.stopListening();
-      startListening();
+      _cancelCommandTimer();
+      _desactivateBegia();
     }
+  }
+
+  bool _executeCommand(int triggerVariable) {
+    this.triggerVariable = triggerVariable;
+    notifyListeners();
+    _cancelCommandTimer();
+    Future.delayed(Duration(seconds: 2), () {
+      triggerVariable = 0; // Reset Trigger after the delay
+    });
+
+    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {

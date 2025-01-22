@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../services/picture_service.dart';
+import 'package:http/http.dart' as http;
 
 class RiskDetection extends StatefulWidget {
   const RiskDetection({super.key});
@@ -52,17 +54,18 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    ttsService.speakLabels([AppLocalizations.of(context).translate("risk-off")]);
+    ttsService
+        .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
   }
 
-  Future<void> _takePicture() async {
+  Future<void> _takePicture({http.Client? client}) async {
     final pictureService = Provider.of<PictureService>(context, listen: false);
     final sessionToken = AppInitializer().sessionToken;
 
-    final endpoint =
-        'https://begiapbl.duckdns.org:1880/detect?session_id=$sessionToken';
+    final endpoint = dotenv.env["API_URL"]! + '3&session_id=${sessionToken}';
 
     await pictureService.takePicture(
+      httpClient: client,
       endpoint: endpoint,
       onLabelsDetected: (labels) {
         Provider.of<ITtsService>(context, listen: false).speakLabels(labels);
@@ -83,46 +86,50 @@ class RiskDetectionState extends State<RiskDetection> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (responseTime != Duration.zero)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
-            ),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.red, width: 2.0),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Icon(Icons.warning, color: Colors.red, size: 40.0),
-                      Switch(
-                        value: isRiskDetectionEnabled,
-                        onChanged: (value) {
-                          if (value) {
-                            enableRiskDetection();
-                          } else {
-                            disableRiskDetection();
-                          }
-                        },
+    return Column(
+      children: [
+        if (responseTime != Duration.zero)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Response Time: ${responseTime.inMilliseconds} ms'),
+          ),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.red, width: 4.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.warning, color: Colors.red, size: 70.0),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          right: 16.0), // Adjust the padding value as needed
+                      child: Transform.scale(
+                        scale: 1.5,
+                        child: Switch(
+                          value: isRiskDetectionEnabled,
+                          onChanged: (value) {
+                            if (value) {
+                              enableRiskDetection();
+                            } else {
+                              disableRiskDetection();
+                            }
+                          },
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

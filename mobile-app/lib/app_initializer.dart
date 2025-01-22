@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:pbl5_menu/services/sos.dart';
 import '../services/picture_service.dart';
 import '../shared/database_helper.dart';
 import '../services/tts/tts_service_google.dart';
@@ -16,6 +18,11 @@ class AppInitializer {
   late SttService sttService;
   late VoiceCommands voiceCommands;
 
+  List<String> _widgetStates = [];
+
+  List<String> get widgetStates => _widgetStates;
+  late SosService sosService;
+
   // External dependency
   late PictureService pictureService;
 
@@ -25,30 +32,29 @@ class AppInitializer {
   String sessionToken = '';
   Locale locale = const Locale('en', 'US');
 
-  // static const MethodChannel platform = MethodChannel('com.example.pbl5_menu/endSession');
+  static const MethodChannel platform =
+      MethodChannel('com.example.pbl5_menu/endSession');
 
   Future<void> initialize({required PictureService pictureService}) async {
-    this.pictureService = pictureService; // Use the passed-in PictureService
+    this.pictureService = pictureService; // Use the passed-in PictureService´
 
     try {
       // Ensure Flutter bindings
       WidgetsFlutterBinding.ensureInitialized();
       HttpOverrides.global = MyHttpOverrides();
 
-//esto komentau
-      // MethodChannel setup
-      // platform.setMethodCallHandler((call) async {
-      //   if (call.method == 'endSession') {
-      //     await endSession(sessionToken);
-      //   } else if (call.method == 'startSession') {
-      //     await startSession();
-      //   }
-      // }
-      // );
-//esto komentau
-
       // Load environment variables
       await dotenv.load(fileName: "./.env");
+
+      // MethodChannel setup
+      platform.setMethodCallHandler((call) async {
+        print("Method call received: ${call.method}");
+        if (call.method == 'endSession') {
+          await endSession(sessionToken);
+        } else if (call.method == 'startSession') {
+          await startSession();
+        }
+      });
 
       // Initialize database helper
       databaseHelper ??= DatabaseHelper();
@@ -67,6 +73,7 @@ class AppInitializer {
 
       // Initialize VoiceCommands
       voiceCommands ??= VoiceCommands(sttService!);
+      sosService = SosService(ttsServiceGoogle: ttsServiceGoogle);
 
       isInitialized = true; // Mark as initialized
     } catch (e) {
@@ -76,8 +83,7 @@ class AppInitializer {
   }
 
   Future<void> startSession({http.Client? client}) async {
-    //esto komentau
-    final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
+    final url = Uri.parse(dotenv.env["API_URL"]! + '1');
     client ??= http.Client();
     try {
       final response = await client.get(url);
@@ -92,13 +98,10 @@ class AppInitializer {
       sessionToken = '';
       throw Exception('Error starting session: $e');
     }
-    //esto komentau
   }
 
   Future<void> endSession(String sessionId, {http.Client? client}) async {
-    //esto komentau
-    final url = Uri.parse(
-        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
+    final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
     client ??= http.Client();
     try {
       final response = await client.delete(url);
@@ -111,7 +114,6 @@ class AppInitializer {
     } catch (e) {
       throw Exception('Error ending session: $e');
     }
-    //esto komentau
   }
 }
 

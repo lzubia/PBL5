@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:pbl5_menu/features/map_widget.dart';
 import 'package:provider/provider.dart';
 import '../shared/database_helper.dart';
 import '../locale_provider.dart';
@@ -16,10 +17,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  late final FlutterNativeContactPicker _contactPicker;
+  FlutterNativeContactPicker _contactPicker =
+      FlutterNativeContactPicker();
 
   // State variables
-  List<String> contacts = [];
+  List<Map<String, String>> contacts = [];
+
   double _fontSize = 20.0;
   String _language = 'English';
   bool _isDarkTheme = false;
@@ -36,13 +39,16 @@ class SettingsScreenState extends State<SettingsScreen> {
     try {
       final dbHelper = context.read<DatabaseHelper>();
       final prefs = await dbHelper.getPreferences();
-      final savedContacts = await dbHelper.getContacts();
+      final savedContacts =
+          await dbHelper.getContacts(); // Fetch all data (name + phone)
 
       setState(() {
         _fontSize = prefs['fontSize'];
         _language = prefs['language'];
         _isDarkTheme = prefs['isDarkTheme'] == 1;
         _speechRate = prefs['speechRate'] ?? 1.0;
+
+        // Populate both lists
         contacts = savedContacts;
       });
     } catch (e) {
@@ -64,24 +70,39 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _addContact(String contact) async {
+  Future<void> _addContact(String contact, String number) async {
     try {
       final dbHelper = context.read<DatabaseHelper>();
-      await dbHelper.insertContact(contact);
+      // Add the contact to the database
+      await dbHelper.insertContact(contact, number);
+
+      // Re-fetch the contacts after inserting a new one
+      final updatedContacts = await dbHelper.getContacts();
+
       setState(() {
-        contacts.add(contact);
+        // Update the contacts list
+        contacts = updatedContacts;
       });
     } catch (e) {
       debugPrint('Error adding contact: $e');
     }
   }
 
-  Future<void> _deleteContact(String contact) async {
-    final dbHelper = context.read<DatabaseHelper>();
-    await dbHelper.deleteContact(contact);
-    setState(() {
-      contacts.remove(contact);
-    });
+  Future<void> _deleteContact(String contactName) async {
+    try {
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.deleteContact(contactName);
+
+      // Re-fetch the contacts after deletion to update the list
+      final updatedContacts = await dbHelper.getContacts();
+
+      setState(() {
+        contacts = updatedContacts;
+      });
+      debugPrint('Contact deleted: $contactName');
+    } catch (e) {
+      debugPrint('Error deleting contact: $e');
+    }
   }
 
   void _changeTheme(bool isDark) {
@@ -127,73 +148,117 @@ class SettingsScreenState extends State<SettingsScreen> {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
-            AppLocalizations.of(context).translate('title'),
-            style: const TextStyle(fontSize: 24.0),
-          ),
-          centerTitle: true,
+          toolbarHeight: 100.0,
+          title: const Text('BEGIA',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle(context, 'contacts', textColor),
-                _buildContactsList(),
-                _buildAddContactButton(),
-                const Divider(),
-                _buildSectionTitle(context, 'theme', textColor),
-                _buildThemeSwitch(),
-                const Divider(),
-                _buildSectionTitle(context, 'language', textColor),
-                _buildLanguageSelector(localeProvider),
-                const Divider(),
-                _buildSectionTitle(context, 'font_size', textColor),
-                _buildFontSizeSlider(),
-                const Divider(),
-                _buildSectionTitle(context, 'speech_rate', textColor),
-                _buildSpeechRateSlider(),
-              ],
-            ),
+        body: Padding(
+          padding: const EdgeInsets.only(
+              left: 16.0, right: 16.0, bottom: 16.0), // Exclude top padding
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle(
+                context,
+                'contacts',
+                textColor,
+                actionButton: ElevatedButton(
+                  onPressed: () async {
+                    // Navigate to the map screen to select the home location
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MapWidget(
+                                title: 'save',
+                              )),
+                    );
+                  },
+                  child: Icon(Icons.home, size: _fontSize),
+                ),
+              ),
+              _buildContactsList(),
+              _buildAddContactButton(),
+              const Divider(),
+              _buildThemeSwitch(),
+              const Divider(),
+              _buildSectionTitle(context, 'language', textColor),
+              _buildLanguageSelector(localeProvider),
+              const Divider(),
+              _buildSectionTitle(context, 'font_size', textColor),
+              _buildFontSizeSlider(),
+              const Divider(),
+              _buildSectionTitle(context, 'speech_rate', textColor),
+              _buildSpeechRateSlider(),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String key, Color color) {
-    return Text(
-      AppLocalizations.of(context).translate(key),
-      style: TextStyle(
-        fontSize: _fontSize + 4,
-        fontWeight: FontWeight.bold,
-        color: color,
-      ),
+  Widget _buildSectionTitle(BuildContext context, String key, Color color,
+      {Widget? actionButton}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate(key),
+          style: TextStyle(
+            fontSize: _fontSize + 4,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        if (actionButton != null)
+          actionButton, // If button is provided, show it
+      ],
     );
   }
 
   Widget _buildContactsList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: contacts.length,
-      itemBuilder: (context, index) {
-        return Dismissible(
-          key: ValueKey(contacts[index]),
-          direction: DismissDirection.endToStart,
-          onDismissed: (_) => _deleteContact(contacts[index]),
-          background: Container(
-            color: Colors.red,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: const Icon(Icons.delete, color: Colors.white),
-          ),
-          child: ListTile(
-            title: Text(contacts[index], style: TextStyle(fontSize: _fontSize)),
-          ),
-        );
-      },
+    return Expanded(
+      child: ListView.builder(
+        itemCount: contacts.length,
+        itemBuilder: (context, index) {
+          return Dismissible(
+            key: ValueKey(contacts[index]),
+            direction: DismissDirection.endToStart,
+            onDismissed: (direction) async {
+              await _deleteContact(contacts[index]['name'] ?? '');
+            },
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            child: Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Text(
+                  contacts[index]['name'] ?? '',
+                  style: TextStyle(
+                    fontSize: _fontSize,
+                    color: _isDarkTheme
+                        ? Colors.white
+                        : Colors.black, // Changes based on theme
+                  ),
+                ),
+                trailing: IconButton(
+                  icon: Icon(
+                    Icons.cancel,
+                    color: Colors.red,
+                    size: _fontSize + 4,
+                  ),
+                  onPressed: () async {
+                    await _deleteContact(contacts[index]['name'] ?? '');
+                  },
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -201,18 +266,48 @@ class SettingsScreenState extends State<SettingsScreen> {
     return ElevatedButton(
       key: const Key('addContactButton'), // Add a unique key
       onPressed: () async {
-        final contact = await _contactPicker.selectContact();
-        if (contact != null) await _addContact(contact.fullName ?? '');
+        try {
+          final contact = await _contactPicker.selectContact();
+          if (contact == null) return;
+
+          final contactName = contact.fullName ?? 'Unknown';
+          final phoneNumber = contact.phoneNumbers?.isNotEmpty == true
+              ? contact.phoneNumbers!.first
+              : null;
+
+          if (phoneNumber == null || phoneNumber.isEmpty) {
+            debugPrint('No phone number found for selected contact.');
+            return;
+          }
+
+          final cleanedPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
+          await _addContact(contactName, cleanedPhone);
+        } catch (e) {
+          debugPrint('Error picking contact: $e');
+        }
       },
       child: const Icon(Icons.add),
     );
   }
 
   Widget _buildThemeSwitch() {
-    return SwitchListTile(
-      title: const Text('Dark Theme'),
-      value: _isDarkTheme,
-      onChanged: _changeTheme,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: SwitchListTile(
+        contentPadding:
+            EdgeInsets.zero, // Remove padding that might be adding extra space
+        title: Text(
+          AppLocalizations.of(context).translate('theme'),
+          style: TextStyle(
+            fontSize: _fontSize + 4,
+            fontWeight: FontWeight.bold,
+            color:
+                _isDarkTheme ? Colors.white : Colors.black, // Text color change
+          ),
+        ),
+        value: _isDarkTheme,
+        onChanged: _changeTheme,
+      ),
     );
   }
 
@@ -220,12 +315,9 @@ class SettingsScreenState extends State<SettingsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildLanguageButton(
-            localeProvider, 'English', 'en-US', 'en-US-Wavenet-D'),
-        _buildLanguageButton(
-            localeProvider, 'Español', 'es-ES', 'es-ES-Wavenet-B'),
-        _buildLanguageButton(
-            localeProvider, 'Euskera', 'eu-ES', 'eu-ES-Wavenet-A'),
+        _buildLanguageButton(localeProvider, 'ENG', 'en-US', 'en-US-Wavenet-D'),
+        _buildLanguageButton(localeProvider, 'ESP', 'es-ES', 'es-ES-Wavenet-B'),
+        _buildLanguageButton(localeProvider, 'EUS', 'eu-ES', 'eu-ES-Wavenet-A'),
       ],
     );
   }
@@ -238,7 +330,7 @@ class SettingsScreenState extends State<SettingsScreen> {
             .setLocale(Locale(code.split('-')[0], code.split('-')[1]));
         _changeLanguage(code, voice);
       },
-      child: Text(label),
+      child: Text(label, style: TextStyle(fontSize: _fontSize)),
     );
   }
 

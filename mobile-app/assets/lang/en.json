@@ -51,11 +51,18 @@
             "tehst"
         ],
         "photo_command": [
-            "photo",
-            "foto",
-            "fotto",
-            "fohtoh",
-            "photto"
+            "describe",
+            "deskribe",
+            "discribe",
+            "descrybe",
+            "diskribe",
+            "discrib",
+            "describ"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "back",
@@ -79,5 +86,10 @@
     "first": "Firstly",
     "now": "Now",
     "reached": "And you will get to",
-    "opened": "Widget already open"
+    "opened": "Widget already open",
+    "Map-active" : "Map is already active",
+    "destination-not-found": "Destination not found",
+    "going-home": "Going home",
+    "home-not-set": "Home not set",
+    "Sos-sent-successfully": "SOS sent successfully"
 }
