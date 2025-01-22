@@ -76,8 +76,7 @@ void main() {
         });
 
     // Mock database contacts
-    when(mockDatabaseHelper.getContacts())
-        .thenAnswer((_) async => [
+    when(mockDatabaseHelper.getContacts()).thenAnswer((_) async => [
           {'name': 'John Doe'},
           {'name': 'Jane Smith'}
         ]);
@@ -249,7 +248,6 @@ void main() {
   //     any,
   //   )).called(2);
   // });
-
 
   // testWidgets('should change language when a language button is pressed',
   //     (WidgetTester tester) async {
