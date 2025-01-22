@@ -1,22 +1,24 @@
+package BVIApplication;
+
 import java.util.Random;
 
 public class EmergencyCall implements Runnable {
-    private BVIApplication app;
+    private BVIModel model;
     private int counter = 1;
 
-    public EmergencyCall(BVIApplication app) {
-        this.app = app;
+    public EmergencyCall(BVIModel model) {
+        this.model = model;
     }
 
     @Override
     public void run() {
-        while (!app.stopSimulation) { 
-            boolean emergencyDetected = new Random().nextDouble() < 0.01;
+        while (!model.stopSimulation) {
+            boolean emergencyDetected = new Random().nextDouble() < 0.01; // Random emergency detection
             if (emergencyDetected) {
                 try {
                     String identifier = "EC" + counter++;
-                    app.commandQueue.put(new AudioCommand("Emergency call in progress...", BVIApplication.PRIORITY_EMERGENCY_CALL, Thread.currentThread(),identifier));
-                    app.printQueueState();
+                    AudioCommand command = new AudioCommand("Emergency call in progress...", BVIModel.PRIORITY_EMERGENCY_CALL, Thread.currentThread(), identifier);
+                    model.addCommand(command);
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();

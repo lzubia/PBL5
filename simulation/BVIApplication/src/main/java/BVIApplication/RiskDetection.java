@@ -1,9 +1,11 @@
+package BVIApplication;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 public class RiskDetection implements Runnable {
-    private BVIApplication app;
+    private BVIModel model;  // Use BVIModel instead of BVIModel
     private int counter = 1;
     private List<String> messagePool = Arrays.asList(
         "Obstacle detected!",
@@ -12,27 +14,34 @@ public class RiskDetection implements Runnable {
         "Alert: Moving object detected nearby."
     );
 
-    public RiskDetection(BVIApplication app) {
-        this.app = app;
+    public RiskDetection(BVIModel model) {
+        this.model = model;
+    }
+
+    public String getRandomMessage() {
+        return messagePool.get(new Random().nextInt(messagePool.size()));
     }
 
     @Override
     public void run() {
-        while (!app.stopSimulation) {
-            boolean riskDetected = new Random().nextDouble() < 0.2;
+        while (!model.stopSimulation) {
+            boolean riskDetected = new Random().nextDouble() < 0.3;
             if (riskDetected) {
                 try {
                     String identifier = "RD" + counter++;
-                    String message = messagePool.get(new Random().nextInt(messagePool.size()));
-                    app.commandQueue.put(new AudioCommand(message, BVIApplication.PRIORITY_RISK_DETECTION, Thread.currentThread(), identifier));
-                    app.printQueueState();
+                    String message = getRandomMessage();
+
+                    AudioCommand command = new AudioCommand(message, BVIModel.PRIORITY_RISK_DETECTION, 
+                            Thread.currentThread(), identifier);
+                    model.addCommand(command); // Add command to the model's queue
+
                 } catch (Exception e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
                 }
             }
             try {
-                Thread.sleep(2000);
+                Thread.sleep(4000); // Sleep for 2 seconds
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 e.printStackTrace();

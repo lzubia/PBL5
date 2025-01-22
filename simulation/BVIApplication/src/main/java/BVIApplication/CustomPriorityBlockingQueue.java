@@ -1,3 +1,5 @@
+package BVIApplication;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -74,6 +76,18 @@ public class CustomPriorityBlockingQueue<T> {
         lock.lock();
         try {
             return queue.isEmpty();
+        } finally {
+            lock.unlock();
+        }
+    }
+    
+    /**
+     * Checks if the queue is full.
+     */
+    public boolean isFull() {
+        lock.lock();
+        try {
+            return queue.size() >= capacity;
         } finally {
             lock.unlock();
         }
