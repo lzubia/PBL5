@@ -7,6 +7,7 @@ import 'package:pbl5_menu/services/l10n.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../services/picture_service.dart';
+import 'package:http/http.dart' as http;
 
 class RiskDetection extends StatefulWidget {
   const RiskDetection({super.key});
@@ -58,13 +59,14 @@ class RiskDetectionState extends State<RiskDetection> {
         .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
   }
 
-  Future<void> _takePicture() async {
+  Future<void> _takePicture({http.Client? client}) async {
     final pictureService = Provider.of<PictureService>(context, listen: false);
     final sessionToken = AppInitializer().sessionToken;
 
     final endpoint = dotenv.env["API_URL"]! + '3&session_id=${sessionToken}';
 
     await pictureService.takePicture(
+      httpClient: client,
       endpoint: endpoint,
       onLabelsDetected: (labels) {
         Provider.of<ITtsService>(context, listen: false).speakLabels(labels);

@@ -40,12 +40,11 @@ class AppInitializer {
 
     try {
       // Ensure Flutter bindings
-      // WidgetsFlutterBinding.ensureInitialized();
+      WidgetsFlutterBinding.ensureInitialized();
+      HttpOverrides.global = MyHttpOverrides();
 
       // Load environment variables
       await dotenv.load(fileName: "./.env");
-
-      HttpOverrides.global = MyHttpOverrides();
 
       // MethodChannel setup
       platform.setMethodCallHandler((call) async {
