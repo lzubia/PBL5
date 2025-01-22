@@ -50,6 +50,7 @@ void main() async {
         ),
         Provider(
             create: (_) => appInitializer.sttService), // Provide SttService
+        Provider(create: (_)=> appInitializer.sosService), // Provide SosService
       ],
       child: const MyApp(),
     ),

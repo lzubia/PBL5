@@ -50,6 +50,11 @@
             "escribir",
             "eskribir",
             "describi"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "atrás",

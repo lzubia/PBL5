@@ -85,6 +85,46 @@ class MapProvider extends ChangeNotifier {
     }
   }
 
+  /// Set the destination using a LatLng object and calculate the route + instructions.
+Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
+  final apiKey = dotenv.env['GEOCODING_API_KEY'];
+  if (apiKey == null) {
+    throw Exception("Missing Google API Key in .env");
+  }
+
+  _loading = true;
+  notifyListeners();
+
+  try {
+    // Construct the destination address using LatLng by converting to a string representation
+    final destinationAddress = '${destinationLocation.latitude},${destinationLocation.longitude}';
+
+    final response = await http.get(Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$destinationAddress&key=$apiKey'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'ZERO_RESULTS') {
+        await ttsService.speakLabels(["Destination not found."]);
+        return;
+      }
+
+      _destinationName = destinationAddress;
+      _destination = destinationLocation;  // Directly use the LatLng object
+      notifyListeners();
+
+      await _fetchPolylineCoordinates();
+      await _fetchNavigationInstructions();
+    } else {
+      throw Exception("Failed to fetch destination.");
+    }
+  } finally {
+    _loading = false;
+    notifyListeners();
+  }
+}
+
+
   /// Fetch polyline coordinates for the route.
   Future<void> _fetchPolylineCoordinates() async {
     if (_currentLocation == null || _destination == null) return;

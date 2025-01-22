@@ -103,6 +103,11 @@
             "atsera",
             "a tzera",
             "atxera"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "command_not_recognized": [
             "Komandoa ez da ezagutu"

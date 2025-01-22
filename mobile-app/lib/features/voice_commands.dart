@@ -3,15 +3,21 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/services/sos.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/shared/database_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 
 class VoiceCommands extends ChangeNotifier {
   VoidCallback? onMenuCommand;
+  ValueChanged<LatLng>? onMapSearchHome; // Updated to accept LatLng
+
+  VoidCallback? onSosCommand;
   bool _isActivated = false;
   bool riskTrigger = false; //state of risk detection
   int triggerVariable = 0; // trigger widget
@@ -155,7 +161,7 @@ class VoiceCommands extends ChangeNotifier {
     await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
-  void _handleCommand(String command) {
+  Future<void> _handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
@@ -202,7 +208,26 @@ class VoiceCommands extends ChangeNotifier {
           case 'photo_command':
             matched = _executeCommand(4);
             break;
-
+          case 'sos_command':
+            matched = true;
+            if (onSosCommand != null) {
+              onSosCommand!(); // Trigger the callback
+            }
+            break;
+          case 'home_command':
+            matched = true;
+            // Handle `home_command` if the current widget is `MapWidget`
+            if (triggerVariable == 2) {
+              // Assuming 2 is the trigger for MapWidget
+              final dbHelper = DatabaseHelper();
+              final homeLocation = await dbHelper.getHomeLocation();
+              if (homeLocation != null) {
+                onMapSearchHome?.call(homeLocation);
+              } else {
+                print('No home location saved in the database.');
+              }
+            }
+            break;
           default:
             break;
         }

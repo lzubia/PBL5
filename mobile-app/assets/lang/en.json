@@ -58,6 +58,11 @@
             "diskribe",
             "discrib",
             "describ"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "back",

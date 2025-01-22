@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -78,9 +80,19 @@ class DatabaseHelper {
 
     // Contacts table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS contacts (
+    CREATE TABLE IF NOT EXISTS contacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      phone TEXT
+    )
+  ''');
+
+    // Home locations table
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS homes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
+        latitude REAL,
+        longitude REAL
       )
     ''');
   }
@@ -113,20 +125,22 @@ class DatabaseHelper {
   }
 
   // Insert a contact
-  Future<void> insertContact(String name) async {
+  Future<void> insertContact(String name, String phone) async {
     final db = await database;
-    await db.insert('contacts', {'name': name});
+    await db.insert('contacts', {'name': name, 'phone': phone});
+    debugPrint('Contact inserted: $name, $phone');
   }
 
   // Get all contacts
-  Future<List<String>> getContacts() async {
+  Future<List<Map<String, String>>> getContacts() async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query('contacts');
-    return result
-        .map((final Map<String, dynamic> e) => e["name"] as String?)
-        .where((final String? name) => name != null)
-        .cast<String>()
-        .toList();
+    return result.map((Map<String, dynamic> e) {
+      return {
+        'name': e['name'] as String,
+        'phone': e['phone'] as String,
+      };
+    }).toList();
   }
 
   /// Deletes a contact by name from the database.
@@ -176,15 +190,23 @@ class DatabaseHelper {
 
   // Get TTS (Text-to-Speech) settings
   Future<Map<String, String>> getTtsSettings() async {
-    final db = await database;
-    final List<Map<String, dynamic>> result =
-        await db.query('settings', limit: 1);
-    if (result.isNotEmpty) {
-      return {
-        'languageCode': result[0]['languageCode'] ?? defaultLocale,
-        'voiceName': result[0]['voiceName'] ?? defaultVoice,
-      };
-    } else {
+    final db = await database; // Ensure the database is initialized
+    try {
+      final List<Map<String, dynamic>> result =
+          await db.query('settings', limit: 1);
+      if (result.isNotEmpty) {
+        return {
+          'languageCode': result[0]['languageCode'] ?? defaultLocale,
+          'voiceName': result[0]['voiceName'] ?? defaultVoice,
+        };
+      } else {
+        return {
+          'languageCode': defaultLocale,
+          'voiceName': defaultVoice,
+        };
+      }
+    } catch (e) {
+      debugPrint('Error fetching TTS settings: $e');
       return {
         'languageCode': defaultLocale,
         'voiceName': defaultVoice,
@@ -203,6 +225,40 @@ class DatabaseHelper {
     );
   }
 
+  // Insert home location into the database
+  Future<void> insertHome(double latitude, double longitude) async {
+    final db = await database;
+    await db.insert(
+      'homes',
+      {'latitude': latitude, 'longitude': longitude},
+    );
+    debugPrint('Home location inserted: $latitude, $longitude');
+  }
+
+  Future<LatLng?> getHomeLocation() async {
+  final db = await database; // Replace with your database initialization
+  final result = await db.query(
+    'home', // Table name
+    columns: ['latitude', 'longitude'], // Columns to fetch
+    limit: 1, // Limit to a single entry
+  );
+
+  if (result.isNotEmpty) {
+    final home = result.first;
+    // Cast latitude and longitude to double
+    final latitude = home['latitude'] is int
+        ? (home['latitude'] as int).toDouble()
+        : home['latitude'] as double;
+    final longitude = home['longitude'] is int
+        ? (home['longitude'] as int).toDouble()
+        : home['longitude'] as double;
+    return LatLng(latitude, longitude);
+  }
+
+  return null; // No home location found
+}
+
+
   Future<void> resetDatabase() async {
     if (_database != null) {
       await _database!.close(); // Explicitly close the database
@@ -210,9 +266,12 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'app_database.db');
     await deleteDatabase(path); // Deletes the database
     _database = null; // Reset the in-memory reference
+
+    // Reinitialize the database
+    await database;
   }
 
-  Future<void> _createDb(Database db, int version) async {
+  Future<void> createDb(Database db, int version) async {
     await db.execute('''
       CREATE TABLE preferences (
         id INTEGER PRIMARY KEY,
