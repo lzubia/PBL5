@@ -58,7 +58,8 @@ class GridMenuState extends State<GridMenu> {
 
       if (title == AppLocalizations.of(context).translate("gps_map")) {
         // Register callback for `home_command` in MapWidget
-        final voiceCommands = Provider.of<VoiceCommands>(context, listen: false);
+        final voiceCommands =
+            Provider.of<VoiceCommands>(context, listen: false);
 
         voiceCommands.onMapSearchHome = (LatLng latLng) {
           final mapProvider = context.read<MapProvider>();
@@ -142,13 +143,15 @@ class GridMenuState extends State<GridMenu> {
         voiceCommands.onSosCommand = () async {
           try {
             final sosService = Provider.of<SosService>(context, listen: false);
-            final dbHelper = Provider.of<DatabaseHelper>(context, listen: false);
+            final dbHelper =
+                Provider.of<DatabaseHelper>(context, listen: false);
 
             // Fetch contacts from the database
             final contacts = await dbHelper.getContacts();
 
             // Send SOS request
-            await sosService.sendSosRequest(contacts.cast<Map<String, String>>());
+            await sosService
+                .sendSosRequest(contacts.cast<Map<String, String>>());
           } catch (e) {
             print('Error calling SOS service: $e');
           }
@@ -211,6 +214,7 @@ class GridMenuState extends State<GridMenu> {
           crossAxisCount: 2,
           children: List.generate(menuOptions.length, (index) {
             final title = menuOptions[index]['title'];
+            final ttsService = context.read<ITtsService>();
 
             return Card(
               margin: const EdgeInsets.all(8.0),
@@ -218,19 +222,18 @@ class GridMenuState extends State<GridMenu> {
                 onTap: () {
                   showBottomSheet(context, title);
                 },
+                onDoubleTap: () {
+                  ttsService.speakLabels(
+                      [AppLocalizations.of(context).translate(title)]);
+                },
                 child: SizedBox(
                   height: 150,
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(menuOptions[index]['icon'], size: 50),
+                        Icon(menuOptions[index]['icon'], size: 100),
                         const SizedBox(height: 10),
-                        Text(
-                          menuOptions[index]['title'],
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 20),
-                        ),
                       ],
                     ),
                   ),

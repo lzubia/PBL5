@@ -94,22 +94,29 @@ class RiskDetectionState extends State<RiskDetection> {
               child: Container(
                 padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.red, width: 2.0),
+                  border: Border.all(color: Colors.red, width: 4.0),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.warning, color: Colors.red, size: 40.0),
-                    Switch(
-                      value: isRiskDetectionEnabled,
-                      onChanged: (value) {
-                        if (value) {
-                          enableRiskDetection();
-                        } else {
-                          disableRiskDetection();
-                        }
-                      },
+                    const Icon(Icons.warning, color: Colors.red, size: 70.0),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          right: 16.0), // Adjust the padding value as needed
+                      child: Transform.scale(
+                        scale: 1.5,
+                        child: Switch(
+                          value: isRiskDetectionEnabled,
+                          onChanged: (value) {
+                            if (value) {
+                              enableRiskDetection();
+                            } else {
+                              disableRiskDetection();
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
