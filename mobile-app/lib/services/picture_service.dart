@@ -94,11 +94,12 @@ class PictureService extends ChangeNotifier {
     required String endpoint,
     required Function(List<dynamic>) onLabelsDetected,
     required Function(Duration) onResponseTimeUpdated,
+    http.Client? httpClient,
   }) async {
     try {
       final imagePath = await captureAndProcessImage();
-      await sendImageAndHandleResponse(
-          imagePath, endpoint, onLabelsDetected, onResponseTimeUpdated);
+      await sendImageAndHandleResponse(imagePath, endpoint, onLabelsDetected,
+          onResponseTimeUpdated, httpClient);
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -134,17 +135,19 @@ class PictureService extends ChangeNotifier {
       String filePath,
       String endpoint,
       Function(List<String>) onDetectedObjects,
-      Function(Duration) onResponseTime) async {
+      Function(Duration) onResponseTime,
+      http.Client? client) async {
     print("sendImageAndHandleResponse called"); // Debug print
     final request = multipartRequestFactory('POST', Uri.parse(endpoint));
 
     // Add the image file to the request
     final file = await multipartFileWrapper.fromPath('file', filePath);
     request.files.add(file);
+    client ??= http.Client();
 
     final startTime = DateTime.now();
     final response =
-        await httpClient.send(request); // Ensure this uses the mock httpClient
+        await client.send(request); // Ensure this uses the mock httpClient
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     onResponseTime(duration);

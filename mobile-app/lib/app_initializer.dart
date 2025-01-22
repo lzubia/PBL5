@@ -40,12 +40,11 @@ class AppInitializer {
 
     try {
       // Ensure Flutter bindings
-      // WidgetsFlutterBinding.ensureInitialized();
+      WidgetsFlutterBinding.ensureInitialized();
+      HttpOverrides.global = MyHttpOverrides();
 
       // Load environment variables
       await dotenv.load(fileName: "./.env");
-
-      HttpOverrides.global = MyHttpOverrides();
 
       // MethodChannel setup
       platform.setMethodCallHandler((call) async {
@@ -85,7 +84,6 @@ class AppInitializer {
       isInitialized = false;
     }
   }
-
 
   Future<void> startSession({http.Client? client}) async {
     final url = Uri.parse(dotenv.env["API_URL"]! + '1');
