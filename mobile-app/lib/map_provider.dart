@@ -8,6 +8,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
@@ -36,18 +37,18 @@ class MapProvider extends ChangeNotifier {
   MapProvider({required this.ttsService});
 
   /// Get current location and start listening to updates.
-  Future<void> getCurrentLocation() async {
+  Future<void> getCurrentLocation(BuildContext context) async {
     _currentLocation = await _location.getLocation();
     notifyListeners();
 
     _locationSubscription = _location.onLocationChanged.listen((newLoc) {
       _currentLocation = newLoc;
       notifyListeners();
-      _updateCurrentInstruction(); // Dynamically update instructions
+      _updateCurrentInstruction(context); // Dynamically update instructions
     });
 
     // Speak a message to indicate the map is active.
-    await ttsService.speakLabels(["Map is now active."]);
+    await ttsService.speakLabels([AppLocalizations.of(context).translate("Map-active")]);
   }
 
   /// Set the destination and calculate route + instructions.
@@ -193,10 +194,11 @@ Future<void> setDestination({
 
       // Translate the instruction
       final translatedInstruction = await translationProvider.translateText(
-          firstInstruction, 'es'); // Replace 'es' with the desired language
+                  "Start your trip to $_destinationName. First instruction: $firstInstruction"
+, Localizations.localeOf(context).languageCode); // Replace 'es' with the desired language
 
       await ttsService.speakLabels([
-        "Start your trip to $_destinationName. First instruction: $translatedInstruction"
+        translatedInstruction
       ]);
     }
 
@@ -214,7 +216,7 @@ Future<void> setDestination({
   }
 
   /// Update the current instruction based on proximity.
-  void _updateCurrentInstruction() {
+  void _updateCurrentInstruction(BuildContext context) async {
     if (_instructions.isEmpty || _currentLocation == null) return;
 
     final currentLatLng = LatLng(
@@ -237,7 +239,9 @@ Future<void> setDestination({
 
     if (closestDistance < 10) {
       final instruction = _instructions[closestIndex]['instruction'];
-      ttsService.speakLabels(["Now: $instruction"]);
+      final translatedInstruction = await Provider.of<TranslationProvider>(context, listen: false)
+          .translateText(instruction, Localizations.localeOf(context).languageCode);
+      ttsService.speakLabels(["Now: $translatedInstruction"]);
       _instructions = _instructions.sublist(closestIndex + 1);
       notifyListeners();
     }

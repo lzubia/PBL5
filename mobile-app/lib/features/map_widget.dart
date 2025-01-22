@@ -22,7 +22,7 @@ class _MapWidgetState extends State<MapWidget> {
   @override
   void initState() {
     super.initState();
-    Provider.of<MapProvider>(context, listen: false).getCurrentLocation();
+    Provider.of<MapProvider>(context, listen: false).getCurrentLocation(context);
   }
 
   Future<void> _searchDestination(BuildContext context) async {
