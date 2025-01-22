@@ -40,12 +40,15 @@ class _MapWidgetState extends State<MapWidget> {
     setState(() {
       _selectedLocation = latLng;
     });
-    // You can add a marker at the selected location
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(
-              'Location Selected: ${latLng.latitude}, ${latLng.longitude}')),
-    );
+
+    if (widget.title == 'save') {
+      // You can add a marker at the selected location
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Location Selected: ${latLng.latitude}, ${latLng.longitude}')),
+      );
+    }
   }
 
   void _saveSelectedLocation() {
@@ -68,10 +71,16 @@ class _MapWidgetState extends State<MapWidget> {
       return Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _destinationController,
-              decoration: const InputDecoration(
-                hintText: 'Search destination',
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 30.0), // Add space on the right
+              child: TextField(
+                controller: _destinationController,
+                decoration: const InputDecoration(
+                  hintText: 'Search destination',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                  border: OutlineInputBorder(),
+                ),
               ),
             ),
           ),
@@ -137,10 +146,11 @@ class _MapWidgetState extends State<MapWidget> {
                 },
                 markers: {
                   if (_selectedLocation != null)
-                    Marker(
-                      markerId: const MarkerId("selectedLocation"),
-                      position: _selectedLocation!,
-                    ),
+                    if (widget.title == 'save')
+                      Marker(
+                        markerId: const MarkerId("selectedLocation"),
+                        position: _selectedLocation!,
+                      ),
                   Marker(
                     markerId: const MarkerId("currentLocation"),
                     position: LatLng(

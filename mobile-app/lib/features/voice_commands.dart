@@ -18,6 +18,7 @@ class VoiceCommands extends ChangeNotifier {
   ValueChanged<LatLng>? onMapSearchHome; // Updated to accept LatLng
 
   VoidCallback? onSosCommand;
+  VoidCallback? onHomeCommand;
   bool _isActivated = false;
   bool riskTrigger = false; //state of risk detection
   int triggerVariable = 0; // trigger widget
@@ -131,6 +132,7 @@ class VoiceCommands extends ChangeNotifier {
   void _desactivateBegia() {
     _isActivated = false;
     useVoiceControlNotifier.value = false;
+    _command = '';
     notifyListeners();
     sttService.stopListening();
     startListening();
@@ -216,16 +218,8 @@ class VoiceCommands extends ChangeNotifier {
             break;
           case 'home_command':
             matched = true;
-            // Handle `home_command` if the current widget is `MapWidget`
-            if (triggerVariable == 2) {
-              // Assuming 2 is the trigger for MapWidget
-              final dbHelper = DatabaseHelper();
-              final homeLocation = await dbHelper.getHomeLocation();
-              if (homeLocation != null) {
-                onMapSearchHome?.call(homeLocation);
-              } else {
-                print('No home location saved in the database.');
-              }
+            if (onHomeCommand != null) {
+              onHomeCommand!(); // Trigger the callback
             }
             break;
           default:
@@ -240,11 +234,7 @@ class VoiceCommands extends ChangeNotifier {
       startListening();
     } else {
       _cancelCommandTimer();
-      _isActivated = false;
-      useVoiceControlNotifier.value = false;
-      _command = ''; // Reset command after it's processed
-      _sttService.stopListening(); // Stop listening to prevent repeat
-      startListening(); // Restart listening for the next command
+      _desactivateBegia();
     }
   }
 

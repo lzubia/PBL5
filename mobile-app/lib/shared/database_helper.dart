@@ -89,7 +89,7 @@ class DatabaseHelper {
 
     // Home locations table
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS homes (
+      CREATE TABLE IF NOT EXISTS home(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         latitude REAL,
         longitude REAL
@@ -229,35 +229,34 @@ class DatabaseHelper {
   Future<void> insertHome(double latitude, double longitude) async {
     final db = await database;
     await db.insert(
-      'homes',
+      'home',
       {'latitude': latitude, 'longitude': longitude},
     );
     debugPrint('Home location inserted: $latitude, $longitude');
   }
 
   Future<LatLng?> getHomeLocation() async {
-  final db = await database; // Replace with your database initialization
-  final result = await db.query(
-    'home', // Table name
-    columns: ['latitude', 'longitude'], // Columns to fetch
-    limit: 1, // Limit to a single entry
-  );
+    final db = await database; // Replace with your database initialization
+    final result = await db.query(
+      'home', // Table name
+      columns: ['latitude', 'longitude'], // Columns to fetch
+      limit: 1, // Limit to a single entry
+    );
 
-  if (result.isNotEmpty) {
-    final home = result.first;
-    // Cast latitude and longitude to double
-    final latitude = home['latitude'] is int
-        ? (home['latitude'] as int).toDouble()
-        : home['latitude'] as double;
-    final longitude = home['longitude'] is int
-        ? (home['longitude'] as int).toDouble()
-        : home['longitude'] as double;
-    return LatLng(latitude, longitude);
+    if (result.isNotEmpty) {
+      final home = result.first;
+      // Cast latitude and longitude to double
+      final latitude = home['latitude'] is int
+          ? (home['latitude'] as int).toDouble()
+          : home['latitude'] as double;
+      final longitude = home['longitude'] is int
+          ? (home['longitude'] as int).toDouble()
+          : home['longitude'] as double;
+      return LatLng(latitude, longitude);
+    }
+
+    return null; // No home location found
   }
-
-  return null; // No home location found
-}
-
 
   Future<void> resetDatabase() async {
     if (_database != null) {

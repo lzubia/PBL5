@@ -86,44 +86,44 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Set the destination using a LatLng object and calculate the route + instructions.
-Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
-  final apiKey = dotenv.env['GEOCODING_API_KEY'];
-  if (apiKey == null) {
-    throw Exception("Missing Google API Key in .env");
-  }
-
-  _loading = true;
-  notifyListeners();
-
-  try {
-    // Construct the destination address using LatLng by converting to a string representation
-    final destinationAddress = '${destinationLocation.latitude},${destinationLocation.longitude}';
-
-    final response = await http.get(Uri.parse(
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$destinationAddress&key=$apiKey'));
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'ZERO_RESULTS') {
-        await ttsService.speakLabels(["Destination not found."]);
-        return;
-      }
-
-      _destinationName = destinationAddress;
-      _destination = destinationLocation;  // Directly use the LatLng object
-      notifyListeners();
-
-      await _fetchPolylineCoordinates();
-      await _fetchNavigationInstructions();
-    } else {
-      throw Exception("Failed to fetch destination.");
+  Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
+    final apiKey = dotenv.env['GEOCODING_API_KEY'];
+    if (apiKey == null) {
+      throw Exception("Missing Google API Key in .env");
     }
-  } finally {
-    _loading = false;
-    notifyListeners();
-  }
-}
 
+    _loading = true;
+    notifyListeners();
+
+    try {
+      // Construct the destination address using LatLng by converting to a string representation
+      final destinationAddress =
+          '${destinationLocation.latitude},${destinationLocation.longitude}';
+
+      final response = await http.get(Uri.parse(
+          'https://maps.googleapis.com/maps/api/geocode/json?latlng=$destinationAddress&key=$apiKey'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'ZERO_RESULTS') {
+          await ttsService.speakLabels(["Destination not found."]);
+          return;
+        }
+
+        _destinationName = 'home';
+        _destination = destinationLocation; // Directly use the LatLng object
+        notifyListeners();
+
+        await _fetchPolylineCoordinates();
+        await _fetchNavigationInstructions();
+      } else {
+        throw Exception("Failed to fetch destination.");
+      }
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
 
   /// Fetch polyline coordinates for the route.
   Future<void> _fetchPolylineCoordinates() async {
@@ -138,8 +138,10 @@ Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
     final result = await polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: apiKey,
       request: PolylineRequest(
-        origin: PointLatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
-        destination: PointLatLng(_destination!.latitude, _destination!.longitude),
+        origin: PointLatLng(
+            _currentLocation!.latitude!, _currentLocation!.longitude!),
+        destination:
+            PointLatLng(_destination!.latitude, _destination!.longitude),
         mode: TravelMode.walking,
       ),
     );
@@ -159,7 +161,8 @@ Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
     if (_currentLocation == null || _destination == null) return;
 
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
-    final origin = "${_currentLocation!.latitude},${_currentLocation!.longitude}";
+    final origin =
+        "${_currentLocation!.latitude},${_currentLocation!.longitude}";
     final dest = "${_destination!.latitude},${_destination!.longitude}";
 
     final response = await http.get(Uri.parse(
@@ -227,7 +230,8 @@ Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
 
     // Notify the user if they've reached the destination.
     if (_instructions.isEmpty) {
-      ttsService.speakLabels(["You have reached your destination: $_destinationName"]);
+      ttsService.speakLabels(
+          ["You have reached your destination: $_destinationName"]);
     }
   }
 
@@ -238,7 +242,8 @@ Future<void> setDestinationFromLatLng(LatLng destinationLocation) async {
         cos((end.latitude - start.latitude) * p) / 2 +
         cos(start.latitude * p) *
             cos(end.latitude * p) *
-            (1 - cos((end.longitude - start.longitude) * p)) / 2;
+            (1 - cos((end.longitude - start.longitude) * p)) /
+            2;
     return 12742 * asin(sqrt(a)) * 1000; // 2 * R; R = 6371 km
   }
 

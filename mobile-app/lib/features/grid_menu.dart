@@ -58,7 +58,8 @@ class GridMenuState extends State<GridMenu> {
 
       if (title == AppLocalizations.of(context).translate("gps_map")) {
         // Register callback for `home_command` in MapWidget
-        final voiceCommands = Provider.of<VoiceCommands>(context, listen: false);
+        final voiceCommands =
+            Provider.of<VoiceCommands>(context, listen: false);
 
         voiceCommands.onMapSearchHome = (LatLng latLng) {
           final mapProvider = context.read<MapProvider>();
@@ -142,15 +143,50 @@ class GridMenuState extends State<GridMenu> {
         voiceCommands.onSosCommand = () async {
           try {
             final sosService = Provider.of<SosService>(context, listen: false);
-            final dbHelper = Provider.of<DatabaseHelper>(context, listen: false);
+            final dbHelper =
+                Provider.of<DatabaseHelper>(context, listen: false);
 
             // Fetch contacts from the database
             final contacts = await dbHelper.getContacts();
 
             // Send SOS request
-            await sosService.sendSosRequest(contacts.cast<Map<String, String>>());
+            await sosService
+                .sendSosRequest(contacts.cast<Map<String, String>>());
           } catch (e) {
             print('Error calling SOS service: $e');
+          }
+        };
+
+        voiceCommands.onHomeCommand = () async {
+          try {
+            // Fetch DatabaseHelper instance
+            final dbHelper =
+                Provider.of<DatabaseHelper>(context, listen: false);
+
+            // Get saved home location (LatLng) from the database
+            final homeLocation = await dbHelper.getHomeLocation();
+
+            if (homeLocation != null) {
+              // Access the MapProvider instance
+              final mapProvider =
+                  Provider.of<MapProvider>(context, listen: false);
+
+              // Use MapProvider to set the destination as the saved home location
+              await mapProvider.setDestinationFromLatLng(homeLocation);
+
+              // Optionally, use TTS to confirm to the user
+              final ttsService =
+                  Provider.of<ITtsService>(context, listen: false);
+              await ttsService
+                  .speakLabels(["Navigating to your home location."]);
+            } else {
+              // Handle case when no home location is saved
+              final ttsService =
+                  Provider.of<ITtsService>(context, listen: false);
+              await ttsService.speakLabels(["Home location not set."]);
+            }
+          } catch (e) {
+            print('Error setting home destination: $e');
           }
         };
 

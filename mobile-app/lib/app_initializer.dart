@@ -59,8 +59,8 @@ class AppInitializer {
 
       // Initialize database helper
       databaseHelper = DatabaseHelper();
-      await databaseHelper
-          .resetDatabase(); // Clear and reinitialize the database
+      // await databaseHelper
+      //     .resetDatabase(); // Clear and reinitialize the database
 
       // Initialize TTS service with the database helper
       ttsServiceGoogle = TtsServiceGoogle(databaseHelper);
@@ -85,7 +85,6 @@ class AppInitializer {
       isInitialized = false;
     }
   }
-
 
   Future<void> startSession({http.Client? client}) async {
     final url = Uri.parse(dotenv.env["API_URL"]! + '1');
