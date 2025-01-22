@@ -17,6 +17,10 @@ class AppInitializer {
   late SttService sttService;
   late VoiceCommands voiceCommands;
 
+  List<String> _widgetStates = [];
+
+  List<String> get widgetStates => _widgetStates;
+
   // External dependency
   late PictureService pictureService;
 
@@ -30,24 +34,26 @@ class AppInitializer {
       MethodChannel('com.example.pbl5_menu/endSession');
 
   Future<void> initialize({required PictureService pictureService}) async {
-    this.pictureService = pictureService; // Use the passed-in PictureService
+    this.pictureService = pictureService; // Use the passed-in PictureService´
 
     try {
       // Ensure Flutter bindings
-      WidgetsFlutterBinding.ensureInitialized();
+      // WidgetsFlutterBinding.ensureInitialized();
+
+      // Load environment variables
+      await dotenv.load(fileName: "./.env");
+
       HttpOverrides.global = MyHttpOverrides();
 
       // MethodChannel setup
       platform.setMethodCallHandler((call) async {
+        print("Method call received: ${call.method}");
         if (call.method == 'endSession') {
-          // await endSession(sessionToken);
+          await endSession(sessionToken);
         } else if (call.method == 'startSession') {
-          // await startSession();
+          await startSession();
         }
       });
-
-      // Load environment variables
-      await dotenv.load(fileName: "./.env");
 
       // Initialize database helper
       databaseHelper = DatabaseHelper();
@@ -75,7 +81,7 @@ class AppInitializer {
   }
 
   Future<void> startSession({http.Client? client}) async {
-    final url = Uri.parse('https://begiapbl.duckdns.org:1880/start-session');
+    final url = Uri.parse(dotenv.env["API_URL"]! + '1');
     client ??= http.Client();
     try {
       final response = await client.get(url);
@@ -93,8 +99,7 @@ class AppInitializer {
   }
 
   Future<void> endSession(String sessionId, {http.Client? client}) async {
-    final url = Uri.parse(
-        'https://begiapbl.duckdns.org:1880/end-session?session_id=$sessionId');
+    final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
     client ??= http.Client();
     try {
       final response = await client.delete(url);

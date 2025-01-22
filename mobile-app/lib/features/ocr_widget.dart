@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:provider/provider.dart';
 import '../services/picture_service.dart';
@@ -18,8 +19,7 @@ class OcrWidgetState extends State<OcrWidget> {
     final sessionToken = context.read<AppInitializer>().sessionToken;
 
     await pictureService.takePicture(
-      endpoint:
-          'https://begiapbl.duckdns.org:1880/ocr?session_id=${sessionToken}',
+      endpoint: dotenv.env["API_URL"]! + '6&session_id=${sessionToken}',
       onLabelsDetected: (labels) {
         ttsService.speakLabels(labels);
         ScaffoldMessenger.of(context).showSnackBar(

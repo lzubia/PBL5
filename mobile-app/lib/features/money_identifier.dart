@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
@@ -38,11 +39,9 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
     super.dispose();
   }
 
-
   void _startPeriodicPictureTaking() {
-
     final ttsService = context.read<ITtsService>();
-    
+
     ttsService
         .speakLabels([AppLocalizations.of(context).translate("money-on")]);
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -54,14 +53,12 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
     final pictureService = context.read<PictureService>();
     final ttsService = context.read<ITtsService>();
     final sessionToken = context.read<AppInitializer>().sessionToken;
-    
+
     await pictureService.takePicture(
-      endpoint:
-          'https://begiapbl.duckdns.org:1880/money?session_id=${sessionToken}', // Pass the endpoint here
+      endpoint: dotenv.env["API_URL"]! + '5&session_id=${sessionToken}',
       onLabelsDetected: (labels) {
         print('Money Identified: $labels');
-        ttsService
-            .speakLabels(labels); // Use ttsService to speak the labels
+        ttsService.speakLabels(labels); // Use ttsService to speak the labels
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Money Identified: $labels')),
         );
