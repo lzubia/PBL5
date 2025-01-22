@@ -6,6 +6,7 @@ on:
       - mobile-develop
       - mobile-tests
       - mobile-tp
+      - unify-tests
   pull_request:
 
 jobs:
