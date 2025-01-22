@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import '../../shared/database_helper.dart';
 import '../stt/i_tts_service.dart';
+import 'package:flutter/services.dart';
 
 class TtsServiceGoogle implements ITtsService {
   late AudioPlayer audioPlayer;
@@ -16,8 +16,15 @@ class TtsServiceGoogle implements ITtsService {
   String voiceName = 'en-US-Wavenet-D';
   double speechRate = 1.6; // Default speech rate
   final DatabaseHelper _dbHelper;
+  final http.Client httpClient;
+  final AssetBundle assetBundle;
 
-  TtsServiceGoogle(this._dbHelper, {AudioPlayer? audioPlayer}) {
+  TtsServiceGoogle(this._dbHelper,
+      {AudioPlayer? audioPlayer,
+      http.Client? httpClient,
+      AssetBundle? assetBundle})
+      : httpClient = httpClient ?? http.Client(),
+        assetBundle = assetBundle ?? rootBundle {
     WidgetsFlutterBinding.ensureInitialized();
     this.audioPlayer = audioPlayer ?? AudioPlayer(); // Allow mock injection
     loadSettings();
@@ -30,8 +37,8 @@ class TtsServiceGoogle implements ITtsService {
 
   Future<void> loadSettings() async {
     final settings = await _dbHelper.getTtsSettings();
-    languageCode = settings['languageCode']!;
-    voiceName = settings['voiceName']!;
+    languageCode = settings['languageCode'] ?? 'en-US';
+    voiceName = settings['voiceName'] ?? 'en-US-Wavenet-D';
     print("Loaded settings: languageCode=$languageCode, voiceName=$voiceName");
   }
 
@@ -45,13 +52,17 @@ class TtsServiceGoogle implements ITtsService {
 
   @override
   Future<void> updateSpeechRate(double newSpeechRate) async {
+    if (newSpeechRate <= 0.0) {
+      print("Invalid speech rate: $newSpeechRate. Using default value.");
+      return; // Ignore invalid values
+    }
     speechRate = newSpeechRate;
     print("Speech rate updated to $speechRate");
   }
 
   Future<String> getAccessToken() async {
     final serviceAccount =
-        json.decode(await rootBundle.loadString(_authFilePath));
+        json.decode(await assetBundle.loadString(_authFilePath));
     final now = DateTime.now();
     final expiry = now.add(const Duration(hours: 1));
 
@@ -68,7 +79,7 @@ class TtsServiceGoogle implements ITtsService {
     final privateKey = RSAPrivateKey(serviceAccount['private_key']);
     final token = jwt.sign(privateKey, algorithm: JWTAlgorithm.RS256);
 
-    final response = await http.post(
+    final response = await httpClient.post(
       Uri.parse("https://oauth2.googleapis.com/token"),
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: {
@@ -93,7 +104,7 @@ class TtsServiceGoogle implements ITtsService {
       try {
         print("Speaking label: $label");
 
-        final response = await http.post(
+        final response = await httpClient.post(
           Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
           headers: {
             "Authorization": "Bearer $token",

@@ -14,6 +14,7 @@ import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i13;
 import 'package:pbl5_menu/features/voice_commands.dart' as _i14;
+import 'package:pbl5_menu/services/l10n.dart' as _i15;
 import 'package:pbl5_menu/services/picture_service.dart' as _i4;
 import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i10;
 import 'package:pbl5_menu/services/stt/stt_service.dart' as _i9;
@@ -742,6 +743,25 @@ class MockVoiceCommands extends _i1.Mock implements _i14.VoiceCommands {
       );
 
   @override
+  bool isActivationCommand(String? transcript) => (super.noSuchMethod(
+        Invocation.method(
+          #isActivationCommand,
+          [transcript],
+        ),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i12.Future<void> playActivationSound() => (super.noSuchMethod(
+        Invocation.method(
+          #playActivationSound,
+          [],
+        ),
+        returnValue: _i12.Future<void>.value(),
+        returnValueForMissingStub: _i12.Future<void>.value(),
+      ) as _i12.Future<void>);
+
+  @override
   void handleCommand(String? command) => super.noSuchMethod(
         Invocation.method(
           #handleCommand,
@@ -817,4 +837,46 @@ class MockVoiceCommands extends _i1.Mock implements _i14.VoiceCommands {
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [AppLocalizations].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAppLocalizations extends _i1.Mock implements _i15.AppLocalizations {
+  MockAppLocalizations() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i8.Locale get locale => (super.noSuchMethod(
+        Invocation.getter(#locale),
+        returnValue: _FakeLocale_8(
+          this,
+          Invocation.getter(#locale),
+        ),
+      ) as _i8.Locale);
+
+  @override
+  _i12.Future<bool> load() => (super.noSuchMethod(
+        Invocation.method(
+          #load,
+          [],
+        ),
+        returnValue: _i12.Future<bool>.value(false),
+      ) as _i12.Future<bool>);
+
+  @override
+  String translate(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #translate,
+          [key],
+        ),
+        returnValue: _i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #translate,
+            [key],
+          ),
+        ),
+      ) as String);
 }

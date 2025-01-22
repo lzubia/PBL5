@@ -20,7 +20,7 @@ class MapProvider extends ChangeNotifier {
   LatLng? _destination;
   List<LatLng> _polylineCoordinates = [];
   List<Map<String, dynamic>> _instructions = [];
-  StreamSubscription<LocationData>? _locationSubscription;
+  StreamSubscription<LocationData>? locationSubscription;
 
   bool _loading = false;
   bool get isLoading => _loading;
@@ -29,7 +29,17 @@ class MapProvider extends ChangeNotifier {
   String? get destinationName => _destinationName;
 
   LocationData? get currentLocation => _currentLocation;
+  set currentLocation(LocationData? location) {
+    _currentLocation = location;
+    notifyListeners();
+  }
+
   LatLng? get destination => _destination;
+  set destination(LatLng? destination) {
+    _destination = destination;
+    notifyListeners();
+  }
+
   List<LatLng> get polylineCoordinates => _polylineCoordinates;
   List<Map<String, dynamic>> get instructions => _instructions;
 
@@ -45,7 +55,7 @@ class MapProvider extends ChangeNotifier {
     _currentLocation = await location.getLocation();
     notifyListeners();
 
-    _locationSubscription = location.onLocationChanged.listen((newLoc) {
+    locationSubscription = location.onLocationChanged.listen((newLoc) {
       _currentLocation = newLoc;
       notifyListeners();
       _updateCurrentInstruction(); // Dynamically update instructions
@@ -81,8 +91,8 @@ class MapProvider extends ChangeNotifier {
         _destination = LatLng(location['lat'], location['lng']);
         notifyListeners();
 
-        await _fetchPolylineCoordinates();
-        await _fetchNavigationInstructions();
+        await fetchPolylineCoordinates();
+        await fetchNavigationInstructions();
       } else {
         throw Exception("Failed to fetch destination.");
       }
@@ -93,7 +103,7 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Fetch polyline coordinates for the route.
-  Future<void> _fetchPolylineCoordinates() async {
+  Future<void> fetchPolylineCoordinates() async {
     if (_currentLocation == null || _destination == null) return;
 
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
@@ -123,7 +133,7 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Fetch navigation instructions (steps).
-  Future<void> _fetchNavigationInstructions() async {
+  Future<void> fetchNavigationInstructions() async {
     if (_currentLocation == null || _destination == null) return;
 
     final apiKey = dotenv.env['GOOGLE_MAPS_API_KEY'];
@@ -215,7 +225,8 @@ class MapProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _locationSubscription?.cancel();
+    locationSubscription?.cancel();
+    locationSubscription = null; // Explicitly set it to null after canceling
     super.dispose();
   }
 }

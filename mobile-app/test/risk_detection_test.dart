@@ -12,11 +12,46 @@ import 'package:provider/provider.dart';
 
 import 'risk_detection_test.mocks.dart';
 
+class MockAppLocalizations extends AppLocalizations {
+  MockAppLocalizations() : super(const Locale('en', 'US'));
+
+  @override
+  String translate(String key) {
+    switch (key) {
+      case 'risk-on':
+        return 'Risk detection enabled';
+      case 'risk-off':
+        return 'Risk detection disabled';
+      default:
+        return key;
+    }
+  }
+}
+
+class MockAppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  final MockAppLocalizations mockAppLocalizations;
+
+  MockAppLocalizationsDelegate(this.mockAppLocalizations);
+
+  @override
+  bool isSupported(Locale locale) =>
+      ['en', 'es', 'eu'].contains(locale.languageCode);
+
+  @override
+  Future<AppLocalizations> load(Locale locale) async => mockAppLocalizations;
+
+  @override
+  bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) =>
+      false;
+}
+
 @GenerateMocks([PictureService, ITtsService, VoiceCommands])
 void main() {
   late MockPictureService mockPictureService;
   late MockITtsService mockTtsService;
   late MockVoiceCommands mockVoiceCommands;
+  late MockAppLocalizations mockAppLocalizations;
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -24,19 +59,10 @@ void main() {
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
     mockVoiceCommands = MockVoiceCommands();
+    mockAppLocalizations = MockAppLocalizations();
 
     when(mockPictureService.isCameraInitialized).thenReturn(true);
     when(mockVoiceCommands.riskTrigger).thenReturn(false);
-  });
-
-  tearDown(() {
-    reset(mockPictureService);
-    reset(mockTtsService);
-    reset(mockVoiceCommands);
-
-    clearInteractions(mockPictureService);
-    clearInteractions(mockTtsService);
-    clearInteractions(mockVoiceCommands);
   });
 
   Future<void> pumpRiskDetection(WidgetTester tester) async {
@@ -50,7 +76,7 @@ void main() {
         ],
         child: MaterialApp(
           localizationsDelegates: [
-            AppLocalizations.delegate,
+            MockAppLocalizationsDelegate(mockAppLocalizations),
             GlobalMaterialLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -67,8 +93,7 @@ void main() {
       ),
     );
 
-    // Ensure all animations and asynchronous tasks are completed
-    await tester.pumpAndSettle(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
   }
 
   testWidgets('should display widgets when camera is initialized',
@@ -80,49 +105,137 @@ void main() {
         findsOneWidget); // Warning icon should exist
   });
 
-  // testWidgets('should enable risk detection when switch is turned on',
+  testWidgets('should enable risk detection when switch is turned on',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
+
+    // Ensure switch is present
+    expect(find.byType(Switch), findsOneWidget);
+
+    // Tap the switch to enable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    // Verify that the TTS service was called with the correct label
+    verify(mockTtsService.speakLabels(["Risk detection enabled"])).called(1);
+  });
+
+  testWidgets('should disable risk detection when switch is turned off',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
+
+    // Ensure switch is present
+    expect(find.byType(Switch), findsOneWidget);
+
+    // Tap the switch to enable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    // Tap the switch again to disable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    verify(mockTtsService.speakLabels(["Risk detection disabled"])).called(1);
+    expect(find.byType(Switch), findsOneWidget);
+  });
+
+  testWidgets('should show response time when available',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
+
+    // Access the widget state
+    final riskDetectionState =
+        tester.state<RiskDetectionState>(find.byType(RiskDetection));
+
+    // Update the responseTime in the state
+    riskDetectionState.setState(() {
+      riskDetectionState.responseTime = const Duration(milliseconds: 500);
+    });
+
+    await tester.pumpAndSettle();
+
+    // Verify that the response time is displayed
+    expect(find.text('Response Time: 500 ms'), findsOneWidget);
+  });
+
+  testWidgets(
+      'should trigger enableRiskDetection when VoiceCommands triggers risk',
+      (WidgetTester tester) async {
+    // Set riskTrigger to true
+    when(mockVoiceCommands.riskTrigger).thenReturn(true);
+
+    await pumpRiskDetection(tester);
+
+    // Verify that risk detection was enabled
+    verify(mockTtsService.speakLabels(["Risk detection enabled"])).called(1);
+  });
+
+  // testWidgets(
+  //     'should trigger disableRiskDetection when VoiceCommands disables risk',
   //     (WidgetTester tester) async {
+  //   // Set riskTrigger to true initially
+  //   when(mockVoiceCommands.riskTrigger).thenReturn(true);
+
+  //   // Pump the widget
   //   await pumpRiskDetection(tester);
 
-  //   await tester.pumpAndSettle();
-  //   expect(find.byType(Switch), findsOneWidget);
-
-  //   await tester.tap(find.byType(Switch));
-  //   await tester.pumpAndSettle();
-
+  //   // Verify that risk detection was enabled
   //   verify(mockTtsService.speakLabels(["Risk detection enabled"])).called(1);
-  //   expect(find.byType(Switch), findsOneWidget);
-  // });
 
-  // testWidgets('should disable risk detection when switch is turned off',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  //   // Change riskTrigger to false and notify listeners
+  //   when(mockVoiceCommands.riskTrigger).thenReturn(false);
+  //   mockVoiceCommands.notifyListeners();
 
-  //   await tester.pumpAndSettle();
-  //   expect(find.byType(Switch), findsOneWidget);
-
-  //   await tester.tap(find.byType(Switch));
+  //   // Pump the widget again to ensure it rebuilds
   //   await tester.pumpAndSettle();
 
-  //   await tester.tap(find.byType(Switch));
-  //   await tester.pumpAndSettle();
-
+  //   // Verify that risk detection was disabled
   //   verify(mockTtsService.speakLabels(["Risk detection disabled"])).called(1);
-  //   expect(find.byType(Switch), findsOneWidget);
   // });
 
-  // testWidgets('should show response time when available',
-  //     (WidgetTester tester) async {
-  //   await pumpRiskDetection(tester);
+  testWidgets(
+      'should call PictureService takePicture periodically when enabled',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
 
-  //   final riskDetectionState =
-  //       tester.state<RiskDetectionState>(find.byType(RiskDetection));
-  //   riskDetectionState.setState(() {
-  //     riskDetectionState.responseTime = const Duration(milliseconds: 500);
-  //   });
+    // Enable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
 
-  //   await tester.pumpAndSettle();
+    // Verify that takePicture is called periodically
+    await tester.pump(const Duration(milliseconds: 1500));
+    verify(mockPictureService.takePicture(
+      endpoint: anyNamed('endpoint'),
+      onLabelsDetected: anyNamed('onLabelsDetected'),
+      onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+    )).called(1);
 
-  //   expect(find.text('Response Time: 500 ms'), findsOneWidget);
-  // });
+    // Wait for the next periodic call
+    await tester.pump(const Duration(milliseconds: 1500));
+    verify(mockPictureService.takePicture(
+      endpoint: anyNamed('endpoint'),
+      onLabelsDetected: anyNamed('onLabelsDetected'),
+      onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+    )).called(1);
+  });
+
+  testWidgets('should cancel Timer when risk detection is disabled',
+      (WidgetTester tester) async {
+    await pumpRiskDetection(tester);
+
+    // Enable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    // Disable risk detection
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    // Verify that the timer was canceled
+    verifyNever(mockPictureService.takePicture(
+      endpoint: anyNamed('endpoint'),
+      onLabelsDetected: anyNamed('onLabelsDetected'),
+      onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
+    ));
+  });
 }

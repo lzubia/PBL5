@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/stt_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/main.dart';
@@ -96,8 +98,16 @@ void main() {
   });
 
   Future<void> pumpMainApp(WidgetTester tester) async {
-    // Reset the WidgetsBinding to ensure clean state
     TestWidgetsFlutterBinding.ensureInitialized();
+
+    // Mock any required dependencies
+    when(mockLocaleProvider.currentLocale).thenReturn(const Locale('en', 'US'));
+    when(mockLocaleProvider.supportedLocales).thenReturn([
+      const Locale('en', 'US'),
+      const Locale('es', 'ES'),
+      const Locale('eu', 'ES'),
+    ]);
+    when(mockPictureService.isCameraInitialized).thenReturn(true);
 
     await tester.pumpWidget(
       MultiProvider(
@@ -116,19 +126,12 @@ void main() {
             value: mockWidgetStateProvider,
           ),
         ],
-        child: Builder(
-          builder: (context) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<VoiceCommands>().initialize(context);
-            });
-            return const MyApp();
-          },
-        ),
+        child: const MyApp(),
       ),
     );
 
-    // Ensure all async tasks, animations, and post-frame callbacks are resolved
-    await tester.pumpAndSettle(const Duration(seconds: 5));
+    // Pump until all async tasks, animations, and post-frame callbacks are complete
+    await tester.pumpAndSettle();
   }
 
   testWidgets('should display the app title in AppBar',
@@ -142,47 +145,145 @@ void main() {
   //     (WidgetTester tester) async {
   //   await pumpMainApp(tester);
 
-  //   expect(find.byKey(const Key('settingsButton')), findsOneWidget);
+  //   expect(find.byKey(const Key('settingsButton')),
+  //       findsOneWidget); // Verify Settings Button
   // });
 
   // testWidgets('should navigate to SettingsScreen on settings button tap',
   //     (WidgetTester tester) async {
   //   await pumpMainApp(tester);
 
-  //   await tester.tap(find.byKey(const Key('settingsButton')));
+  //   await tester
+  //       .tap(find.byKey(const Key('settingsButton'))); // Tap on settings button
   //   await tester.pumpAndSettle();
 
-  //   expect(find.byType(SettingsScreen), findsOneWidget);
+  //   expect(find.byType(SettingsScreen),
+  //       findsOneWidget); // Verify SettingsScreen is loaded
   // });
 
   // testWidgets('should display RiskDetection widget',
   //     (WidgetTester tester) async {
   //   await pumpMainApp(tester);
 
-  //   expect(find.byType(RiskDetection), findsOneWidget);
+  //   expect(find.byType(RiskDetection),
+  //       findsOneWidget); // RiskDetection should be present
   // });
 
   // testWidgets('should display GridMenu widget', (WidgetTester tester) async {
   //   await pumpMainApp(tester);
 
-  //   expect(find.byType(GridMenu), findsOneWidget);
+  //   expect(find.byType(GridMenu), findsOneWidget); // GridMenu should be present
   // });
 
-  // testWidgets('should display the camera status', (WidgetTester tester) async {
-  //   await pumpMainApp(tester);
+  // testWidgets('should display the voice control gif when enabled',
+  //     (WidgetTester tester) async {
+  //   VoiceCommands.useVoiceControlNotifier.value = true;
 
-  //   expect(find.text('Camera: Enabled'), findsOneWidget);
+  //   await tester.runAsync(() async {
+  //     await pumpMainApp(tester);
+  //   });
+
+  //   expect(find.byType(Image), findsOneWidget);
   // });
 
-  // testWidgets('should toggle voice control switch',
+  testWidgets('should hide the voice control gif when disabled',
+      (WidgetTester tester) async {
+    when(mockVoiceCommands.isActivated)
+        .thenReturn(false); // Mock voice control is disabled
+    await pumpMainApp(tester);
+
+    expect(find.byType(Image), findsNothing); // Verify gif is hidden
+  });
+
+  // testWidgets('should toggle voice control on double tap',
   //     (WidgetTester tester) async {
   //   await pumpMainApp(tester);
 
-  //   final switchFinder = find.byKey(const Key('voiceControlSwitch'));
+  //   // Locate the specific GestureDetector by Key
+  //   final gestureDetectorFinder = find.byKey(const Key('voiceControlGesture'));
+  //   expect(gestureDetectorFinder, findsOneWidget);
 
-  //   expect(switchFinder, findsOneWidget);
+  //   // Simulate a double-tap
+  //   await tester.tap(gestureDetectorFinder);
+  //   await tester.pump(const Duration(milliseconds: 50));
+  //   await tester.tap(gestureDetectorFinder);
+  //   await tester.pumpAndSettle();
 
-  //   await tester.tap(switchFinder);
-  //   verify(mockVoiceCommands.toggleActivation(any)).called(1);
+  //   // Verify voice control toggle is called
+  //   verify(mockVoiceCommands.toggleVoiceControl()).called(1);
+  // });
+
+  // testWidgets('should display the current locale in the app',
+  //     (WidgetTester tester) async {
+  //   when(mockLocaleProvider.currentLocale).thenReturn(const Locale('en', 'US'));
+
+  //   await tester.pumpWidget(
+  //     MultiProvider(
+  //       providers: [
+  //         ChangeNotifierProvider<LocaleProvider>.value(
+  //             value: mockLocaleProvider),
+  //         // Add other providers if needed
+  //       ],
+  //       child: MaterialApp(
+  //         locale: mockLocaleProvider.currentLocale,
+  //         localizationsDelegates: [
+  //           AppLocalizations.delegate,
+  //           GlobalMaterialLocalizations.delegate,
+  //           GlobalWidgetsLocalizations.delegate,
+  //           GlobalCupertinoLocalizations.delegate,
+  //         ],
+  //         supportedLocales: mockLocaleProvider.supportedLocales,
+  //         home: const MyApp(),
+  //       ),
+  //     ),
+  //   );
+
+  //   // Allow the widget tree to build
+  //   await tester.pumpAndSettle();
+
+  //   expect(Localizations.localeOf(tester.element(find.byType(MyApp))),
+  //       const Locale('en', 'US'));
+  // });
+
+  // testWidgets('should initialize dependencies on startup',
+  //     (WidgetTester tester) async {
+  //   await pumpMainApp(tester);
+
+  //   // Verify the dependencies initialized properly
+  //   verify(mockAppInitializer.initialize(pictureService: mockPictureService))
+  //       .called(1);
+  //   verify(mockVoiceCommands.initialize(any)).called(1);
+  // });
+
+  // testWidgets(
+  //     'should show a loading indicator while dependencies are initializing',
+  //     (WidgetTester tester) async {
+  //   // Mock initialization delay
+  //   when(mockAppInitializer.initialize(pictureService: mockPictureService))
+  //       .thenAnswer((_) async {
+  //     await Future.delayed(const Duration(seconds: 2));
+  //   });
+
+  //   await pumpMainApp(tester);
+
+  //   // Verify that a loading indicator is displayed
+  //   expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+  //   // Wait for initialization to complete
+  //   await tester.pumpAndSettle();
+
+  //   // Verify the loading indicator disappears
+  //   expect(find.byType(CircularProgressIndicator), findsNothing);
+  // });
+
+  // testWidgets('should respect theme changes from ThemeProvider',
+  //     (WidgetTester tester) async {
+  //   when(mockThemeProvider.currentTheme)
+  //       .thenReturn(ThemeData(brightness: Brightness.dark));
+  //   await pumpMainApp(tester);
+
+  //   // Check that MaterialApp respects the theme
+  //   final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+  //   expect(materialApp.theme?.brightness, Brightness.dark);
   // });
 }

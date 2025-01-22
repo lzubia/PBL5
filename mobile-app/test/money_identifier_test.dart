@@ -59,7 +59,6 @@ void main() {
             Locale('eu', 'ES'),
           ],
           home: Scaffold(
-            // Ensure a Scaffold is present
             body: MoneyIdentifier(),
           ),
         ),
@@ -139,42 +138,98 @@ void main() {
   //   await tester.runAsync(() async {
   //     when(mockPictureService.isCameraInitialized).thenReturn(true);
 
-  //     // Pump the widget
   //     await pumpMoneyIdentifier(tester);
 
-  //     // Get the widget state
   //     final moneyIdentifierState =
   //         tester.state<MoneyIdentifierState>(find.byType(MoneyIdentifier));
 
-  //     // Labels to simulate
   //     final labels = ['10 dollars', '20 euros'];
 
-  //     // Call the method that triggers the mock `takePicture` function
   //     await moneyIdentifierState.takeAndSendImage();
 
-  //     // Capture the `onLabelsDetected` callback
   //     final capturedInvocation = verify(mockPictureService.takePicture(
   //       endpoint: anyNamed('endpoint'),
   //       onLabelsDetected: captureAnyNamed('onLabelsDetected'),
   //       onResponseTimeUpdated: anyNamed('onResponseTimeUpdated'),
   //     )).captured;
 
-  //     // Ensure `onLabelsDetected` was passed to the mock
   //     final onLabelsDetected =
   //         capturedInvocation.first as Function(List<String>);
 
-  //     // Invoke the `onLabelsDetected` callback manually with test labels
   //     onLabelsDetected(labels);
 
-  //     // Pump the widget tree to process the callback
   //     await tester.pumpAndSettle();
 
-  //     // Verify that TTS is called with the detected labels
   //     verify(mockTtsService.speakLabels(labels)).called(1);
 
-  //     // Verify that the Snackbar is shown with the correct labels
   //     expect(find.text('Money Identified: [10 dollars, 20 euros]'),
   //         findsOneWidget);
+  //   });
+  // });
+
+  // testWidgets('should not start periodic picture-taking when already running',
+  //     (WidgetTester tester) async {
+  //   await tester.runAsync(() async {
+  //     when(mockPictureService.isCameraInitialized).thenReturn(true);
+
+  //     await pumpMoneyIdentifier(tester);
+
+  //     final moneyIdentifierState =
+  //         tester.state<MoneyIdentifierState>(find.byType(MoneyIdentifier));
+
+  //     expect(moneyIdentifierState.timer, isNotNull);
+
+  //     final previousTimer = moneyIdentifierState.timer;
+
+  //     moneyIdentifierState.didChangeDependencies();
+
+  //     expect(moneyIdentifierState.timer, equals(previousTimer));
+
+  //     moneyIdentifierState.cancelTimer();
+  //   });
+  // });
+
+  // testWidgets('should cancel timer on dispose', (WidgetTester tester) async {
+  //   await tester.runAsync(() async {
+  //     when(mockPictureService.isCameraInitialized).thenReturn(true);
+
+  //     await pumpMoneyIdentifier(tester);
+
+  //     final moneyIdentifierState =
+  //         tester.state<MoneyIdentifierState>(find.byType(MoneyIdentifier));
+
+  //     expect(moneyIdentifierState.timer, isNotNull);
+
+  //     moneyIdentifierState.dispose();
+
+  //     expect(moneyIdentifierState.timer?.isActive, isFalse);
+  //   });
+  // });
+
+  // testWidgets('should handle response time updates',
+  //     (WidgetTester tester) async {
+  //   await tester.runAsync(() async {
+  //     when(mockPictureService.isCameraInitialized).thenReturn(true);
+
+  //     await pumpMoneyIdentifier(tester);
+
+  //     final moneyIdentifierState =
+  //         tester.state<MoneyIdentifierState>(find.byType(MoneyIdentifier));
+
+  //     final capturedInvocation = verify(mockPictureService.takePicture(
+  //       endpoint: anyNamed('endpoint'),
+  //       onLabelsDetected: anyNamed('onLabelsDetected'),
+  //       onResponseTimeUpdated: captureAnyNamed('onResponseTimeUpdated'),
+  //     )).captured;
+
+  //     final onResponseTimeUpdated =
+  //         capturedInvocation.first as Function(Duration);
+
+  //     onResponseTimeUpdated(const Duration(milliseconds: 600));
+
+  //     await tester.pumpAndSettle();
+
+  //     expect(find.text('Response time: 0:00:00.600000'), findsOneWidget);
   //   });
   // });
 }

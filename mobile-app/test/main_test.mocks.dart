@@ -1245,6 +1245,25 @@ class MockVoiceCommands extends _i1.Mock implements _i5.VoiceCommands {
       );
 
   @override
+  bool isActivationCommand(String? transcript) => (super.noSuchMethod(
+        Invocation.method(
+          #isActivationCommand,
+          [transcript],
+        ),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i21.Future<void> playActivationSound() => (super.noSuchMethod(
+        Invocation.method(
+          #playActivationSound,
+          [],
+        ),
+        returnValue: _i21.Future<void>.value(),
+        returnValueForMissingStub: _i21.Future<void>.value(),
+      ) as _i21.Future<void>);
+
+  @override
   void handleCommand(String? command) => super.noSuchMethod(
         Invocation.method(
           #handleCommand,
