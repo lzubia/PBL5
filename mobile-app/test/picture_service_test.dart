@@ -268,6 +268,7 @@ void main() {
         (responseTime) {
           // You can add assertions for response time if needed
         },
+        mockHttpClient,
       );
 
       // Verify the expected interactions
@@ -324,6 +325,7 @@ void main() {
         'http://mock.endpoint', // Mock endpoint
         (objects) => detectedObjects.addAll(objects),
         (duration) => responseTimes.add(duration),
+        mockHttpClient,
       );
 
       // Check that the HTTP client send method was actually called

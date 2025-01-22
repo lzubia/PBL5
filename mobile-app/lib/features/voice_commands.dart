@@ -116,7 +116,7 @@ class VoiceCommands extends ChangeNotifier {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;
-      _handleCommand(_command);
+      handleCommand(_command);
     } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
@@ -162,7 +162,7 @@ class VoiceCommands extends ChangeNotifier {
     await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
-  Future<void> _handleCommand(String command) async {
+  Future<void> handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;

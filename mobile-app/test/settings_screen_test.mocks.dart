@@ -7,11 +7,12 @@ import 'dart:async' as _i5;
 import 'dart:ui' as _i3;
 
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart'
-    as _i8;
-import 'package:flutter_native_contact_picker/model/contact.dart' as _i9;
+    as _i9;
+import 'package:flutter_native_contact_picker/model/contact.dart' as _i10;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:pbl5_menu/locale_provider.dart' as _i7;
-import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i6;
+import 'package:pbl5_menu/locale_provider.dart' as _i8;
+import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i7;
 import 'package:pbl5_menu/shared/database_helper.dart' as _i4;
 import 'package:sqflite/sqflite.dart' as _i2;
 
@@ -121,23 +122,31 @@ class MockDatabaseHelper extends _i1.Mock implements _i4.DatabaseHelper {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> insertContact(String? name) => (super.noSuchMethod(
+  _i5.Future<void> insertContact(
+    String? name,
+    String? phone,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #insertContact,
-          [name],
+          [
+            name,
+            phone,
+          ],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<List<String>> getContacts() => (super.noSuchMethod(
+  _i5.Future<List<Map<String, String>>> getContacts() => (super.noSuchMethod(
         Invocation.method(
           #getContacts,
           [],
         ),
-        returnValue: _i5.Future<List<String>>.value(<String>[]),
-      ) as _i5.Future<List<String>>);
+        returnValue: _i5.Future<List<Map<String, String>>>.value(
+            <Map<String, String>>[]),
+      ) as _i5.Future<List<Map<String, String>>>);
 
   @override
   _i5.Future<void> deleteContact(String? name) => (super.noSuchMethod(
@@ -207,10 +216,53 @@ class MockDatabaseHelper extends _i1.Mock implements _i4.DatabaseHelper {
       ) as _i5.Future<void>);
 
   @override
+  _i5.Future<void> insertHome(
+    double? latitude,
+    double? longitude,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #insertHome,
+          [
+            latitude,
+            longitude,
+          ],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<_i6.LatLng?> getHomeLocation() => (super.noSuchMethod(
+        Invocation.method(
+          #getHomeLocation,
+          [],
+        ),
+        returnValue: _i5.Future<_i6.LatLng?>.value(),
+      ) as _i5.Future<_i6.LatLng?>);
+
+  @override
   _i5.Future<void> resetDatabase() => (super.noSuchMethod(
         Invocation.method(
           #resetDatabase,
           [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> createDb(
+    _i2.Database? db,
+    int? version,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createDb,
+          [
+            db,
+            version,
+          ],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
@@ -220,7 +272,7 @@ class MockDatabaseHelper extends _i1.Mock implements _i4.DatabaseHelper {
 /// A class which mocks [ITtsService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockITtsService extends _i1.Mock implements _i6.ITtsService {
+class MockITtsService extends _i1.Mock implements _i7.ITtsService {
   MockITtsService() {
     _i1.throwOnMissingStub(this);
   }
@@ -277,7 +329,7 @@ class MockITtsService extends _i1.Mock implements _i6.ITtsService {
 /// A class which mocks [LocaleProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLocaleProvider extends _i1.Mock implements _i7.LocaleProvider {
+class MockLocaleProvider extends _i1.Mock implements _i8.LocaleProvider {
   MockLocaleProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -363,35 +415,35 @@ class MockLocaleProvider extends _i1.Mock implements _i7.LocaleProvider {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFlutterNativeContactPicker extends _i1.Mock
-    implements _i8.FlutterNativeContactPicker {
+    implements _i9.FlutterNativeContactPicker {
   MockFlutterNativeContactPicker() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i9.Contact?> selectContact() => (super.noSuchMethod(
+  _i5.Future<_i10.Contact?> selectContact() => (super.noSuchMethod(
         Invocation.method(
           #selectContact,
           [],
         ),
-        returnValue: _i5.Future<_i9.Contact?>.value(),
-      ) as _i5.Future<_i9.Contact?>);
+        returnValue: _i5.Future<_i10.Contact?>.value(),
+      ) as _i5.Future<_i10.Contact?>);
 
   @override
-  _i5.Future<List<_i9.Contact>?> selectContacts() => (super.noSuchMethod(
+  _i5.Future<List<_i10.Contact>?> selectContacts() => (super.noSuchMethod(
         Invocation.method(
           #selectContacts,
           [],
         ),
-        returnValue: _i5.Future<List<_i9.Contact>?>.value(),
-      ) as _i5.Future<List<_i9.Contact>?>);
+        returnValue: _i5.Future<List<_i10.Contact>?>.value(),
+      ) as _i5.Future<List<_i10.Contact>?>);
 
   @override
-  _i5.Future<_i9.Contact?> selectPhoneNumber() => (super.noSuchMethod(
+  _i5.Future<_i10.Contact?> selectPhoneNumber() => (super.noSuchMethod(
         Invocation.method(
           #selectPhoneNumber,
           [],
         ),
-        returnValue: _i5.Future<_i9.Contact?>.value(),
-      ) as _i5.Future<_i9.Contact?>);
+        returnValue: _i5.Future<_i10.Contact?>.value(),
+      ) as _i5.Future<_i10.Contact?>);
 }

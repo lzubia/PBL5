@@ -4,14 +4,15 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'dart:convert' as _i10;
+import 'dart:convert' as _i11;
 import 'dart:io' as _i6;
-import 'dart:typed_data' as _i9;
+import 'dart:typed_data' as _i10;
 
 import 'package:audioplayers/audioplayers.dart' as _i3;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as _i8;
 import 'package:http/http.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i9;
 import 'package:pbl5_menu/shared/database_helper.dart' as _i7;
 import 'package:sqflite/sqflite.dart' as _i2;
 
@@ -234,23 +235,31 @@ class MockDatabaseHelper extends _i1.Mock implements _i7.DatabaseHelper {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> insertContact(String? name) => (super.noSuchMethod(
+  _i4.Future<void> insertContact(
+    String? name,
+    String? phone,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #insertContact,
-          [name],
+          [
+            name,
+            phone,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<List<String>> getContacts() => (super.noSuchMethod(
+  _i4.Future<List<Map<String, String>>> getContacts() => (super.noSuchMethod(
         Invocation.method(
           #getContacts,
           [],
         ),
-        returnValue: _i4.Future<List<String>>.value(<String>[]),
-      ) as _i4.Future<List<String>>);
+        returnValue: _i4.Future<List<Map<String, String>>>.value(
+            <Map<String, String>>[]),
+      ) as _i4.Future<List<Map<String, String>>>);
 
   @override
   _i4.Future<void> deleteContact(String? name) => (super.noSuchMethod(
@@ -320,10 +329,53 @@ class MockDatabaseHelper extends _i1.Mock implements _i7.DatabaseHelper {
       ) as _i4.Future<void>);
 
   @override
+  _i4.Future<void> insertHome(
+    double? latitude,
+    double? longitude,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #insertHome,
+          [
+            latitude,
+            longitude,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<_i8.LatLng?> getHomeLocation() => (super.noSuchMethod(
+        Invocation.method(
+          #getHomeLocation,
+          [],
+        ),
+        returnValue: _i4.Future<_i8.LatLng?>.value(),
+      ) as _i4.Future<_i8.LatLng?>);
+
+  @override
   _i4.Future<void> resetDatabase() => (super.noSuchMethod(
         Invocation.method(
           #resetDatabase,
           [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> createDb(
+    _i2.Database? db,
+    int? version,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createDb,
+          [
+            db,
+            version,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
@@ -359,7 +411,7 @@ class MockAudioPlayer extends _i1.Mock implements _i3.AudioPlayer {
   @override
   String get playerId => (super.noSuchMethod(
         Invocation.getter(#playerId),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.getter(#playerId),
         ),
@@ -680,7 +732,7 @@ class MockAudioPlayer extends _i1.Mock implements _i3.AudioPlayer {
 
   @override
   _i4.Future<void> setSourceBytes(
-    _i9.Uint8List? bytes, {
+    _i10.Uint8List? bytes, {
     String? mimeType,
   }) =>
       (super.noSuchMethod(
@@ -777,7 +829,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i10.Encoding? encoding,
+    _i11.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -808,7 +860,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i10.Encoding? encoding,
+    _i11.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -839,7 +891,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i10.Encoding? encoding,
+    _i11.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -870,7 +922,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
-    _i10.Encoding? encoding,
+    _i11.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -907,7 +959,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i9.dummyValue<String>(
           this,
           Invocation.method(
             #read,
@@ -918,7 +970,7 @@ class MockClient extends _i1.Mock implements _i5.Client {
       ) as _i4.Future<String>);
 
   @override
-  _i4.Future<_i9.Uint8List> readBytes(
+  _i4.Future<_i10.Uint8List> readBytes(
     Uri? url, {
     Map<String, String>? headers,
   }) =>
@@ -928,8 +980,8 @@ class MockClient extends _i1.Mock implements _i5.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i4.Future<_i9.Uint8List>.value(_i9.Uint8List(0)),
-      ) as _i4.Future<_i9.Uint8List>);
+        returnValue: _i4.Future<_i10.Uint8List>.value(_i10.Uint8List(0)),
+      ) as _i4.Future<_i10.Uint8List>);
 
   @override
   _i4.Future<_i5.StreamedResponse> send(_i5.BaseRequest? request) =>
@@ -978,7 +1030,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   String get path => (super.noSuchMethod(
         Invocation.getter(#path),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.getter(#path),
         ),
@@ -1312,7 +1364,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   @override
   _i6.IOSink openWrite({
     _i6.FileMode? mode = _i6.FileMode.write,
-    _i10.Encoding? encoding = const _i10.Utf8Codec(),
+    _i11.Encoding? encoding = const _i11.Utf8Codec(),
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1337,33 +1389,33 @@ class MockFile extends _i1.Mock implements _i6.File {
       ) as _i6.IOSink);
 
   @override
-  _i4.Future<_i9.Uint8List> readAsBytes() => (super.noSuchMethod(
+  _i4.Future<_i10.Uint8List> readAsBytes() => (super.noSuchMethod(
         Invocation.method(
           #readAsBytes,
           [],
         ),
-        returnValue: _i4.Future<_i9.Uint8List>.value(_i9.Uint8List(0)),
-      ) as _i4.Future<_i9.Uint8List>);
+        returnValue: _i4.Future<_i10.Uint8List>.value(_i10.Uint8List(0)),
+      ) as _i4.Future<_i10.Uint8List>);
 
   @override
-  _i9.Uint8List readAsBytesSync() => (super.noSuchMethod(
+  _i10.Uint8List readAsBytesSync() => (super.noSuchMethod(
         Invocation.method(
           #readAsBytesSync,
           [],
         ),
-        returnValue: _i9.Uint8List(0),
-      ) as _i9.Uint8List);
+        returnValue: _i10.Uint8List(0),
+      ) as _i10.Uint8List);
 
   @override
   _i4.Future<String> readAsString(
-          {_i10.Encoding? encoding = const _i10.Utf8Codec()}) =>
+          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
       (super.noSuchMethod(
         Invocation.method(
           #readAsString,
           [],
           {#encoding: encoding},
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i9.dummyValue<String>(
           this,
           Invocation.method(
             #readAsString,
@@ -1374,14 +1426,14 @@ class MockFile extends _i1.Mock implements _i6.File {
       ) as _i4.Future<String>);
 
   @override
-  String readAsStringSync({_i10.Encoding? encoding = const _i10.Utf8Codec()}) =>
+  String readAsStringSync({_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
       (super.noSuchMethod(
         Invocation.method(
           #readAsStringSync,
           [],
           {#encoding: encoding},
         ),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.method(
             #readAsStringSync,
@@ -1393,7 +1445,7 @@ class MockFile extends _i1.Mock implements _i6.File {
 
   @override
   _i4.Future<List<String>> readAsLines(
-          {_i10.Encoding? encoding = const _i10.Utf8Codec()}) =>
+          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
       (super.noSuchMethod(
         Invocation.method(
           #readAsLines,
@@ -1405,7 +1457,7 @@ class MockFile extends _i1.Mock implements _i6.File {
 
   @override
   List<String> readAsLinesSync(
-          {_i10.Encoding? encoding = const _i10.Utf8Codec()}) =>
+          {_i11.Encoding? encoding = const _i11.Utf8Codec()}) =>
       (super.noSuchMethod(
         Invocation.method(
           #readAsLinesSync,
@@ -1465,7 +1517,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   _i4.Future<_i6.File> writeAsString(
     String? contents, {
     _i6.FileMode? mode = _i6.FileMode.write,
-    _i10.Encoding? encoding = const _i10.Utf8Codec(),
+    _i11.Encoding? encoding = const _i11.Utf8Codec(),
     bool? flush = false,
   }) =>
       (super.noSuchMethod(
@@ -1496,7 +1548,7 @@ class MockFile extends _i1.Mock implements _i6.File {
   void writeAsStringSync(
     String? contents, {
     _i6.FileMode? mode = _i6.FileMode.write,
-    _i10.Encoding? encoding = const _i10.Utf8Codec(),
+    _i11.Encoding? encoding = const _i11.Utf8Codec(),
     bool? flush = false,
   }) =>
       super.noSuchMethod(
@@ -1536,7 +1588,7 @@ class MockFile extends _i1.Mock implements _i6.File {
           #resolveSymbolicLinks,
           [],
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i9.dummyValue<String>(
           this,
           Invocation.method(
             #resolveSymbolicLinks,
@@ -1551,7 +1603,7 @@ class MockFile extends _i1.Mock implements _i6.File {
           #resolveSymbolicLinksSync,
           [],
         ),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.method(
             #resolveSymbolicLinksSync,

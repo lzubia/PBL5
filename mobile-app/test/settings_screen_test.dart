@@ -77,7 +77,10 @@ void main() {
 
     // Mock database contacts
     when(mockDatabaseHelper.getContacts())
-        .thenAnswer((_) async => ['John Doe', 'Jane Smith']);
+        .thenAnswer((_) async => [
+          {'name': 'John Doe'},
+          {'name': 'Jane Smith'}
+        ]);
   });
 
   tearDown(() {
@@ -147,7 +150,7 @@ void main() {
     );
 
     // Mock the database insertContact method
-    when(mockDatabaseHelper.insertContact(any)).thenAnswer((_) async {});
+    when(mockDatabaseHelper.insertContact(any, any)).thenAnswer((_) async {});
 
     // Find the "Add Contact" button using the key
     final addContactButton = find.byKey(const Key('addContactButton'));
@@ -161,7 +164,7 @@ void main() {
     verify(mockContactPicker.selectContact()).called(1);
 
     // Verify that the contact was inserted into the database
-    verify(mockDatabaseHelper.insertContact('New Contact')).called(1);
+    verify(mockDatabaseHelper.insertContact('New Contact', any)).called(1);
 
     // Verify that the new contact is displayed in the list
     expect(find.text('New Contact'), findsOneWidget);

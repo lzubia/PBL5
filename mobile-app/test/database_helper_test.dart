@@ -76,7 +76,7 @@ void main() {
           .thenAnswer((_) async => 1);
 
       // Call the method to test
-      await databaseHelper.insertContact('John Doe');
+      await databaseHelper.insertContact('John Doe', 'john.doe@example.com');
 
       // Verify the behavior
       verify(mockDatabase.insert('contacts', {'name': 'John Doe'})).called(1);

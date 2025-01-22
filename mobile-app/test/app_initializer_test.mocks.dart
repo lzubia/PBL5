@@ -3,7 +3,7 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i14;
+import 'dart:async' as _i13;
 import 'dart:convert' as _i19;
 import 'dart:io' as _i5;
 import 'dart:typed_data' as _i20;
@@ -12,16 +12,16 @@ import 'dart:ui' as _i10;
 import 'package:audioplayers/audioplayers.dart' as _i8;
 import 'package:camera/camera.dart' as _i2;
 import 'package:flutter/material.dart' as _i6;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as _i16;
 import 'package:http/http.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i15;
+import 'package:mockito/src/dummies.dart' as _i14;
 import 'package:pbl5_menu/features/voice_commands.dart' as _i18;
 import 'package:pbl5_menu/services/picture_service.dart' as _i4;
 import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i12;
 import 'package:pbl5_menu/services/stt/stt_service.dart' as _i11;
 import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i17;
-import 'package:pbl5_menu/shared/database_helper.dart' as _i16;
-import 'package:pbl5_menu/widgetState_provider.dart' as _i13;
+import 'package:pbl5_menu/shared/database_helper.dart' as _i15;
 import 'package:speech_to_text/speech_to_text.dart' as _i9;
 import 'package:sqflite/sqflite.dart' as _i7;
 
@@ -135,8 +135,8 @@ class _FakeAudioPlayer_8 extends _i1.SmartFake implements _i8.AudioPlayer {
         );
 }
 
-class _FakeSpeechToText_9 extends _i1.SmartFake implements _i9.SpeechToText {
-  _FakeSpeechToText_9(
+class _FakeAssetBundle_9 extends _i1.SmartFake implements _i6.AssetBundle {
+  _FakeAssetBundle_9(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -145,8 +145,8 @@ class _FakeSpeechToText_9 extends _i1.SmartFake implements _i9.SpeechToText {
         );
 }
 
-class _FakeLocale_10 extends _i1.SmartFake implements _i10.Locale {
-  _FakeLocale_10(
+class _FakeSpeechToText_10 extends _i1.SmartFake implements _i9.SpeechToText {
+  _FakeSpeechToText_10(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -155,8 +155,8 @@ class _FakeLocale_10 extends _i1.SmartFake implements _i10.Locale {
         );
 }
 
-class _FakeSttService_11 extends _i1.SmartFake implements _i11.SttService {
-  _FakeSttService_11(
+class _FakeLocale_11 extends _i1.SmartFake implements _i10.Locale {
+  _FakeLocale_11(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -165,8 +165,8 @@ class _FakeSttService_11 extends _i1.SmartFake implements _i11.SttService {
         );
 }
 
-class _FakeITtsService_12 extends _i1.SmartFake implements _i12.ITtsService {
-  _FakeITtsService_12(
+class _FakeSttService_12 extends _i1.SmartFake implements _i11.SttService {
+  _FakeSttService_12(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -175,9 +175,8 @@ class _FakeITtsService_12 extends _i1.SmartFake implements _i12.ITtsService {
         );
 }
 
-class _FakeWidgetStateProvider_13 extends _i1.SmartFake
-    implements _i13.WidgetStateProvider {
-  _FakeWidgetStateProvider_13(
+class _FakeITtsService_13 extends _i1.SmartFake implements _i12.ITtsService {
+  _FakeITtsService_13(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -354,24 +353,24 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       ) as bool);
 
   @override
-  _i14.Future<void> setupCamera() => (super.noSuchMethod(
+  _i13.Future<void> setupCamera() => (super.noSuchMethod(
         Invocation.method(
           #setupCamera,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> initializeCamera() => (super.noSuchMethod(
+  _i13.Future<void> initializeCamera() => (super.noSuchMethod(
         Invocation.method(
           #initializeCamera,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   void disposeCamera() => super.noSuchMethod(
@@ -398,10 +397,11 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
       ) as _i6.Widget);
 
   @override
-  _i14.Future<void> takePicture({
+  _i13.Future<void> takePicture({
     required String? endpoint,
     required dynamic Function(List<dynamic>)? onLabelsDetected,
     required dynamic Function(Duration)? onResponseTimeUpdated,
+    _i3.Client? httpClient,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -411,33 +411,35 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
             #endpoint: endpoint,
             #onLabelsDetected: onLabelsDetected,
             #onResponseTimeUpdated: onResponseTimeUpdated,
+            #httpClient: httpClient,
           },
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<String> captureAndProcessImage() => (super.noSuchMethod(
+  _i13.Future<String> captureAndProcessImage() => (super.noSuchMethod(
         Invocation.method(
           #captureAndProcessImage,
           [],
         ),
-        returnValue: _i14.Future<String>.value(_i15.dummyValue<String>(
+        returnValue: _i13.Future<String>.value(_i14.dummyValue<String>(
           this,
           Invocation.method(
             #captureAndProcessImage,
             [],
           ),
         )),
-      ) as _i14.Future<String>);
+      ) as _i13.Future<String>);
 
   @override
-  _i14.Future<void> sendImageAndHandleResponse(
+  _i13.Future<void> sendImageAndHandleResponse(
     String? filePath,
     String? endpoint,
     dynamic Function(List<String>)? onDetectedObjects,
     dynamic Function(Duration)? onResponseTime,
+    _i3.Client? client,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -447,11 +449,12 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
             endpoint,
             onDetectedObjects,
             onResponseTime,
+            client,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   List<String> parseLabelsFromResponse(String? responseBody) =>
@@ -503,13 +506,13 @@ class MockPictureService extends _i1.Mock implements _i4.PictureService {
 /// A class which mocks [DatabaseHelper].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
+class MockDatabaseHelper extends _i1.Mock implements _i15.DatabaseHelper {
   MockDatabaseHelper() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  set database(_i14.Future<_i7.Database>? db) => super.noSuchMethod(
+  set database(_i13.Future<_i7.Database>? db) => super.noSuchMethod(
         Invocation.setter(
           #database,
           db,
@@ -518,16 +521,16 @@ class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
       );
 
   @override
-  _i14.Future<_i7.Database> get database => (super.noSuchMethod(
+  _i13.Future<_i7.Database> get database => (super.noSuchMethod(
         Invocation.getter(#database),
-        returnValue: _i14.Future<_i7.Database>.value(_FakeDatabase_7(
+        returnValue: _i13.Future<_i7.Database>.value(_FakeDatabase_7(
           this,
           Invocation.getter(#database),
         )),
-      ) as _i14.Future<_i7.Database>);
+      ) as _i13.Future<_i7.Database>);
 
   @override
-  _i14.Future<void> onCreate(
+  _i13.Future<void> onCreate(
     _i7.Database? db,
     int? version,
   ) =>
@@ -539,12 +542,12 @@ class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
             version,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> onUpgrade(
+  _i13.Future<void> onUpgrade(
     _i7.Database? db,
     int? oldVersion,
     int? newVersion,
@@ -558,61 +561,69 @@ class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
             newVersion,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> insertDefaultData(_i7.Database? db) => (super.noSuchMethod(
+  _i13.Future<void> insertDefaultData(_i7.Database? db) => (super.noSuchMethod(
         Invocation.method(
           #insertDefaultData,
           [db],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> insertContact(String? name) => (super.noSuchMethod(
+  _i13.Future<void> insertContact(
+    String? name,
+    String? phone,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #insertContact,
-          [name],
+          [
+            name,
+            phone,
+          ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<List<String>> getContacts() => (super.noSuchMethod(
+  _i13.Future<List<Map<String, String>>> getContacts() => (super.noSuchMethod(
         Invocation.method(
           #getContacts,
           [],
         ),
-        returnValue: _i14.Future<List<String>>.value(<String>[]),
-      ) as _i14.Future<List<String>>);
+        returnValue: _i13.Future<List<Map<String, String>>>.value(
+            <Map<String, String>>[]),
+      ) as _i13.Future<List<Map<String, String>>>);
 
   @override
-  _i14.Future<void> deleteContact(String? name) => (super.noSuchMethod(
+  _i13.Future<void> deleteContact(String? name) => (super.noSuchMethod(
         Invocation.method(
           #deleteContact,
           [name],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<Map<String, dynamic>> getPreferences() => (super.noSuchMethod(
+  _i13.Future<Map<String, dynamic>> getPreferences() => (super.noSuchMethod(
         Invocation.method(
           #getPreferences,
           [],
         ),
         returnValue:
-            _i14.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
-      ) as _i14.Future<Map<String, dynamic>>);
+            _i13.Future<Map<String, dynamic>>.value(<String, dynamic>{}),
+      ) as _i13.Future<Map<String, dynamic>>);
 
   @override
-  _i14.Future<void> updatePreferences(
+  _i13.Future<void> updatePreferences(
     double? fontSize,
     String? language,
     bool? isDarkTheme,
@@ -628,21 +639,21 @@ class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
             speechRate,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<Map<String, String>> getTtsSettings() => (super.noSuchMethod(
+  _i13.Future<Map<String, String>> getTtsSettings() => (super.noSuchMethod(
         Invocation.method(
           #getTtsSettings,
           [],
         ),
-        returnValue: _i14.Future<Map<String, String>>.value(<String, String>{}),
-      ) as _i14.Future<Map<String, String>>);
+        returnValue: _i13.Future<Map<String, String>>.value(<String, String>{}),
+      ) as _i13.Future<Map<String, String>>);
 
   @override
-  _i14.Future<void> updateTtsSettings(
+  _i13.Future<void> updateTtsSettings(
     String? languageCode,
     String? voiceName,
   ) =>
@@ -654,19 +665,62 @@ class MockDatabaseHelper extends _i1.Mock implements _i16.DatabaseHelper {
             voiceName,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> resetDatabase() => (super.noSuchMethod(
+  _i13.Future<void> insertHome(
+    double? latitude,
+    double? longitude,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #insertHome,
+          [
+            latitude,
+            longitude,
+          ],
+        ),
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
+
+  @override
+  _i13.Future<_i16.LatLng?> getHomeLocation() => (super.noSuchMethod(
+        Invocation.method(
+          #getHomeLocation,
+          [],
+        ),
+        returnValue: _i13.Future<_i16.LatLng?>.value(),
+      ) as _i13.Future<_i16.LatLng?>);
+
+  @override
+  _i13.Future<void> resetDatabase() => (super.noSuchMethod(
         Invocation.method(
           #resetDatabase,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
+
+  @override
+  _i13.Future<void> createDb(
+    _i7.Database? db,
+    int? version,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createDb,
+          [
+            db,
+            version,
+          ],
+        ),
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 }
 
 /// A class which mocks [TtsServiceGoogle].
@@ -698,7 +752,7 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i17.TtsServiceGoogle {
   @override
   String get languageCode => (super.noSuchMethod(
         Invocation.getter(#languageCode),
-        returnValue: _i15.dummyValue<String>(
+        returnValue: _i14.dummyValue<String>(
           this,
           Invocation.getter(#languageCode),
         ),
@@ -716,7 +770,7 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i17.TtsServiceGoogle {
   @override
   String get voiceName => (super.noSuchMethod(
         Invocation.getter(#voiceName),
-        returnValue: _i15.dummyValue<String>(
+        returnValue: _i14.dummyValue<String>(
           this,
           Invocation.getter(#voiceName),
         ),
@@ -747,27 +801,45 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i17.TtsServiceGoogle {
       );
 
   @override
-  _i14.Future<void> initializeTts() => (super.noSuchMethod(
+  _i3.Client get httpClient => (super.noSuchMethod(
+        Invocation.getter(#httpClient),
+        returnValue: _FakeClient_1(
+          this,
+          Invocation.getter(#httpClient),
+        ),
+      ) as _i3.Client);
+
+  @override
+  _i6.AssetBundle get assetBundle => (super.noSuchMethod(
+        Invocation.getter(#assetBundle),
+        returnValue: _FakeAssetBundle_9(
+          this,
+          Invocation.getter(#assetBundle),
+        ),
+      ) as _i6.AssetBundle);
+
+  @override
+  _i13.Future<void> initializeTts() => (super.noSuchMethod(
         Invocation.method(
           #initializeTts,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> loadSettings() => (super.noSuchMethod(
+  _i13.Future<void> loadSettings() => (super.noSuchMethod(
         Invocation.method(
           #loadSettings,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> updateLanguage(
+  _i13.Future<void> updateLanguage(
     String? newLanguageCode,
     String? newVoiceName,
   ) =>
@@ -779,46 +851,46 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i17.TtsServiceGoogle {
             newVoiceName,
           ],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> updateSpeechRate(double? newSpeechRate) =>
+  _i13.Future<void> updateSpeechRate(double? newSpeechRate) =>
       (super.noSuchMethod(
         Invocation.method(
           #updateSpeechRate,
           [newSpeechRate],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<String> getAccessToken() => (super.noSuchMethod(
+  _i13.Future<String> getAccessToken() => (super.noSuchMethod(
         Invocation.method(
           #getAccessToken,
           [],
         ),
-        returnValue: _i14.Future<String>.value(_i15.dummyValue<String>(
+        returnValue: _i13.Future<String>.value(_i14.dummyValue<String>(
           this,
           Invocation.method(
             #getAccessToken,
             [],
           ),
         )),
-      ) as _i14.Future<String>);
+      ) as _i13.Future<String>);
 
   @override
-  _i14.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i13.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
           [detectedObjects],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 }
 
 /// A class which mocks [SttService].
@@ -832,7 +904,7 @@ class MockSttService extends _i1.Mock implements _i11.SttService {
   @override
   _i9.SpeechToText get speech => (super.noSuchMethod(
         Invocation.getter(#speech),
-        returnValue: _FakeSpeechToText_9(
+        returnValue: _FakeSpeechToText_10(
           this,
           Invocation.getter(#speech),
         ),
@@ -863,25 +935,25 @@ class MockSttService extends _i1.Mock implements _i11.SttService {
       );
 
   @override
-  _i14.Future<void> initializeStt() => (super.noSuchMethod(
+  _i13.Future<void> initializeStt() => (super.noSuchMethod(
         Invocation.method(
           #initializeStt,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> startListening(dynamic Function(String)? onResult) =>
+  _i13.Future<void> startListening(dynamic Function(String)? onResult) =>
       (super.noSuchMethod(
         Invocation.method(
           #startListening,
           [onResult],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   void stopListening() => super.noSuchMethod(
@@ -918,6 +990,43 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
   MockVoiceCommands() {
     _i1.throwOnMissingStub(this);
   }
+
+  @override
+  set onMenuCommand(_i10.VoidCallback? _onMenuCommand) => super.noSuchMethod(
+        Invocation.setter(
+          #onMenuCommand,
+          _onMenuCommand,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set onMapSearchHome(_i6.ValueChanged<_i16.LatLng>? _onMapSearchHome) =>
+      super.noSuchMethod(
+        Invocation.setter(
+          #onMapSearchHome,
+          _onMapSearchHome,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set onSosCommand(_i10.VoidCallback? _onSosCommand) => super.noSuchMethod(
+        Invocation.setter(
+          #onSosCommand,
+          _onSosCommand,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set onHomeCommand(_i10.VoidCallback? _onHomeCommand) => super.noSuchMethod(
+        Invocation.setter(
+          #onHomeCommand,
+          _onHomeCommand,
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   bool get riskTrigger => (super.noSuchMethod(
@@ -992,7 +1101,7 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
   @override
   _i10.Locale get locale => (super.noSuchMethod(
         Invocation.getter(#locale),
-        returnValue: _FakeLocale_10(
+        returnValue: _FakeLocale_11(
           this,
           Invocation.getter(#locale),
         ),
@@ -1010,7 +1119,7 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
   @override
   _i11.SttService get sttService => (super.noSuchMethod(
         Invocation.getter(#sttService),
-        returnValue: _FakeSttService_11(
+        returnValue: _FakeSttService_12(
           this,
           Invocation.getter(#sttService),
         ),
@@ -1028,7 +1137,7 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
   @override
   _i12.ITtsService get ttsServiceGoogle => (super.noSuchMethod(
         Invocation.getter(#ttsServiceGoogle),
-        returnValue: _FakeITtsService_12(
+        returnValue: _FakeITtsService_13(
           this,
           Invocation.getter(#ttsServiceGoogle),
         ),
@@ -1045,25 +1154,6 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
       );
 
   @override
-  _i13.WidgetStateProvider get widgetStateProvider => (super.noSuchMethod(
-        Invocation.getter(#widgetStateProvider),
-        returnValue: _FakeWidgetStateProvider_13(
-          this,
-          Invocation.getter(#widgetStateProvider),
-        ),
-      ) as _i13.WidgetStateProvider);
-
-  @override
-  set widgetStateProvider(_i13.WidgetStateProvider? _widgetStateProvider) =>
-      super.noSuchMethod(
-        Invocation.setter(
-          #widgetStateProvider,
-          _widgetStateProvider,
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   bool get isActivated => (super.noSuchMethod(
         Invocation.getter(#isActivated),
         returnValue: false,
@@ -1072,7 +1162,7 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
   @override
   String get command => (super.noSuchMethod(
         Invocation.getter(#command),
-        returnValue: _i15.dummyValue<String>(
+        returnValue: _i14.dummyValue<String>(
           this,
           Invocation.getter(#command),
         ),
@@ -1094,35 +1184,35 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
       );
 
   @override
-  _i14.Future<void> initialize(_i6.BuildContext? context) =>
+  _i13.Future<void> initialize(_i6.BuildContext? context) =>
       (super.noSuchMethod(
         Invocation.method(
           #initialize,
           [context],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> loadVoiceCommands() => (super.noSuchMethod(
+  _i13.Future<void> loadVoiceCommands() => (super.noSuchMethod(
         Invocation.method(
           #loadVoiceCommands,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
-  _i14.Future<void> loadActivationCommands() => (super.noSuchMethod(
+  _i13.Future<void> loadActivationCommands() => (super.noSuchMethod(
         Invocation.method(
           #loadActivationCommands,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   void toggleVoiceControl() => super.noSuchMethod(
@@ -1152,23 +1242,14 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
       ) as bool);
 
   @override
-  _i14.Future<void> playActivationSound() => (super.noSuchMethod(
+  _i13.Future<void> playActivationSound() => (super.noSuchMethod(
         Invocation.method(
           #playActivationSound,
           [],
         ),
-        returnValue: _i14.Future<void>.value(),
-        returnValueForMissingStub: _i14.Future<void>.value(),
-      ) as _i14.Future<void>);
-
-  @override
-  void handleCommand(String? command) => super.noSuchMethod(
-        Invocation.method(
-          #handleCommand,
-          [command],
-        ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i13.Future<void>.value(),
+        returnValueForMissingStub: _i13.Future<void>.value(),
+      ) as _i13.Future<void>);
 
   @override
   double calculateSimilarity(
@@ -1248,7 +1329,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
   }
 
   @override
-  _i14.Future<_i3.Response> head(
+  _i13.Future<_i3.Response> head(
     Uri? url, {
     Map<String, String>? headers,
   }) =>
@@ -1258,7 +1339,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #head,
@@ -1266,10 +1347,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             {#headers: headers},
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<_i3.Response> get(
+  _i13.Future<_i3.Response> get(
     Uri? url, {
     Map<String, String>? headers,
   }) =>
@@ -1279,7 +1360,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #get,
@@ -1287,10 +1368,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             {#headers: headers},
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<_i3.Response> post(
+  _i13.Future<_i3.Response> post(
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
@@ -1306,7 +1387,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
             #encoding: encoding,
           },
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #post,
@@ -1318,10 +1399,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             },
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<_i3.Response> put(
+  _i13.Future<_i3.Response> put(
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
@@ -1337,7 +1418,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
             #encoding: encoding,
           },
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #put,
@@ -1349,10 +1430,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             },
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<_i3.Response> patch(
+  _i13.Future<_i3.Response> patch(
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
@@ -1368,7 +1449,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
             #encoding: encoding,
           },
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #patch,
@@ -1380,10 +1461,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             },
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<_i3.Response> delete(
+  _i13.Future<_i3.Response> delete(
     Uri? url, {
     Map<String, String>? headers,
     Object? body,
@@ -1399,7 +1480,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
             #encoding: encoding,
           },
         ),
-        returnValue: _i14.Future<_i3.Response>.value(_FakeResponse_14(
+        returnValue: _i13.Future<_i3.Response>.value(_FakeResponse_14(
           this,
           Invocation.method(
             #delete,
@@ -1411,10 +1492,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             },
           ),
         )),
-      ) as _i14.Future<_i3.Response>);
+      ) as _i13.Future<_i3.Response>);
 
   @override
-  _i14.Future<String> read(
+  _i13.Future<String> read(
     Uri? url, {
     Map<String, String>? headers,
   }) =>
@@ -1424,7 +1505,7 @@ class MockClient extends _i1.Mock implements _i3.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i14.Future<String>.value(_i15.dummyValue<String>(
+        returnValue: _i13.Future<String>.value(_i14.dummyValue<String>(
           this,
           Invocation.method(
             #read,
@@ -1432,10 +1513,10 @@ class MockClient extends _i1.Mock implements _i3.Client {
             {#headers: headers},
           ),
         )),
-      ) as _i14.Future<String>);
+      ) as _i13.Future<String>);
 
   @override
-  _i14.Future<_i20.Uint8List> readBytes(
+  _i13.Future<_i20.Uint8List> readBytes(
     Uri? url, {
     Map<String, String>? headers,
   }) =>
@@ -1445,25 +1526,25 @@ class MockClient extends _i1.Mock implements _i3.Client {
           [url],
           {#headers: headers},
         ),
-        returnValue: _i14.Future<_i20.Uint8List>.value(_i20.Uint8List(0)),
-      ) as _i14.Future<_i20.Uint8List>);
+        returnValue: _i13.Future<_i20.Uint8List>.value(_i20.Uint8List(0)),
+      ) as _i13.Future<_i20.Uint8List>);
 
   @override
-  _i14.Future<_i3.StreamedResponse> send(_i3.BaseRequest? request) =>
+  _i13.Future<_i3.StreamedResponse> send(_i3.BaseRequest? request) =>
       (super.noSuchMethod(
         Invocation.method(
           #send,
           [request],
         ),
         returnValue:
-            _i14.Future<_i3.StreamedResponse>.value(_FakeStreamedResponse_15(
+            _i13.Future<_i3.StreamedResponse>.value(_FakeStreamedResponse_15(
           this,
           Invocation.method(
             #send,
             [request],
           ),
         )),
-      ) as _i14.Future<_i3.StreamedResponse>);
+      ) as _i13.Future<_i3.StreamedResponse>);
 
   @override
   void close() => super.noSuchMethod(

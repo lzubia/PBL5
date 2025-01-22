@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -9,7 +10,10 @@ import 'package:location/location.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pbl5_menu/map_provider.dart';
+import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:pbl5_menu/translation_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'map_provider_test.mocks.dart';
 
@@ -18,6 +22,8 @@ import 'map_provider_test.mocks.dart';
   http.Client,
   PolylinePoints,
   TtsServiceGoogle,
+  TranslationProvider,
+  AppLocalizations,
 ])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +32,8 @@ void main() {
   late MockClient mockHttpClient;
   late MockPolylinePoints mockPolylinePoints;
   late MockTtsServiceGoogle mockTtsService;
+  late MockTranslationProvider mockTranslationProvider;
+  late MockAppLocalizations mockAppLocalizations;
   late MapProvider mapProvider;
 
   setUp(() {
@@ -33,6 +41,8 @@ void main() {
     mockHttpClient = MockClient();
     mockPolylinePoints = MockPolylinePoints();
     mockTtsService = MockTtsServiceGoogle();
+    mockTranslationProvider = MockTranslationProvider();
+    mockAppLocalizations = MockAppLocalizations();
     mapProvider = MapProvider(
       httpClient: mockHttpClient,
       polylinePoints: mockPolylinePoints,
@@ -40,9 +50,21 @@ void main() {
     )..location = mockLocation;
   });
 
+  Widget createTestWidget(Widget child) {
+    return MultiProvider(
+      providers: [
+        Provider<TranslationProvider>.value(value: mockTranslationProvider),
+        Provider<AppLocalizations>.value(value: mockAppLocalizations),
+      ],
+      child: MaterialApp(
+        home: Scaffold(body: child),
+      ),
+    );
+  }
+
   group('MapProvider Tests', () {
-    test('getCurrentLocation retrieves and listens for location changes',
-        () async {
+    testWidgets('getCurrentLocation retrieves and listens for location changes',
+        (WidgetTester tester) async {
       final mockLocationData = LocationData.fromMap({
         'latitude': 37.7749,
         'longitude': -122.4194,
@@ -56,7 +78,14 @@ void main() {
       when(mockLocation.onLocationChanged)
           .thenAnswer((_) => Stream.value(mockLocationData));
 
-      await mapProvider.getCurrentLocation();
+      // Mock translation
+      when(mockAppLocalizations.translate("mapa-on"))
+          .thenReturn("Map is now active.");
+
+      await tester.pumpWidget(createTestWidget(Container()));
+
+      await mapProvider
+          .getCurrentLocation(tester.element(find.byType(Container)));
 
       expect(mapProvider.currentLocation, mockLocationData);
 
@@ -68,8 +97,9 @@ void main() {
       verify(mockTtsService.speakLabels(["Map is now active."])).called(1);
     });
 
-    test('setDestination fetches destination coordinates and sets destination',
-        () async {
+    testWidgets(
+        'setDestination fetches destination coordinates and sets destination',
+        (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GEOCODING_API_KEY=TEST_API_KEY');
       final destinationAddress = '1600 Amphitheatre Parkway, Mountain View, CA';
       final mockResponse = {
@@ -88,13 +118,19 @@ void main() {
         (_) async => http.Response(jsonEncode(mockResponse), 200),
       );
 
-      await mapProvider.setDestination(destinationAddress);
+      await tester.pumpWidget(createTestWidget(Container()));
+
+      await mapProvider.setDestination(
+        context: tester.element(find.byType(Container)),
+        address: destinationAddress,
+      );
 
       expect(mapProvider.destination, const LatLng(37.422, -122.084));
       verify(mockHttpClient.get(any)).called(1);
     });
 
-    test('setDestination throws exception for invalid address', () async {
+    testWidgets('setDestination throws exception for invalid address',
+        (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GEOCODING_API_KEY=TEST_API_KEY');
       final destinationAddress = 'invalid address';
       final mockResponse = {'status': 'ZERO_RESULTS'};
@@ -104,9 +140,18 @@ void main() {
         (_) async => http.Response(jsonEncode(mockResponse), 200),
       );
 
+      // Mock translation
+      when(mockAppLocalizations.translate("destination-not-found"))
+          .thenReturn("Destination not found.");
+
+      await tester.pumpWidget(createTestWidget(Container()));
+
       // Expect an exception when the address is invalid
       await expectLater(
-        () async => await mapProvider.setDestination(destinationAddress),
+        () async => await mapProvider.setDestination(
+          context: tester.element(find.byType(Container)),
+          address: destinationAddress,
+        ),
         throwsA(isA<Exception>()),
       );
 
@@ -117,7 +162,8 @@ void main() {
       verify(mockHttpClient.get(any)).called(1);
     });
 
-    test('fetchPolylineCoordinates retrieves polyline coordinates', () async {
+    testWidgets('fetchPolylineCoordinates retrieves polyline coordinates',
+        (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
 
       // Set the current location
@@ -165,8 +211,8 @@ void main() {
       )).called(1);
     });
 
-    test('fetchPolylineCoordinates throws exception for empty polyline',
-        () async {
+    testWidgets('fetchPolylineCoordinates throws exception for empty polyline',
+        (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
       mapProvider.currentLocation = LocationData.fromMap({
         'latitude': 37.7749,
@@ -196,8 +242,8 @@ void main() {
       )).called(1);
     });
 
-    test('fetchNavigationInstructions retrieves navigation instructions',
-        () async {
+    testWidgets('fetchNavigationInstructions retrieves navigation instructions',
+        (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
       mapProvider.currentLocation = LocationData.fromMap({
         'latitude': 37.7749,
@@ -226,11 +272,20 @@ void main() {
         ],
       };
 
+      // Mock HTTP client
       when(mockHttpClient.get(any)).thenAnswer(
         (_) async => http.Response(jsonEncode(mockResponse), 200),
       );
 
-      await mapProvider.fetchNavigationInstructions();
+      // Mock translation
+      when(mockTranslationProvider.translateText(any, any)).thenAnswer(
+          (_) async =>
+              "Start your trip to null. First instruction: Head north");
+
+      await tester.pumpWidget(createTestWidget(Container()));
+
+      await mapProvider
+          .fetchNavigationInstructions(tester.element(find.byType(Container)));
 
       expect(mapProvider.instructions, [
         {
@@ -249,7 +304,7 @@ void main() {
           .called(1);
     });
 
-    test('dispose cancels location subscription', () async {
+    testWidgets('dispose cancels location subscription', (WidgetTester tester) async {
       // Create a mock StreamController for location updates
       final streamController = StreamController<LocationData>();
 
@@ -266,7 +321,8 @@ void main() {
           .thenAnswer((_) => streamController.stream);
 
       // Start listening to location updates
-      await mapProvider.getCurrentLocation();
+      await tester.pumpWidget(createTestWidget(Container()));
+      await mapProvider.getCurrentLocation(tester.element(find.byType(Container)));
 
       // Ensure the subscription is created
       expect(mapProvider.locationSubscription, isNotNull);
