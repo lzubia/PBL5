@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/voice_commands.dart';
 import 'package:pbl5_menu/services/l10n.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import '../services/picture_service.dart';
@@ -45,7 +47,8 @@ class RiskDetectionState extends State<RiskDetection> {
       );
     });
 
-    ttsService.speakLabels([AppLocalizations.of(context).translate("risk-on")]);
+    ttsService.speakLabels(
+        [AppLocalizations.of(context).translate("risk-on")], context);
   }
 
   void disableRiskDetection() {
@@ -55,8 +58,8 @@ class RiskDetectionState extends State<RiskDetection> {
       isRiskDetectionEnabled = false;
       _timer?.cancel();
     });
-    ttsService
-        .speakLabels([AppLocalizations.of(context).translate("risk-off")]);
+    ttsService.speakLabels(
+        [AppLocalizations.of(context).translate("risk-off")], context);
   }
 
   Future<void> _takePicture({http.Client? client}) async {
@@ -70,8 +73,15 @@ class RiskDetectionState extends State<RiskDetection> {
     await pictureService.takePicture(
       httpClient: client,
       endpoint: endpoint,
-      onLabelsDetected: (labels) {
-        Provider.of<ITtsService>(context, listen: false).speakLabels(labels);
+      onLabelsDetected: (labels) async {
+        for (final label in labels) {
+          final translatedLabel =
+              await Provider.of<TranslationProvider>(context, listen: false)
+                  .translateText(label as String,
+                      Localizations.localeOf(context).languageCode);
+          Provider.of<ITtsService>(context, listen: false)
+              .speakLabels([translatedLabel], context);
+        }
       },
       onResponseTimeUpdated: (duration) {
         setState(() {

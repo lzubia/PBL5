@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:pbl5_menu/services/l10n.dart';
 import '../../shared/database_helper.dart';
 import '../stt/i_tts_service.dart';
 
@@ -85,26 +86,47 @@ class TtsServiceGoogle implements ITtsService {
   }
 
   @override
-  Future<void> speakLabels(List<dynamic> detectedObjects) async {
+  Future<void> speakLabels(
+      List<dynamic> detectedObjects, BuildContext context) async {
     final token = await _getAccessToken();
+    final locale = Localizations.localeOf(context).languageCode;
 
     for (var obj in detectedObjects) {
       String label = obj;
       try {
         print("Speaking label: $label");
-
-        final response = await http.post(
-          Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
-          headers: {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-          },
-          body: json.encode({
-            "input": {"text": label},
-            "voice": {"languageCode": languageCode, "name": voiceName},
-            "audioConfig": {"audioEncoding": "MP3", "speakingRate": speechRate},
-          }),
-        );
+        final response;
+        if (locale == 'eu') {
+          response = await http.post(
+            Uri.parse("https://ttsneuronala.elhuyar.eus/api/standard"),
+            body: json.encode(
+              {
+                "text": {"text": label},
+                "speaker": "female_low",
+                "language": "eu",
+                "extension": "mp3",
+                "api_id": "6e1438a5d2d544d9bdb71a89a4e37d2c",
+                "api_key": "25f45ae7dab14458af4b6ee229c36ac8"
+              },
+            ),
+          );
+        } else {
+          response = await http.post(
+            Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
+            headers: {
+              "Authorization": "Bearer $token",
+              "Content-Type": "application/json",
+            },
+            body: json.encode({
+              "input": {"text": label},
+              "voice": {"languageCode": languageCode, "name": voiceName},
+              "audioConfig": {
+                "audioEncoding": "MP3",
+                "speakingRate": speechRate
+              },
+            }),
+          );
+        }
 
         if (response.statusCode == 200) {
           final audioContent = json.decode(response.body)['audioContent'];

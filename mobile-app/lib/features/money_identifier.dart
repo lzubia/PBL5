@@ -43,8 +43,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
   void _startPeriodicPictureTaking() {
     final ttsService = context.read<ITtsService>();
 
-    ttsService
-        .speakLabels([AppLocalizations.of(context).translate("money-on")]);
+    ttsService.speakLabels(
+        [AppLocalizations.of(context).translate("money-on")], context);
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _takeAndSendImage();
     });
@@ -59,7 +59,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
       httpClient: client,
       endpoint: dotenv.env["API_URL"]! + '5&session_id=${sessionToken}',
       onLabelsDetected: (labels) {
-        ttsService.speakLabels(labels); // Use ttsService to speak the labels
+        ttsService.speakLabels(
+            labels, context); // Use ttsService to speak the labels
       },
       onResponseTimeUpdated: (duration) {
         setState(() {

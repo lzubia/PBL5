@@ -41,7 +41,7 @@ class MapProvider extends ChangeNotifier {
     // Use context safely within this method
     final localizationMessage =
         AppLocalizations.of(context).translate("mapa-on");
-    ttsService.speakLabels([localizationMessage]);
+    ttsService.speakLabels([localizationMessage], context);
 
     _currentLocation = await _location.getLocation();
     notifyListeners();
@@ -89,7 +89,7 @@ class MapProvider extends ChangeNotifier {
           if (data['status'] == 'ZERO_RESULTS') {
             await ttsService.speakLabels([
               AppLocalizations.of(context).translate("destination-not-found")
-            ]);
+            ], context);
             return;
           }
 
@@ -110,7 +110,7 @@ class MapProvider extends ChangeNotifier {
           if (data['status'] == 'ZERO_RESULTS') {
             await ttsService.speakLabels([
               AppLocalizations.of(context).translate("destination-not-found")
-            ]);
+            ], context);
             return;
           }
 
@@ -207,7 +207,7 @@ class MapProvider extends ChangeNotifier {
             Localizations.localeOf(context)
                 .languageCode); // Replace 'es' with the desired language
 
-        await ttsService.speakLabels([translatedInstruction]);
+        await ttsService.speakLabels([translatedInstruction], context);
       }
 
       notifyListeners();
@@ -224,47 +224,48 @@ class MapProvider extends ChangeNotifier {
 
   /// Update the current instruction based on proximity.
   void _updateCurrentInstruction(BuildContext context) async {
-  if (_instructions.isEmpty || _currentLocation == null) return;
+    if (_instructions.isEmpty || _currentLocation == null) return;
 
-  final currentLatLng = LatLng(
-    _currentLocation!.latitude!,
-    _currentLocation!.longitude!,
-  );
+    final currentLatLng = LatLng(
+      _currentLocation!.latitude!,
+      _currentLocation!.longitude!,
+    );
 
-  int closestIndex = -1;
-  double closestDistance = double.infinity;
+    int closestIndex = -1;
+    double closestDistance = double.infinity;
 
-  for (int i = 0; i < _instructions.length; i++) {
-    final instructionLatLng = _instructions[i]['start_location'] as LatLng;
-    final distance = _calculateDistance(currentLatLng, instructionLatLng);
+    for (int i = 0; i < _instructions.length; i++) {
+      final instructionLatLng = _instructions[i]['start_location'] as LatLng;
+      final distance = _calculateDistance(currentLatLng, instructionLatLng);
 
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestIndex = i;
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
+    }
+
+    if (closestDistance < 10) {
+      final instruction = _instructions[closestIndex]['instruction'];
+      final translationProvider =
+          Provider.of<TranslationProvider>(context, listen: false);
+      final translatedInstruction = await translationProvider.translateText(
+          instruction, Localizations.localeOf(context).languageCode);
+
+      await ttsService.speakLabels([
+        AppLocalizations.of(context).translate("Now" + translatedInstruction)
+      ], context);
+
+      _instructions = _instructions.sublist(closestIndex + 1);
+      notifyListeners();
+    }
+
+    if (_instructions.isEmpty) {
+      ttsService.speakLabels([
+        AppLocalizations.of(context).translate("Destination-reached"),
+        _destinationName ?? "",
+      ], context);
     }
   }
-
-  if (closestDistance < 10) {
-    final instruction = _instructions[closestIndex]['instruction'];
-    final translationProvider = Provider.of<TranslationProvider>(context, listen: false);
-    final translatedInstruction = await translationProvider.translateText(
-        instruction, Localizations.localeOf(context).languageCode);
-
-    await ttsService.speakLabels([
-      AppLocalizations.of(context).translate("Now" + translatedInstruction)
-    ]);
-
-    _instructions = _instructions.sublist(closestIndex + 1);
-    notifyListeners();
-  }
-
-  if (_instructions.isEmpty) {
-    ttsService.speakLabels([
-      AppLocalizations.of(context).translate("Destination-reached"),
-      _destinationName ?? "",
-    ]);
-  }
-}
 
   /// Calculate distance between two points in meters.
   double _calculateDistance(LatLng start, LatLng end) {

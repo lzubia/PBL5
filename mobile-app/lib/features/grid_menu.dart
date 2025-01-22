@@ -43,8 +43,8 @@ class GridMenuState extends State<GridMenu> {
 
     // Avoid showing duplicate bottom sheets
     if (currentWidgetTitle == title) {
-      ttsService
-          .speakLabels([AppLocalizations.of(context).translate("opened")]);
+      ttsService.speakLabels(
+          [AppLocalizations.of(context).translate("opened")], context);
       return;
     } else if (currentWidgetTitle != null) {
       Navigator.of(context).pop(); // Close the previous bottom sheet
@@ -184,13 +184,15 @@ class GridMenuState extends State<GridMenu> {
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
               await ttsService.speakLabels(
-                  [AppLocalizations.of(context).translate("going-home")]);
+                  [AppLocalizations.of(context).translate("going-home")],
+                  context);
             } else {
               // Handle case when no home location is saved
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
               await ttsService.speakLabels(
-                  [AppLocalizations.of(context).translate("home-not-set")]);
+                  [AppLocalizations.of(context).translate("home-not-set")],
+                  context);
             }
           } catch (e) {
             print('Error setting home destination: $e');
@@ -264,7 +266,7 @@ class GridMenuState extends State<GridMenu> {
                 },
                 onDoubleTap: () {
                   ttsService.speakLabels(
-                      [AppLocalizations.of(context).translate(title)]);
+                      [AppLocalizations.of(context).translate(title)], context);
                 },
                 child: SizedBox(
                   height: 150,

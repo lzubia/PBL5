@@ -9,8 +9,8 @@ class SosService {
 
   SosService({required this.ttsServiceGoogle});
 
-
-  Future<void> sendSosRequest(List<Map<String, String>> numbers, BuildContext context) async {
+  Future<void> sendSosRequest(
+      List<Map<String, String>> numbers, BuildContext context) async {
     final url = Uri.parse('https://begiapbl.duckdns.org:1880/sos');
 
     // Aquí es donde ponemos el mapa como cuerpo del request
@@ -21,7 +21,9 @@ class SosService {
     );
 
     if (response.statusCode == 200) {
-      ttsServiceGoogle.speakLabels([AppLocalizations.of(context).translate("Sos-sent-successfully")]);
+      ttsServiceGoogle.speakLabels(
+          [AppLocalizations.of(context).translate("Sos-sent-successfully")],
+          context);
     } else {
       throw Exception('Failed to send SOS request');
     }
