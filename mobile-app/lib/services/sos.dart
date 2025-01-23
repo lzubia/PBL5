@@ -5,19 +5,20 @@ import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/tts/tts_service_google.dart';
 
 class SosService {
-  TtsServiceGoogle ttsServiceGoogle;
+  final TtsServiceGoogle ttsServiceGoogle;
+  final http.Client client; // Accept a custom client
 
-  SosService({required this.ttsServiceGoogle});
+  SosService({required this.ttsServiceGoogle, http.Client? client})
+      : client = client ?? http.Client();
 
   Future<void> sendSosRequest(
       List<Map<String, String>> numbers, BuildContext context) async {
     final url = Uri.parse('https://begiapbl.duckdns.org:1880/sos');
 
-    // Aquí es donde ponemos el mapa como cuerpo del request
-    final response = await http.post(
+    final response = await client.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'numbers': numbers}), // Agregar el mapa de números
+      body: jsonEncode({'numbers': numbers}),
     );
 
     if (response.statusCode == 200) {

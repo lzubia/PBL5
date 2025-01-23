@@ -787,6 +787,15 @@ class MockTranslationProvider extends _i1.Mock
   }
 
   @override
+  _i3.Client get httpClient => (super.noSuchMethod(
+        Invocation.getter(#httpClient),
+        returnValue: _FakeClient_1(
+          this,
+          Invocation.getter(#httpClient),
+        ),
+      ) as _i3.Client);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
