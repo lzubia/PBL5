@@ -179,31 +179,50 @@ class VoiceCommands extends ChangeNotifier {
         commandGroup.value.any((synonym) => command.contains(synonym));
   }
 
+  Future<void> _handleRiskDetectionCommand() async {
+    riskTrigger = true;
+    notifyListeners();
+    _isActivated = false;
+    useVoiceControlNotifier.value = false;
+    _command = '';
+    notifyListeners();
+    sttService.stopListening();
+    startListening();
+    await Future.delayed(Duration(seconds: 2), () {
+      riskTrigger = false;
+    });
+  }
+
+  void _handleMenuCommand() {
+    if (onMenuCommand != null) {
+      onMenuCommand!();
+    }
+  }
+
+  void _handleSosCommand() {
+    if (onSosCommand != null) {
+      onSosCommand!();
+    }
+  }
+
+  void _handleHomeCommand() {
+    if (onHomeCommand != null) {
+      onHomeCommand!();
+    }
+  }
+
   Future<void> handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
 
     for (var commandGroup in voiceCommands.entries) {
-      final similarity = calculateSimilarity(command, commandGroup.value.first);
-
       if (isCommandMatched(command, commandGroup)) {
         final primaryCommand = commandGroup.key;
 
         switch (primaryCommand) {
           case 'risk_detection_command':
-            riskTrigger = true;
-            notifyListeners();
-            _isActivated = false;
-            useVoiceControlNotifier.value = false;
-            _command = '';
-            notifyListeners();
-            sttService.stopListening();
-            startListening();
-            Future.delayed(Duration(seconds: 2), () {
-              riskTrigger = false;
-            });
-
+            await _handleRiskDetectionCommand();
             break;
 
           case 'money_identifier_command':
@@ -216,9 +235,7 @@ class VoiceCommands extends ChangeNotifier {
 
           case 'menu_command':
             matched = true;
-            if (onMenuCommand != null) {
-              onMenuCommand!(); // Trigger the callback
-            }
+            _handleMenuCommand();
             // _cancelCommandTimer();
             // _desactivateBegia();
             break;
@@ -232,15 +249,11 @@ class VoiceCommands extends ChangeNotifier {
             break;
           case 'sos_command':
             matched = true;
-            if (onSosCommand != null) {
-              onSosCommand!(); // Trigger the callback
-            }
+            _handleSosCommand();
             break;
           case 'home_command':
             matched = true;
-            if (onHomeCommand != null) {
-              onHomeCommand!(); // Trigger the callback
-            }
+            _handleHomeCommand();
             break;
           default:
             break;
@@ -255,6 +268,62 @@ class VoiceCommands extends ChangeNotifier {
       _desactivateBegia();
     }
     startListening();
+  }
+
+  Future<void> handleCommandAction(
+      String primaryCommand, bool Function(int) executeCommand) async {
+    switch (primaryCommand) {
+      case 'risk_detection_command':
+        riskTrigger = true;
+        notifyListeners();
+        _isActivated = false;
+        useVoiceControlNotifier.value = false;
+        _command = '';
+        notifyListeners();
+        sttService.stopListening();
+        startListening();
+        Future.delayed(Duration(seconds: 2), () {
+          riskTrigger = false;
+        });
+        break;
+
+      case 'money_identifier_command':
+        executeCommand(1);
+        break;
+
+      case 'map_command':
+        executeCommand(2);
+        break;
+
+      case 'menu_command':
+        if (onMenuCommand != null) {
+          onMenuCommand!(); // Trigger the callback
+        }
+        break;
+
+      case 'text_command':
+        executeCommand(3);
+        break;
+
+      case 'photo_command':
+        executeCommand(4);
+        break;
+
+      case 'sos_command':
+        if (onSosCommand != null) {
+          onSosCommand!(); // Trigger the callback
+        }
+        break;
+
+      case 'home_command':
+        if (onHomeCommand != null) {
+          onHomeCommand!(); // Trigger the callback
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   bool _executeCommand(int triggerVariable) {
