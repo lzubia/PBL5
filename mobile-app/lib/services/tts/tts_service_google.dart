@@ -10,6 +10,7 @@ import '../stt/i_tts_service.dart';
 import 'package:flutter/services.dart';
 
 class TtsServiceGoogle implements ITtsService {
+  static const String _contentTypeHeader = "Content-Type";
   late AudioPlayer audioPlayer;
   final String _authFilePath = 'assets/tts-english.json';
   final String _elhuyarFilePath = 'assets/tts-elhuyar.json';
@@ -92,7 +93,7 @@ class TtsServiceGoogle implements ITtsService {
 
     final response = await httpClient.post(
       Uri.parse("https://oauth2.googleapis.com/token"),
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      headers: {_contentTypeHeader: "application/x-www-form-urlencoded"},
       body: {
         "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
         "assertion": token,
@@ -121,7 +122,7 @@ class TtsServiceGoogle implements ITtsService {
           response = await http.post(
             Uri.parse("https://ttsneuronala.elhuyar.eus/api/standard"),
             headers: {
-              "Content-Type": "application/json",
+              _contentTypeHeader: "application/json",
             },
             body: json.encode(
               {
@@ -139,7 +140,7 @@ class TtsServiceGoogle implements ITtsService {
             Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
             headers: {
               "Authorization": "Bearer $token",
-              "Content-Type": "application/json",
+              _contentTypeHeader: "application/json",
             },
             body: json.encode({
               "input": {"text": label},
