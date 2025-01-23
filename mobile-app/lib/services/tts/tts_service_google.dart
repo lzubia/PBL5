@@ -117,13 +117,13 @@ class TtsServiceGoogle implements ITtsService {
       String label = obj;
       try {
         print("Speaking label: $label");
-        final response;
+
+        http.Response response; // Explicitly typed as http.Response
+
         if (locale == 'eu') {
           response = await http.post(
             Uri.parse("https://ttsneuronala.elhuyar.eus/api/standard"),
-            headers: {
-              _contentTypeHeader: "application/json",
-            },
+            headers: {_contentTypeHeader: "application/json"},
             body: json.encode(
               {
                 "text": label,
@@ -154,8 +154,9 @@ class TtsServiceGoogle implements ITtsService {
         }
 
         if (response.statusCode == 200) {
-          final audioContent;
+          String audioContent; // Explicitly typed as String
           final bytes;
+
           if (locale == 'eu') {
             bytes = response.bodyBytes;
           } else {
