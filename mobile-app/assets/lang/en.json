@@ -9,7 +9,7 @@
     "describe_environment": "Describe",
     "gps_map": "GPS (Map)",
     "money_identifier": "Money Identifier",
-    "scanner": "Scanner (Read Texts, QRs, ...)",
+    "scanner": "Read Texts",
     "voice_commands": {
         "risk_detection_command": [
             "risk",

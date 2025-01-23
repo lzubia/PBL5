@@ -9,7 +9,7 @@
     "describe_environment": "Deskribatu",
     "gps_map": "GPS (Mapa)",
     "money_identifier": "Dirua",
-    "scanner": "Eskanerra (Testuak, QRak, ... irakurri)",
+    "scanner": "Testuak Irakurri",
     "voice_commands": {
         "risk_detection_command": [
             "arrisku",
