@@ -268,7 +268,7 @@ class MapProvider extends ChangeNotifier {
           instruction, Localizations.localeOf(context).languageCode);
 
       await ttsService.speakLabels([
-        AppLocalizations.of(context).translate("Now" + translatedInstruction)
+        AppLocalizations.of(context).translate("Now $translatedInstruction")
       ], context);
 
       _instructions = _instructions.sublist(closestIndex + 1);

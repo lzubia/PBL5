@@ -174,7 +174,6 @@ class VoiceCommands extends ChangeNotifier {
     print('Activated command: $command');
 
     bool matched = false;
-    bool matchedRisk = false;
     const double similarityThreshold = 80.0;
 
     for (var commandGroup in voiceCommands.entries) {
