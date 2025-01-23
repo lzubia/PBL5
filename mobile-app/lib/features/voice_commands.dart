@@ -241,6 +241,7 @@ class VoiceCommands extends ChangeNotifier {
 
         break;
       }
+      //
     }
 
     if (matched) {
