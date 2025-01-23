@@ -1,6 +1,5 @@
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from models import YOLOModel
 from distance_calculation import calculate_distance_from_box
@@ -40,6 +39,7 @@ services_state = {
     "perform_ocr": {"id": 6, "enabled": True if app.get("ocr") else False},
 }
 
+# Strings
 Session_ID_Error_String = "Session ID not found."
 
 # Lock for thread-safe access
@@ -81,7 +81,6 @@ async def read_root():
     with open("./index.html", "r", encoding="utf-8") as file:
         html_content = file.read()
     return HTMLResponse(content=html_content, status_code=200)
-
 # Services
 @app.get("/services", response_model=List[dict], summary="Gets all the created endpoints available")
 async def list_services():
@@ -340,6 +339,10 @@ async def perform_ocr(session_id: str, file: UploadFile = File(...)):
     Process and returns the detected text in the image.
     """
     try:
+        # Check if the session exists
+        if session_id not in session_yolo_models:
+            raise HTTPException(status_code=404, detail=Session_ID_Error_String)
+
         # Execute the OCR process
         output_text = ocr_model.execute_ocr(file)
         
