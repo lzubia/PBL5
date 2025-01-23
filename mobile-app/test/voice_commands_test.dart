@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -303,6 +304,31 @@ void main() {
 
       // Verify that triggerVariable is reset to 0
       expect(voiceCommands.triggerVariable, 2);
+    });
+  });
+
+  group('VoiceCommands Tests', () {
+    late VoiceCommands voiceCommands;
+    late MockSttService mockSttService;
+
+    setUp(() {
+      mockSttService = MockSttService();
+      voiceCommands = VoiceCommands(mockSttService);
+    });
+
+    test('_handleMenuCommand triggers callback', () {
+      bool menuCommandCalled = false;
+
+      // Assign a callback
+      voiceCommands.onMenuCommand = () {
+        menuCommandCalled = true;
+      };
+
+      // Call the method
+      voiceCommands.handleMenuCommand();
+
+      // Verify the callback was invoked
+      expect(menuCommandCalled, isTrue);
     });
   });
 }

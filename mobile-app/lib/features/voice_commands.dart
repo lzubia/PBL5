@@ -179,7 +179,7 @@ class VoiceCommands extends ChangeNotifier {
         commandGroup.value.any((synonym) => command.contains(synonym));
   }
 
-  Future<void> _handleRiskDetectionCommand() async {
+  Future<void> handleRiskDetectionCommand() async {
     riskTrigger = true;
     notifyListeners();
     _isActivated = false;
@@ -193,7 +193,7 @@ class VoiceCommands extends ChangeNotifier {
     });
   }
 
-  void _handleMenuCommand() {
+  void handleMenuCommand() {
     if (onMenuCommand != null) {
       onMenuCommand!();
     }
@@ -222,7 +222,7 @@ class VoiceCommands extends ChangeNotifier {
 
         switch (primaryCommand) {
           case 'risk_detection_command':
-            await _handleRiskDetectionCommand();
+            await handleRiskDetectionCommand();
             break;
 
           case 'money_identifier_command':
@@ -235,7 +235,7 @@ class VoiceCommands extends ChangeNotifier {
 
           case 'menu_command':
             matched = true;
-            _handleMenuCommand();
+            handleMenuCommand();
             // _cancelCommandTimer();
             // _desactivateBegia();
             break;
