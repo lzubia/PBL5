@@ -187,6 +187,26 @@ void main() {
       expect(ttsService.getAccessToken(), throwsException);
     });
 
+    test('getAccessToken throws an error if auth file is missing', () async {
+      testAssetBundle.addMockAsset('assets/tts-english.json', '');
+
+      expect(ttsService.getAccessToken(), throwsException);
+    });
+
+    test('getAccessToken handles invalid JSON format', () async {
+      testAssetBundle.addMockAsset('assets/tts-english.json', 'Invalid JSON');
+
+      expect(ttsService.getAccessToken(), throwsFormatException);
+    });
+
+    test('getAccessToken handles exceptions gracefully', () async {
+      testAssetBundle.addMockAsset('assets/tts-english.json', 'Invalid JSON');
+
+      expect(ttsService.getAccessToken(), throwsFormatException);
+    });
+
+    
+
     // test('speakLabels synthesizes speech and plays audio', () async {
     //   const mockToken = 'mock_access_token';
     //   final audioContent = base64Encode([0, 1, 2, 3]); // Mocked audio content

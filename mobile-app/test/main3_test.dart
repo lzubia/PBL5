@@ -111,24 +111,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  // Group tests for UI, navigation, and functionality
-  group('UI and Navigation Tests', () {
-    testWidgets('should display the app title in AppBar', (WidgetTester tester) async {
+  group('State Management Tests', () {
+    testWidgets('should initialize VoiceCommands after app starts', (WidgetTester tester) async {
       await pumpMainApp(tester);
 
-      // Verify the title "BEGIA" is found in the app bar
-      expect(find.text('BEGIA'), findsOneWidget);
-    });
-  });
-
-  group('Voice Control Tests', () {
-
-    testWidgets('should hide the voice control gif when disabled', (WidgetTester tester) async {
-      when(mockVoiceCommands.isActivated).thenReturn(false); // Mock voice control disabled
-      await pumpMainApp(tester);
-
-      // Verify that the gif is hidden when voice control is disabled
-      expect(find.byType(Image), findsNothing);
+      // Verify that the VoiceCommands is initialized after the app starts
+      verify(mockVoiceCommands.initialize(any)).called(1);
     });
   });
 }

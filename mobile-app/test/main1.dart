@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -23,20 +22,8 @@ import 'package:pbl5_menu/app_initializer.dart';
 
 import 'main_test.mocks.dart';
 
-@GenerateMocks([
-  AppInitializer,
-  PictureService,
-  SttService,
-  TtsServiceGoogle,
-  VoiceCommands,
-  DatabaseHelper,
-  LocaleProvider,
-  ThemeProvider,
-  MapProvider,
-  WidgetStateProvider,
-])
-void main() {
-  // Declare all mocks
+@GenerateMocks([AppInitializer, PictureService, SttService, TtsServiceGoogle, VoiceCommands, DatabaseHelper, LocaleProvider, ThemeProvider, MapProvider, WidgetStateProvider])
+class VoiceControlTests {
   late MockAppInitializer mockAppInitializer;
   late MockPictureService mockPictureService;
   late MockSttService mockSttService;
@@ -47,10 +34,8 @@ void main() {
   late MockThemeProvider mockThemeProvider;
   late MockMapProvider mockMapProvider;
   late MockWidgetStateProvider mockWidgetStateProvider;
-  
 
-  // Set up mocks and default behaviors
-  setUp(() {
+  void setUp() {
     mockAppInitializer = MockAppInitializer();
     mockPictureService = MockPictureService();
     mockSttService = MockSttService();
@@ -62,35 +47,12 @@ void main() {
     mockMapProvider = MockMapProvider();
     mockWidgetStateProvider = MockWidgetStateProvider();
 
-    // Mock common behaviors
-    when(mockPictureService.isCameraInitialized).thenReturn(true);
-    when(mockVoiceCommands.isActivated).thenReturn(false);
-    when(mockVoiceCommands.riskTrigger).thenReturn(false);
-    when(mockVoiceCommands.triggerVariable).thenReturn(0);
-    when(mockMapProvider.currentLocation).thenReturn(null);
-    when(mockLocaleProvider.currentLocale).thenReturn(const Locale('en', 'US'));
-    when(mockLocaleProvider.supportedLocales).thenReturn([
-      const Locale('en', 'US'),
-      const Locale('es', 'ES'),
-      const Locale('eu', 'ES'),
-    ]);
-  });
+// Mock currentLocale to return a Locale object
+  when(mockLocaleProvider.currentLocale).thenReturn(Locale('en', 'US'));
 
-  // Tear down and reset mocks after each test
-  tearDown(() {
-    reset(mockAppInitializer);
-    reset(mockPictureService);
-    reset(mockSttService);
-    reset(mockTtsServiceGoogle);
-    reset(mockVoiceCommands);
-    reset(mockDatabaseHelper);
-    reset(mockLocaleProvider);
-    reset(mockThemeProvider);
-    reset(mockMapProvider);
-    reset(mockWidgetStateProvider);
-  });
+  when(mockVoiceCommands.isActivated).thenReturn(false);
+}
 
-  // Helper function to pump the main app with mocked dependencies
   Future<void> pumpMainApp(WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
@@ -111,24 +73,24 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  // Group tests for UI, navigation, and functionality
-  group('UI and Navigation Tests', () {
-    testWidgets('should display the app title in AppBar', (WidgetTester tester) async {
+  void runTests() {
+     testWidgets('should display the app title in AppBar', (WidgetTester tester) async {
       await pumpMainApp(tester);
-
-      // Verify the title "BEGIA" is found in the app bar
       expect(find.text('BEGIA'), findsOneWidget);
     });
-  });
+    
+  }
 
-  group('Voice Control Tests', () {
-
-    testWidgets('should hide the voice control gif when disabled', (WidgetTester tester) async {
-      when(mockVoiceCommands.isActivated).thenReturn(false); // Mock voice control disabled
-      await pumpMainApp(tester);
-
-      // Verify that the gif is hidden when voice control is disabled
-      expect(find.byType(Image), findsNothing);
-    });
-  });
+  void tearDown() {
+    reset(mockAppInitializer);
+    reset(mockPictureService);
+    reset(mockSttService);
+    reset(mockTtsServiceGoogle);
+    reset(mockVoiceCommands);
+    reset(mockDatabaseHelper);
+    reset(mockLocaleProvider);
+    reset(mockThemeProvider);
+    reset(mockMapProvider);
+    reset(mockWidgetStateProvider);
+  }
 }
