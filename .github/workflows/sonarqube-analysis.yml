@@ -7,6 +7,7 @@ on:
       - mobile-tests
       - mobile-tp
       - unify-tests
+      - unify-tests-analysis
   pull_request:
 
 jobs:

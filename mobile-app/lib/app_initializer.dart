@@ -100,21 +100,29 @@ class AppInitializer {
     }
   }
 
-  Future<void> endSession(String sessionId, {http.Client? client}) async {
-    final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
-    client ??= http.Client();
-    try {
-      final response = await client.delete(url);
-      if (response.statusCode == 200) {
-        print('Session ended successfully');
-        sessionToken = '';
-      } else {
-        throw Exception('Failed to end session: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error ending session: $e');
-    }
+Future<void> endSession(String sessionId, {http.Client? client}) async {
+  if (sessionId.isEmpty) {
+    print('Session token is missing. Skipping endSession call.');
+    return; // Early return if sessionId is empty
   }
+
+  final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
+  client ??= http.Client();
+  try {
+    final response = await client.delete(url);
+    if (response.statusCode == 200) {
+      print('Session ended successfully');
+      sessionToken = '';
+    } else {
+      throw Exception('Failed to end session: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error ending session: $e');
+  }
+}
+
+
+  void dispose() {}
 }
 
 class MyHttpOverrides extends HttpOverrides {

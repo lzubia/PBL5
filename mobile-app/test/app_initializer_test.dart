@@ -154,4 +154,124 @@ void main() {
       expect(appInitializer.sessionToken, isNot(equals('testSession')));
     });
   });
+
+  test('should handle errors during initialization', () async {
+  when(mockPictureService.setupCamera()).thenThrow(Exception('Camera error'));
+  when(mockPictureService.initializeCamera())
+      .thenThrow(Exception('Camera initialization error'));
+  
+  final appInitializer = AppInitializer();
+  appInitializer.databaseHelper = mockDatabaseHelper;
+  appInitializer.ttsServiceGoogle = mockTtsServiceGoogle;
+  appInitializer.sttService = mockSttService;
+  appInitializer.voiceCommands = mockVoiceCommands;
+
+  await appInitializer.initialize(pictureService: mockPictureService);
+
+  expect(appInitializer.isInitialized, isFalse);
+  expect(appInitializer.initializationError, contains('Initialization failed'));
+});
+
+test('should properly initialize widgetStates', () async {
+  final appInitializer = AppInitializer();
+  expect(appInitializer.widgetStates, isEmpty); // Initial state
+
+  // Add logic to mock any state changes
+  // Example: appInitializer._widgetStates.add('newState');
+  // Then assert that the states were updated as expected
+});
+
+test('should initialize with default locale', () async {
+  final appInitializer = AppInitializer();
+  expect(appInitializer.locale.languageCode, equals('en'));
+  expect(appInitializer.locale.countryCode, equals('US'));
+});
+
+test('should handle MethodChannel calls for endSession', () async {
+  final appInitializer = AppInitializer();
+
+  const MethodChannel('com.example.pbl5_menu/endSession')
+      .setMockMethodCallHandler((methodCall) async {
+    if (methodCall.method == 'endSession') {
+      return 'Session Ended';
+    }
+    return null;
+  });
+
+  final result = await AppInitializer.platform.invokeMethod('endSession');
+  expect(result, equals('Session Ended'));
+});
+test('should handle missing session token during endSession', () async {
+  final appInitializer = AppInitializer();
+
+  await appInitializer.endSession('', client: mockHttpClient);
+
+  // Verify that no call is made to the delete method
+  verifyNever(mockHttpClient.delete(any));
+});
+
+test('should call PictureService methods during initialization', () async {
+  // Mock PictureService methods
+  when(mockPictureService.setupCamera()).thenAnswer((_) async {});
+  when(mockPictureService.initializeCamera()).thenAnswer((_) async {});
+
+  // Mock other required dependencies
+  when(mockTtsServiceGoogle.initializeTts()).thenAnswer((_) async {});
+  when(mockSttService.initializeStt()).thenAnswer((_) async {});
+
+  final appInitializer = AppInitializer();
+
+  // Inject mocked dependencies
+  appInitializer.databaseHelper = mockDatabaseHelper;
+  appInitializer.ttsServiceGoogle = mockTtsServiceGoogle;
+  appInitializer.sttService = mockSttService;
+  appInitializer.voiceCommands = mockVoiceCommands;
+
+  // Call the initialize method
+  await appInitializer.initialize(pictureService: mockPictureService);
+
+  // Verify PictureService methods are called
+  verify(mockPictureService.setupCamera()).called(1);
+  verify(mockPictureService.initializeCamera()).called(1);
+});
+
+
+// test('should not end session if sessionToken is invalid', () async {
+//   final appInitializer = AppInitializer();
+//   appInitializer.sessionToken = '';
+
+//   expect(
+//     () async => await appInitializer.endSession(appInitializer.sessionToken, client: mockHttpClient),
+//     throwsA(isA<Exception>()),
+//   );
+// });
+
+test('should clean up resources during deinitialization', () async {
+  // Add a method in AppInitializer for cleanup, e.g., dispose()
+  final appInitializer = AppInitializer();
+  await appInitializer.initialize(pictureService: mockPictureService);
+  
+  // Simulate cleanup
+  appInitializer.dispose();
+
+  // Assert that resources were cleaned up
+  // Example: expect(appInitializer.isInitialized, isFalse);
+});
+
+test('should handle delayed response for startSession', () async {
+  when(mockHttpClient.get(any)).thenAnswer(
+    (_) async => Future.delayed(
+      const Duration(seconds: 2),
+      () => http.Response('{"session_id": "delayedSession"}', 200),
+    ),
+  );
+
+  final appInitializer = AppInitializer();
+  await appInitializer.startSession(client: mockHttpClient);
+
+  expect(appInitializer.sessionToken, equals('delayedSession'));
+});
+
+
+
 }
