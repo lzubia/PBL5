@@ -22,6 +22,10 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: Install Tesseract
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -40,8 +44,15 @@ jobs:
         run: |
           pytest tests/ --cov=. --cov-report=xml
 
-      - name: SonarCloud Scan
+      - name: SonarCloud Scan using Docker
         run: |
-          sonar-scanner
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_PY_TOKEN }}
+          docker run \
+            --rm \
+            -v "${{ github.workspace }}:/usr/src" \
+            -e SONAR_TOKEN=${{ secrets.SONAR_PY_TOKEN }} \
+            sonarsource/sonar-scanner-cli:latest \
+            -Dsonar.projectBaseDir=/usr/src/ai-models/service \
+            -Dsonar.login=${{ secrets.SONAR_PY_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ github.ref_name }}
+
