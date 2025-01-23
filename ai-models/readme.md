@@ -68,6 +68,7 @@ This model leverages the **YOLOv11** implementation provided by [Ultralytics](ht
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ```
     > **Note:** The running parameters can be changed, this is a standard example to execute the web service.
+    >           To deploy with HTTPS, ssl_keyfile and ssl_certfile files needs to be added.
 
 If the steps were followed the service will start and response on localhost:8000/*
 - **`/detect`**: tracking, clustering and detecting objects, giving instructions to guide, from a given images.

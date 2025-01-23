@@ -337,13 +337,3 @@ async def perform_ocr(session_id: str, file: UploadFile = File(...)):
         return {"results": object_text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing the image: {str(e)}")
-# Web service main, prepared for running uvicorn
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=443,
-        ssl_keyfile="./certificate/key.pem",
-        ssl_certfile="./certificate/cert.pem",
-        # reload=True
-    )
