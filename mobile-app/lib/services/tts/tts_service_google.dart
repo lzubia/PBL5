@@ -99,9 +99,12 @@ class TtsServiceGoogle implements ITtsService {
         if (locale == 'eu') {
           response = await http.post(
             Uri.parse("https://ttsneuronala.elhuyar.eus/api/standard"),
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: json.encode(
               {
-                "text": {"text": label},
+                "text": label,
                 "speaker": "female_low",
                 "language": "eu",
                 "extension": "mp3",
@@ -129,8 +132,14 @@ class TtsServiceGoogle implements ITtsService {
         }
 
         if (response.statusCode == 200) {
-          final audioContent = json.decode(response.body)['audioContent'];
-          final bytes = base64.decode(audioContent);
+          final audioContent;
+          final bytes;
+          if (locale == 'eu') {
+            bytes = response.bodyBytes;
+          } else {
+            audioContent = json.decode(response.body)['audioContent'];
+            bytes = base64.decode(audioContent);
+          }
 
           final tempDir = await getTemporaryDirectory();
           final file = File('${tempDir.path}/output.mp3');
