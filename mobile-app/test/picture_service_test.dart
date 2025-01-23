@@ -337,4 +337,46 @@ void main() {
       expect(responseTimes.first, isA<Duration>());
     });
   });
+
+  group('setupCamera', () {
+    test('should setup the camera successfully', () async {
+      await pictureService.setupCamera();
+
+      expect(pictureService.controller, isA<CameraController>());
+    });
+
+    test('should handle exception during camera setup', () async {
+      CameraPlatform.instance = MockCameraPlatform();
+      when(mockController.initialize()).thenThrow(Exception('Camera error'));
+
+      await pictureService.setupCamera();
+
+      expect(pictureService.controller, isNotNull);
+    });
+  });
+
+  group('parseLabelsFromResponse', () {
+    test('should parse labels correctly from response', () {
+      final responseBody = '{"results": {"message": ["label1", "label2"]}}';
+
+      final labels = pictureService.parseLabelsFromResponse(responseBody);
+
+      expect(labels, ['label1', 'label2']);
+    });
+
+    test('should handle single string message in response', () {
+      final responseBody = '{"results": {"message": "single_label"}}';
+
+      final labels = pictureService.parseLabelsFromResponse(responseBody);
+
+      expect(labels, ['single_label']);
+    });
+
+    test('should handle unexpected response format', () {
+      final responseBody = '{"unexpected": "format"}';
+
+      expect(() => pictureService.parseLabelsFromResponse(responseBody),
+          throwsException);
+    });
+  });
 }
