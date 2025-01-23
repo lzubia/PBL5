@@ -155,7 +155,7 @@ class TtsServiceGoogle implements ITtsService {
 
         if (response.statusCode == 200) {
           String audioContent; // Explicitly typed as String
-          final bytes;
+          List<int> bytes; // Explicitly typed as List<int>
 
           if (locale == 'eu') {
             bytes = response.bodyBytes;
