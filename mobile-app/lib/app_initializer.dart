@@ -100,27 +100,26 @@ class AppInitializer {
     }
   }
 
-Future<void> endSession(String sessionId, {http.Client? client}) async {
-  if (sessionId.isEmpty) {
-    print('Session token is missing. Skipping endSession call.');
-    return; // Early return if sessionId is empty
-  }
-
-  final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
-  client ??= http.Client();
-  try {
-    final response = await client.delete(url);
-    if (response.statusCode == 200) {
-      print('Session ended successfully');
-      sessionToken = '';
-    } else {
-      throw Exception('Failed to end session: ${response.statusCode}');
+  Future<void> endSession(String sessionId, {http.Client? client}) async {
+    if (sessionId.isEmpty) {
+      print('Session token is missing. Skipping endSession call.');
+      return; // Early return if sessionId is empty
     }
-  } catch (e) {
-    throw Exception('Error ending session: $e');
-  }
-}
 
+    final url = Uri.parse(dotenv.env["API_URL"]! + '2&session_id=$sessionId');
+    client ??= http.Client();
+    try {
+      final response = await client.delete(url);
+      if (response.statusCode == 200) {
+        print('Session ended successfully');
+        sessionToken = '';
+      } else {
+        throw Exception('Failed to end session: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error ending session: $e');
+    }
+  }
 
   void dispose() {}
 }

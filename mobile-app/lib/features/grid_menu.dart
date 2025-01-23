@@ -107,7 +107,7 @@ class GridMenuState extends State<GridMenu> {
       AppLocalizations.of(context).translate("gps_map"):
           _buildDynamicWidget(mapWidgetInstance ??= SizedBox(
         height: contentHeight,
-        child: MapWidget(title: 'guide'),
+        child: const MapWidget(title: 'guide'),
       )),
       AppLocalizations.of(context).translate("scanner"):
           _buildDynamicWidget(OcrWidget()),
