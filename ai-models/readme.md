@@ -47,9 +47,21 @@ This model leverages the **YOLOv11** implementation provided by [Ultralytics](ht
     ```
 
     Additionally, the Tesseract OCR set up must be installed on the device running the web service.
-    - For **Windows**:
-    
-    - For **macOS/Linux**:
+    - **Windows**:  
+        Download and install Tesseract OCR from the official page: [Tesseract OCR for Windows](https://github.com/UB-Mannheim/tesseract/wiki). Follow the installation steps provided in the link.
+    - **macOS/Linux**:  
+        Use your system's package manager to install Tesseract OCR. For example:
+        - **macOS**:  
+            ```bash
+            brew install tesseract
+            ```
+        - **Linux**:  
+            ```bash
+            sudo apt update
+            sudo apt install tesseract-ocr
+            ```
+
+    Make sure Tesseract is properly added to your system's `PATH` so it can be accessed by the web service.
 
 3. **Run the following command to start the service**:
     ```bash
