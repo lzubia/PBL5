@@ -49,8 +49,8 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
 
     ttsService.speakLabels(
         [AppLocalizations.of(context).translate("money-on")], context);
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      _takeAndSendImage();
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      takeAndSendImage();
     });
   }
 

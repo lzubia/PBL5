@@ -109,7 +109,7 @@ class TtsServiceGoogle implements ITtsService {
   @override
   Future<void> speakLabels(
       List<dynamic> detectedObjects, BuildContext context) async {
-    final token = await _getAccessToken();
+    final token = await getAccessToken();
     final locale = Localizations.localeOf(context).languageCode;
 
     for (var obj in detectedObjects) {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:path/path.dart';
 import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
@@ -121,7 +122,7 @@ class VoiceCommands extends ChangeNotifier {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
       _command = '';
-      _playActivationSound();
+      playActivationSound();
       notifyListeners();
       _startCommandTimer();
       sttService.stopListening();
@@ -179,12 +180,6 @@ class VoiceCommands extends ChangeNotifier {
         final primaryCommand = commandGroup.key;
 
         switch (primaryCommand) {
-          case 'menu_command':
-            matched = true;
-            final label = appLocalizations?.translate("menu") ?? "menu";
-            ttsServiceGoogle.speakLabels([label]);
-            break;
-
           case 'risk_detection_command':
             riskTrigger = true;
             notifyListeners();
