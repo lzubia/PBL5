@@ -282,7 +282,7 @@ class VoiceCommands extends ChangeNotifier {
         notifyListeners();
         sttService.stopListening();
         startListening();
-        Future.delayed(Duration(seconds: 2), () {
+        Future.delayed(const Duration(seconds: 2), () {
           riskTrigger = false;
         });
         break;
