@@ -13,6 +13,7 @@ onnx==1.16.1
 onnxruntime
 onnxruntime-gpu
 tensorflow
+transformers
 openvino==2024.6.0
 pytesseract
 symspellpy
