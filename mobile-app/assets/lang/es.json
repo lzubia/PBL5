@@ -1,0 +1,88 @@
+{
+    "title": "BEGIA",
+    "contacts": "Contactos",
+    "theme": "Tema",
+    "dark_theme": "Tema Oscuro",
+    "language": "Idioma",
+    "font_size": "Tamaño de Fuente",
+    "speech_rate": "Velocidad de Habla",
+    "describe_environment": "Describir",
+    "gps_map": "GPS (Mapa)",
+    "money_identifier": "Identificador de Dinero",
+    "scanner": "Leer Textos",
+    "voice_commands": {
+        "risk_detection_command": [
+            "peligro",
+            "peligró",
+            "perigo"
+        ],
+        "money_identifier_command": [
+            "dinero",
+            "dineró",
+            "dinéra"
+        ],
+        "map_command": [
+            "mapa",
+            "mappa",
+            "ma"
+        ],
+        "home_command": [
+            "casa",
+            "cáza",
+            "zasa",
+            "záza"
+        ],
+        "menu_command": [
+            "menú",
+            "menua",
+            "menúa",
+            "menu"
+        ],
+        "text_command": [
+            "texto",
+            "textu",
+            "téstu",
+            "testuá",
+            "teks"
+        ],
+        "photo_command": [
+            "describir",
+            "deskribir",
+            "escribir",
+            "eskribir",
+            "describi"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
+        ],
+        "back_command": [
+            "atrás",
+            "atras",
+            "a tras"
+        ],
+        "command_not_recognized": [
+            "Comando no reconocido"
+        ]
+    },
+    "risk-on": "Riesgo activado",
+    "risk-off": "Riesgo desactivado",
+    "money-on": "Identificador de dinero activado",
+    "menu": "En el menú",
+    "describe-on": "Describiendo el entorno",
+    "text-on": "Leyendo texto",
+    "mapa-on": "Mapa abierto",
+    "loc_not_found": "Destino no encontrado",
+    "start_trip": "Iniciando tu viaje a",
+    "first": "Primero",
+    "now": "Ahora",
+    "reached": "Y llegarás a",
+    "opened": "La página ya está abierta",
+    "Map-active": "Mapa abierto",
+    "destination-not-found": "Destino no encontrado",
+    "going-home": "Regresando a casa",
+    "home-not-set": "Casa no establecida",
+    "Sos-sent-successfully": "SOS enviado con éxito"
+
+}
