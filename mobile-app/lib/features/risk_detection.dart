@@ -67,7 +67,7 @@ class RiskDetectionState extends State<RiskDetection> {
 
     final sessionToken = appInitializer.sessionToken;
 
-    final endpoint = dotenv.env["API_URL"]! + '3&session_id=${sessionToken}';
+    final endpoint = dotenv.env["API_URL"]! + '3&session_id=$sessionToken';
 
     await pictureService.takePicture(
       httpClient: client,

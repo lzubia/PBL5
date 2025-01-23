@@ -107,7 +107,7 @@ class GridMenuState extends State<GridMenu> {
       AppLocalizations.of(context).translate("gps_map"):
           _buildDynamicWidget(mapWidgetInstance ??= SizedBox(
         height: contentHeight,
-        child: MapWidget(title: 'guide'),
+        child: const MapWidget(title: 'guide'),
       )),
       AppLocalizations.of(context).translate("scanner"):
           _buildDynamicWidget(OcrWidget()),
@@ -138,153 +138,165 @@ class GridMenuState extends State<GridMenu> {
   Widget build(BuildContext context) {
     return Consumer<VoiceCommands>(
       builder: (context, voiceCommands, child) {
-        // Define callbacks for menu and SOS commands
-        voiceCommands.onMenuCommand = () {
-          Navigator.of(context).popUntil((route) => route.isFirst); // Close all
-        };
+        // Set up callbacks for voice commands
+        setupVoiceCommandCallbacks(context, voiceCommands);
 
-        voiceCommands.onSosCommand = () async {
-          try {
-            final sosService = Provider.of<SosService>(context, listen: false);
-            final dbHelper =
-                Provider.of<DatabaseHelper>(context, listen: false);
-
-            // Fetch contacts from the database
-            final contacts = await dbHelper.getContacts();
-
-            // Send SOS request
-            await sosService.sendSosRequest(
-                contacts.cast<Map<String, String>>(), context);
-          } catch (e) {
-            print('Error calling SOS service: $e');
-          }
-        };
-
-        voiceCommands.onHomeCommand = () async {
-          try {
-            // Fetch DatabaseHelper instance
-            final dbHelper =
-                Provider.of<DatabaseHelper>(context, listen: false);
-
-            // Get saved home location (LatLng) from the database
-            final homeLocation = await dbHelper.getHomeLocation();
-
-            if (homeLocation != null) {
-              // Access the MapProvider instance
-              final mapProvider =
-                  Provider.of<MapProvider>(context, listen: false);
-
-              // Use MapProvider to set the destination as the saved home location
-              await mapProvider.setDestination(
-                context: context,
-                location: homeLocation, // Provide the `LatLng` object
-              );
-
-              // Optionally, use TTS to confirm to the user
-              final ttsService =
-                  Provider.of<ITtsService>(context, listen: false);
-              await ttsService.speakLabels(
-                  [AppLocalizations.of(context).translate("going-home")],
-                  context);
-            } else {
-              // Handle case when no home location is saved
-              final ttsService =
-                  Provider.of<ITtsService>(context, listen: false);
-              await ttsService.speakLabels(
-                  [AppLocalizations.of(context).translate("home-not-set")],
-                  context);
-            }
-          } catch (e) {
-            print('Error setting home destination: $e');
-          }
-        };
-
-        // Trigger bottom sheet based on voice commands
-        if (voiceCommands.triggerVariable != 0) {
-          final trigger = voiceCommands.triggerVariable;
-          voiceCommands.triggerVariable = 0; // Reset the trigger immediately
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            switch (trigger) {
-              case 1:
-                showBottomSheet(context,
-                    AppLocalizations.of(context).translate("money_identifier"));
-                break;
-              case 2:
-                showBottomSheet(
-                    context, AppLocalizations.of(context).translate("gps_map"));
-                break;
-              case 3:
-                showBottomSheet(
-                    context, AppLocalizations.of(context).translate("scanner"));
-                break;
-              case 4:
-                showBottomSheet(
-                    context,
-                    AppLocalizations.of(context)
-                        .translate("describe_environment"));
-                break;
-              default:
-                break;
-            }
-          });
-        }
+        // Trigger bottom sheet if a command is activated
+        handleBottomSheetTrigger(context, voiceCommands);
 
         // Define the grid menu options
-        final List<Map<String, dynamic>> menuOptions = [
-          {
-            'title':
-                AppLocalizations.of(context).translate('describe_environment'),
-            'icon': Icons.description,
-          },
-          {
-            'title': AppLocalizations.of(context).translate('gps_map'),
-            'icon': Icons.map,
-          },
-          {
-            'title': AppLocalizations.of(context).translate('scanner'),
-            'icon': Icons.qr_code_scanner,
-          },
-          {
-            'title': AppLocalizations.of(context).translate('money_identifier'),
-            'icon': Icons.attach_money,
-          },
-        ];
+        final List<Map<String, dynamic>> menuOptions =
+            createMenuOptions(context);
 
         // Build the grid menu UI
         return GridView.count(
           crossAxisCount: 2,
           children: List.generate(menuOptions.length, (index) {
-            final title = menuOptions[index]['title'];
-            final ttsService = context.read<ITtsService>();
-
-            return Card(
-              margin: const EdgeInsets.all(8.0),
-              child: InkWell(
-                onTap: () {
-                  showBottomSheet(context, title);
-                },
-                onDoubleTap: () {
-                  ttsService.speakLabels(
-                      [AppLocalizations.of(context).translate(title)], context);
-                },
-                child: SizedBox(
-                  height: 150,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(menuOptions[index]['icon'], size: 100),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
+            return buildMenuCard(context, menuOptions[index]);
           }),
         );
       },
+    );
+  }
+
+  void setupVoiceCommandCallbacks(
+      BuildContext context, VoiceCommands voiceCommands) {
+    voiceCommands.onMenuCommand = () {
+      Navigator.of(context).popUntil((route) => route.isFirst); // Close all
+    };
+
+    voiceCommands.onSosCommand = () async {
+      try {
+        final sosService = Provider.of<SosService>(context, listen: false);
+        final dbHelper = Provider.of<DatabaseHelper>(context, listen: false);
+
+        // Fetch contacts and send SOS request
+        final contacts = await dbHelper.getContacts();
+        await sosService.sendSosRequest(
+            contacts.cast<Map<String, String>>(), context);
+      } catch (e) {
+        print('Error calling SOS service: $e');
+      }
+    };
+
+    voiceCommands.onHomeCommand = () async {
+      await handleHomeCommand(context);
+    };
+  }
+
+  Future<void> handleHomeCommand(BuildContext context) async {
+    try {
+      final dbHelper = Provider.of<DatabaseHelper>(context, listen: false);
+      final homeLocation = await dbHelper.getHomeLocation();
+
+      final ttsService = Provider.of<ITtsService>(context, listen: false);
+
+      if (homeLocation != null) {
+        final mapProvider = Provider.of<MapProvider>(context, listen: false);
+
+        // Set destination to home location
+        await mapProvider.setDestination(
+          context: context,
+          location: homeLocation, // Provide the `LatLng` object
+        );
+
+        // Confirm with TTS
+        await ttsService.speakLabels(
+          [AppLocalizations.of(context).translate("going-home")],
+          context,
+        );
+      } else {
+        // Handle case when no home location is saved
+        await ttsService.speakLabels(
+          [AppLocalizations.of(context).translate("home-not-set")],
+          context,
+        );
+      }
+    } catch (e) {
+      print('Error setting home destination: $e');
+    }
+  }
+
+  void handleBottomSheetTrigger(
+      BuildContext context, VoiceCommands voiceCommands) {
+    if (voiceCommands.triggerVariable != 0) {
+      final trigger = voiceCommands.triggerVariable;
+      voiceCommands.triggerVariable = 0; // Reset the trigger immediately
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        switch (trigger) {
+          case 1:
+            showBottomSheet(context,
+                AppLocalizations.of(context).translate("money_identifier"));
+            break;
+          case 2:
+            showBottomSheet(
+                context, AppLocalizations.of(context).translate("gps_map"));
+            break;
+          case 3:
+            showBottomSheet(
+                context, AppLocalizations.of(context).translate("scanner"));
+            break;
+          case 4:
+            showBottomSheet(context,
+                AppLocalizations.of(context).translate("describe_environment"));
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> createMenuOptions(BuildContext context) {
+    return [
+      {
+        'title': AppLocalizations.of(context).translate('describe_environment'),
+        'icon': Icons.description,
+      },
+      {
+        'title': AppLocalizations.of(context).translate('gps_map'),
+        'icon': Icons.map,
+      },
+      {
+        'title': AppLocalizations.of(context).translate('scanner'),
+        'icon': Icons.qr_code_scanner,
+      },
+      {
+        'title': AppLocalizations.of(context).translate('money_identifier'),
+        'icon': Icons.attach_money,
+      },
+    ];
+  }
+
+  Widget buildMenuCard(BuildContext context, Map<String, dynamic> option) {
+    final ttsService = context.read<ITtsService>();
+    final title = option['title'];
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: InkWell(
+        onTap: () {
+          showBottomSheet(context, title);
+        },
+        onDoubleTap: () {
+          ttsService.speakLabels(
+            [AppLocalizations.of(context).translate(title)],
+            context,
+          );
+        },
+        child: SizedBox(
+          height: 150,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(option['icon'], size: 100),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

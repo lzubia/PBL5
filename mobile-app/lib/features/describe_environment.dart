@@ -28,7 +28,7 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
 
     await pictureService.takePicture(
       httpClient: client,
-      endpoint: dotenv.env["API_URL"]! + '4&session_id=${sessionToken}',
+      endpoint: dotenv.env["API_URL"]! + '4&session_id=$sessionToken',
       onLabelsDetected: (labels) {
         Provider.of<TranslationProvider>(context, listen: false)
             .translateText(labels.first as String,

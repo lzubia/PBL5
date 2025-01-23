@@ -61,7 +61,7 @@ class MoneyIdentifierState extends State<MoneyIdentifier> {
 
     await pictureService.takePicture(
       httpClient: client,
-      endpoint: dotenv.env["API_URL"]! + '5&session_id=${sessionToken}',
+      endpoint: dotenv.env["API_URL"]! + '5&session_id=$sessionToken',
       onLabelsDetected: (labels) {
         ttsService.speakLabels(
             labels, context); // Use ttsService to speak the labels
