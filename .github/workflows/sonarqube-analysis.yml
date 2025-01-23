@@ -1,0 +1,46 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - mobile-main
+      - mobile-develop
+  pull_request:
+
+jobs:
+  sonar-analysis:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./mobile-app   # Adjust this if your sonar-project.properties file is located in a subdirectory.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.7.0
+        with:
+          flutter-version: '3.24.5'
+
+      - name: Disable Flutter analytics
+        run: flutter config --no-analytics
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      #- name: Generate Coverage Report
+       # run: flutter test --coverage
+
+      - name: Run SonarQube analysis using Docker
+        run: |
+          docker run \
+            -v ${{ github.workspace }}/mobile-app:/usr/src/mobile-app \
+            -e SONAR_TOKEN=${{ secrets.SONAR_TOKEN }} \
+            sonarsource/sonar-scanner-cli:latest \
+            -Dsonar.projectBaseDir=/usr/src/mobile-app \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ github.ref_name }}
