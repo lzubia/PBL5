@@ -170,17 +170,24 @@ class VoiceCommands extends ChangeNotifier {
     await player.play(AssetSource('sounds/Begia-off.mp3'));
   }
 
+  bool isCommandMatched(
+      String command, MapEntry<String, List<String>> commandGroup) {
+    const double similarityThreshold = 80.0;
+    final similarity = calculateSimilarity(command, commandGroup.value.first);
+
+    return similarity >= similarityThreshold ||
+        commandGroup.value.any((synonym) => command.contains(synonym));
+  }
+
   Future<void> handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
-    const double similarityThreshold = 80.0;
 
     for (var commandGroup in voiceCommands.entries) {
       final similarity = calculateSimilarity(command, commandGroup.value.first);
 
-      if (similarity >= similarityThreshold ||
-          commandGroup.value.any((synonym) => command.contains(synonym))) {
+      if (isCommandMatched(command, commandGroup)) {
         final primaryCommand = commandGroup.key;
 
         switch (primaryCommand) {
@@ -243,7 +250,6 @@ class VoiceCommands extends ChangeNotifier {
       }
       //
     }
-
     if (matched) {
       _cancelCommandTimer();
       _desactivateBegia();
