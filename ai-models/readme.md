@@ -46,6 +46,11 @@ This model leverages the **YOLOv11** implementation provided by [Ultralytics](ht
     pip install -r requirements.txt
     ```
 
+    Additionally, the Tesseract OCR set up must be installed on the device running the web service.
+    - For **Windows**:
+    
+    - For **macOS/Linux**:
+
 3. **Run the following command to start the service**:
     ```bash
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload

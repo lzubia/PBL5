@@ -3,10 +3,9 @@ import cv2
 from config import RESIZE_DIM
 
 class MoneyCounter:
-    
     def __init__(self):
         # Initialize YOLO model
-        self.model = YOLO("../models/money3.pt")
+        self.model = YOLO("../models/money3.onnx")
 
     def detect_objects(self, image):
         """

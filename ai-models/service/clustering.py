@@ -4,9 +4,13 @@ from typing import List, Dict
 # Global dictionary to store clusters
 clusters = {}
 
+# THe classes that will be grouped, if applicable
 grouping_classes = {"car", "tree", "barrier", "safety-barrier", "table", "chair", "person", "People"}
 
 def cluster_obj(obj):
+    """
+    Clusters the objects, indicated on grouping classes.
+    """
     if obj['label'] in grouping_classes:
         get_cluster(obj)
 
@@ -38,23 +42,24 @@ def determine_cluster_direction(group):
     Determines the direction of the cluster based on the directions of its members.
     This function is optimized to handle groups more efficiently.
     """
-    directions = {"left": 0, "right": 0, "in front": 0}
+    in_front = "in front"
+    directions = {"left": 0, "right": 0, in_front: 0}
     
     # Count directions for the group
     for obj in group:
         directions[obj['side']] += 1
     
     # Assign the cluster's direction based on the majority
-    if directions["in front"] > 0:
-        cluster_direction = "in front"
+    if directions[in_front] > 0:
+        cluster_direction = in_front
     elif directions["left"] > 0 and directions["right"] > 0:
-        cluster_direction = "in front"
+        cluster_direction = in_front
     elif directions["left"] > 0:
         cluster_direction = "left"
     elif directions["right"] > 0:
         cluster_direction = "right"
     else:
-        cluster_direction = "in front"  # Default case if no direction is found
+        cluster_direction = in_front  # Default case if no direction is found
     
     # Assign direction to all objects in the cluster
     for obj in group:
@@ -103,14 +108,13 @@ def calculate_iou(bbox1, bbox2):
 
     return inter_area / union_area
 
-def generate_output(detected_objects: List[Dict]) -> List[str]:
+def generate_output(detected_objects: List[Dict]) -> Dict:
     """
-    Generate descriptive phrases for detected objects, ensuring no duplicates.
-    - If an object belongs to a group, only the group is mentioned.
-    - Individual objects are described only if they are not in a group.
+    Generate descriptive phrases for detected objects and include additional details.
     """
     phrases = []
-    
+    details = {"clusters": [], "individual_objects": []}
+
     # Cache grouped object IDs for faster lookup
     clustered_ids = {obj['id'] for group in clusters.values() for obj in group}
 
@@ -128,6 +132,21 @@ def generate_output(detected_objects: List[Dict]) -> List[str]:
             else:
                 phrases.append(f"{label} at {obj['distance']} meters {cluster_direction}.")
 
+        # Add cluster details
+        details["clusters"].append({
+            "label": label,
+            "count": count,
+            "direction": cluster_direction,
+            "members": [
+                {
+                    "id": obj['id'],
+                    "bbox": obj.get("bbox", [0, 0, 0, 0]),  # Ensure 'bbox' key exists or provide a default
+                    "distance": obj['distance'],
+                    "confidence": obj.get('confidence', None)
+                } for obj in group
+            ]
+        })
+
     # Process individual objects that are not part of any cluster
     for obj in detected_objects:
         if obj["id"] not in clustered_ids:  # Check if not part of a cluster
@@ -136,8 +155,21 @@ def generate_output(detected_objects: List[Dict]) -> List[str]:
             else:
                 phrases.append(f"{obj['label']} at {obj['distance']} meters {obj['side']}.")
 
-    return phrases
+            # Add individual object details
+            details["individual_objects"].append({
+                "label": obj['label'],
+                "id": obj['id'],
+                "bbox": obj.get("bbox", [0, 0, 0, 0]),  # Ensure 'bbox' key exists or provide a default
+                "distance": obj['distance'],
+                "confidence": obj.get('confidence', None),
+                "side": obj['side']
+            })
+
+    return {"message": phrases, "details": details}
 
 def reload_clusters():
+    """
+    Reloads the clusters.
+    """
     global clusters
     clusters = {}

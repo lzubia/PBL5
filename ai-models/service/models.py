@@ -1,12 +1,9 @@
 from ultralytics import YOLO
-from fastapi import HTTPException
-from typing import List, Dict, Optional
-from asyncio import Lock
 
 class YOLOModel:
     def __init__(self):
-        # Initialize YOLO model
-        self.model = YOLO("../models/yolo_detect2.pt")
+        # Initialize YOLO model (select the desired model)
+        self.model = YOLO("../models/yolo11n.onnx")
 
     def track_objects(self, image):
         """

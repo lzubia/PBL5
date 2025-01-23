@@ -1,0 +1,12 @@
+[ req ]
+default_bits       = 2048
+default_keyfile    = key.pem
+distinguished_name = req_distinguished_name
+prompt             = no
+
+[ req_distinguished_name ]
+C  = ES
+L  = Arrasate
+O  = Begia
+OU = Begia
+CN = Begia
