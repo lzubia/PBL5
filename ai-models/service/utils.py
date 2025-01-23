@@ -12,15 +12,6 @@ def save_uploaded_file(file):
         shutil.copyfileobj(file.file, buffer)
     return temp_file_path
 
-# def save_uploaded_file(file):
-#     """
-#     Saves the uploaded file in a temporal file.
-#     """
-#     temp_file_path = f"./temp_{file.filename}"
-#     with open(temp_file_path, "wb") as buffer:
-#         buffer.write(file.file.read())
-#     return temp_file_path
-
 def remove_temp_file(file_path):
     """
     Removes the temporal file.

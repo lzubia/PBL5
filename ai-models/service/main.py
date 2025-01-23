@@ -1,3 +1,5 @@
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from models import YOLOModel
@@ -70,7 +72,16 @@ async def inspect_request(request: Request, call_next):
     response = await call_next(request)
     return response
 
+# Mount static dir
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Web services
+@app.get("/", response_class=HTMLResponse)
+async def read_root():
+    with open("./index.html", "r", encoding="utf-8") as file:
+        html_content = file.read()
+    return HTMLResponse(content=html_content, status_code=200)
+
 # Services
 @app.get("/services", response_model=List[dict], summary="Gets all the created endpoints available")
 async def list_services():
