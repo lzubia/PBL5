@@ -48,7 +48,7 @@ jobs:
         run: |
           docker run \
             --rm \
-            -v "${{ github.workspace }}:/usr/src" \
+            -v ${{ github.workspace }}/ai-models/service:/usr/src/ai-models/service
             -e SONAR_TOKEN=${{ secrets.SONAR_PY_TOKEN }} \
             sonarsource/sonar-scanner-cli:latest \
             -Dsonar.projectBaseDir=/usr/src/ai-models/service \
