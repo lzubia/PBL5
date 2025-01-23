@@ -38,7 +38,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov=my_project --cov-report=xml
+          pytest tests/ --cov=. --cov-report=xml
 
       - name: SonarCloud Scan
         run: |
