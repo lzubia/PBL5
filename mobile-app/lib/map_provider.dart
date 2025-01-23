@@ -95,66 +95,64 @@ class MapProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      String? destinationName;
-      LatLng? destination;
+      final result = address != null
+          ? await _fetchDestinationFromAddress(apiKey, address, context)
+          : await _fetchDestinationFromLatLng(apiKey, location!, context);
 
-      if (address != null) {
-        // Fetch destination from address
-        final response = await http.get(Uri.parse(
-            'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=$apiKey'));
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['status'] == 'ZERO_RESULTS') {
-            await ttsService.speakLabels([
-              AppLocalizations.of(context).translate("destination-not-found")
-            ], context);
-            return;
-          }
-
-          final location = data['results'][0]['geometry']['location'];
-          destinationName = address;
-          destination = LatLng(location['lat'], location['lng']);
-        } else {
-          throw Exception("Failed to fetch destination.");
-        }
-      } else if (location != null) {
-        // Fetch destination from LatLng
-        final latLngString = '${location.latitude},${location.longitude}';
-        final response = await http.get(Uri.parse(
-            'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latLngString&key=$apiKey'));
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          if (data['status'] == 'ZERO_RESULTS') {
-            await ttsService.speakLabels([
-              AppLocalizations.of(context).translate("destination-not-found")
-            ], context);
-            return;
-          }
-
-          destinationName = 'home'; // You can modify this to a meaningful name
-          destination = location;
-        } else {
-          throw Exception("Failed to fetch destination.");
-        }
+      if (result == null) {
+        return;
       }
 
-      if (destination == null) {
-        throw Exception("Failed to determine destination.");
-      }
-
-      // Set the destination and fetch routes and instructions
-      _destinationName = destinationName;
-      _destination = destination;
+      _destinationName = result['name'];
+      _destination = result['location'];
       notifyListeners();
 
       await fetchPolylineCoordinates();
-      await fetchNavigationInstructions(
-          context); // Pass context for translation
+      await fetchNavigationInstructions(context);
     } finally {
       _loading = false;
       notifyListeners();
+    }
+  }
+
+  /// Fetch destination details from an address.
+  Future<Map<String, dynamic>?> _fetchDestinationFromAddress(
+      String apiKey, String address, BuildContext context) async {
+    final response = await http.get(Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?address=$address&key=$apiKey'));
+
+    return _processGeocodingResponse(response, context, address);
+  }
+
+  /// Fetch destination details from a LatLng object.
+  Future<Map<String, dynamic>?> _fetchDestinationFromLatLng(
+      String apiKey, LatLng location, BuildContext context) async {
+    final latLngString = '${location.latitude},${location.longitude}';
+    final response = await http.get(Uri.parse(
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=$latLngString&key=$apiKey'));
+
+    return _processGeocodingResponse(response, context, 'home');
+  }
+
+  /// Process the geocoding response and return the destination details.
+  Future<Map<String, dynamic>?> _processGeocodingResponse(
+      http.Response response, BuildContext context, String defaultName) async {
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'ZERO_RESULTS') {
+        await ttsService.speakLabels(
+            [AppLocalizations.of(context).translate("destination-not-found")],
+            context);
+        return null;
+      }
+
+      final location = data['results'][0]['geometry']['location'];
+      return {
+        'name': defaultName,
+        'location': LatLng(location['lat'], location['lng']),
+      };
+    } else {
+      throw Exception("Failed to fetch destination.");
     }
   }
 
