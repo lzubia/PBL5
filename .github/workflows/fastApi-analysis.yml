@@ -43,7 +43,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov=. --cov-report=xml
+          pytest ./ai-models/service/tests/ --cov=./ai-models/service --cov-report=xml
+
 
       - name: SonarCloud Scan using Docker
         run: |
