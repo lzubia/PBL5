@@ -130,7 +130,6 @@ void main() {
     // testWidgets(
     //     'setDestination fetches destination coordinates and sets destination',
     //     (WidgetTester tester) async {
-    //   // Mock loading the API key
     //   dotenv.testLoad(fileInput: 'GEOCODING_API_KEY=TEST_API_KEY');
 
     //   // Mock destination address
@@ -177,81 +176,63 @@ void main() {
     //   verify(mockHttpClient.get(Uri.parse(expectedUrl))).called(1);
     // });
 
-    // testWidgets('setDestination throws exception for invalid address',
-    //     (WidgetTester tester) async {
-    //   dotenv.testLoad(fileInput: 'GEOCODING_API_KEY=TEST_API_KEY');
-    //   final destinationAddress = 'invalid address';
-    //   final mockResponse = {'status': 'ZERO_RESULTS'};
-
-    //   // Mock HTTP client to return ZERO_RESULTS
-    //   when(mockHttpClient.get(any)).thenAnswer(
-    //     (_) async => http.Response(jsonEncode(mockResponse), 200),
-    //   );
-
-    //   // Mock translation
-    //   when(mockAppLocalizations.translate("destination-not-found"))
-    //       .thenReturn("Destination not found.");
-
-    //   await tester.pumpWidget(createTestWidget(Container()));
-
-    //   await tester.pumpAndSettle(); // Ensure the widget tree is fully built
-
-    //   // Expect an exception when the address is invalid
-    //   await expectLater(
-    //     () async => await mapProvider.setDestination(
-    //       context: tester.element(find.byType(Container)),
-    //       address: destinationAddress,
-    //     ),
-    //     throwsA(isA<Exception>()),
-    //   );
-
-    //   // Verify that TTS speaks the error message
-    //   verify(mockTtsService.speakLabels(["Destination not found."], any))
-    //       .called(1);
-
-    //   // Verify that the HTTP client was called
-    //   verify(mockHttpClient.get(any)).called(1);
-    // });
-
-    testWidgets('fetchPolylineCoordinates retrieves polyline coordinates',
+    testWidgets('fetchNavigationInstructions retrieves and parses instructions',
         (WidgetTester tester) async {
       dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
 
-      // Set the current location
       mapProvider.currentLocation = LocationData.fromMap({
         'latitude': 37.7749,
         'longitude': -122.4194,
       });
 
-      // Set the destination
       mapProvider.destination = const LatLng(37.422, -122.084);
 
-      // Mock PolylinePoints to return a valid result
-      when(mockPolylinePoints.getRouteBetweenCoordinates(
-        googleApiKey: anyNamed('googleApiKey'),
-        request: anyNamed('request'),
-      )).thenAnswer((_) async => PolylineResult(
-            points: [
-              PointLatLng(37.7749, -122.4194),
-              PointLatLng(37.422, -122.084),
-            ],
-            status: 'OK',
-          ));
+      final mockResponse = {
+        'routes': [
+          {
+            'legs': [
+              {
+                'steps': [
+                  {
+                    'html_instructions': '<b>Turn right</b> onto Main Street.',
+                    'start_location': {'lat': 37.7749, 'lng': -122.4194},
+                  },
+                  {
+                    'html_instructions': '<b>Turn left</b> onto Elm Street.',
+                    'start_location': {'lat': 37.7750, 'lng': -122.4195},
+                  },
+                ]
+              }
+            ]
+          }
+        ]
+      };
 
-      // Call the method under test
-      await mapProvider.fetchPolylineCoordinates();
+      final expectedUrl =
+          'https://maps.googleapis.com/maps/api/directions/json?origin=37.7749,-122.4194&destination=37.422,-122.084&mode=walking&key=TEST_API_KEY';
 
-      // Verify the polyline coordinates
-      expect(mapProvider.polylineCoordinates, [
-        const LatLng(37.7749, -122.4194),
-        const LatLng(37.422, -122.084),
-      ]);
+      when(mockHttpClient.get(Uri.parse(expectedUrl))).thenAnswer(
+        (_) async => http.Response(jsonEncode(mockResponse), 200),
+      );
 
-      // Verify that the mocked method was called once
-      verify(mockPolylinePoints.getRouteBetweenCoordinates(
-        googleApiKey: anyNamed('googleApiKey'),
-        request: anyNamed('request'),
-      )).called(1);
+      when(mockTranslationProvider.translateText(any, any))
+          .thenAnswer((_) async => 'Translated instruction.');
+
+      await tester.pumpWidget(createTestWidget(Container()));
+
+      await tester.pumpAndSettle();
+
+      await mapProvider
+          .fetchNavigationInstructions(tester.element(find.byType(Container)));
+
+      expect(mapProvider.instructions.length, 2);
+
+      expect(mapProvider.instructions[0]['instruction'],
+          'Turn right onto Main Street.');
+      expect(mapProvider.instructions[1]['instruction'],
+          'Turn left onto Elm Street.');
+
+      verify(mockHttpClient.get(Uri.parse(expectedUrl))).called(1);
     });
 
     // testWidgets('dispose cancels location subscription',
