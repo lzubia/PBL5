@@ -147,7 +147,7 @@ class VoiceCommands extends ChangeNotifier {
 
   void _startCommandTimer() {
     _cancelCommandTimer();
-    _commandTimer = Timer(Duration(seconds: 10), () {
+    _commandTimer = Timer(const Duration(seconds: 10), () {
       _desactivateBegia();
     });
   }
@@ -188,7 +188,7 @@ class VoiceCommands extends ChangeNotifier {
     notifyListeners();
     sttService.stopListening();
     startListening();
-    await Future.delayed(Duration(seconds: 2), () {
+    await Future.delayed(const Duration(seconds: 2), () {
       riskTrigger = false;
     });
   }
@@ -330,7 +330,7 @@ class VoiceCommands extends ChangeNotifier {
     this.triggerVariable = triggerVariable;
     notifyListeners();
     _cancelCommandTimer();
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
       triggerVariable = 0; // Reset Trigger after the delay
     });
 
