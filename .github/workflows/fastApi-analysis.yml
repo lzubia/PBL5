@@ -12,7 +12,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./ai-models    
+        working-directory: ./ai-models/service    
 
     steps:
       - uses: actions/checkout@v3
