@@ -1196,6 +1196,15 @@ class MockVoiceCommands extends _i1.Mock implements _i18.VoiceCommands {
       );
 
   @override
+  set commandTimer(_i13.Timer? timer) => super.noSuchMethod(
+        Invocation.setter(
+          #commandTimer,
+          timer,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   bool get isActivated => (super.noSuchMethod(
         Invocation.getter(#isActivated),
         returnValue: false,

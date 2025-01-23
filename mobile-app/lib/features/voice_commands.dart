@@ -22,6 +22,11 @@ class VoiceCommands extends ChangeNotifier {
   int triggerVariable = 0; // trigger widget
 
   Timer? _commandTimer;
+  Timer? get commandTimer => _commandTimer;
+  set commandTimer(Timer? timer) {
+    _commandTimer = timer;
+    notifyListeners();
+  }
 
   final SttService _sttService;
   late AudioPlayer player;

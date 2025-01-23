@@ -723,14 +723,13 @@ class MockSosService extends _i1.Mock implements _i19.SosService {
       ) as _i10.TtsServiceGoogle);
 
   @override
-  set ttsServiceGoogle(_i10.TtsServiceGoogle? _ttsServiceGoogle) =>
-      super.noSuchMethod(
-        Invocation.setter(
-          #ttsServiceGoogle,
-          _ttsServiceGoogle,
+  _i3.Client get client => (super.noSuchMethod(
+        Invocation.getter(#client),
+        returnValue: _FakeClient_1(
+          this,
+          Invocation.getter(#client),
         ),
-        returnValueForMissingStub: null,
-      );
+      ) as _i3.Client);
 
   @override
   _i15.Future<void> sendSosRequest(
@@ -1199,6 +1198,15 @@ class MockVoiceCommands extends _i1.Mock implements _i21.VoiceCommands {
         Invocation.setter(
           #ttsServiceGoogle,
           _ttsServiceGoogle,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  set commandTimer(_i15.Timer? timer) => super.noSuchMethod(
+        Invocation.setter(
+          #commandTimer,
+          timer,
         ),
         returnValueForMissingStub: null,
       );

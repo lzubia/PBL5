@@ -48,7 +48,7 @@ void main() {
       httpClient: mockHttpClient,
       polylinePoints: mockPolylinePoints,
       ttsService: mockTtsService,
-      location: mockLocation, // Pass the mockLocation here
+      location: mockLocation,
     );
   });
 
@@ -83,13 +83,14 @@ void main() {
     //     'longitude': -122.4194,
     //   });
 
-    //   // Mock location.getLocation
+    //   // Mock `location.getLocation` to return a fixed location
     //   when(mockLocation.getLocation())
     //       .thenAnswer((_) async => mockLocationData);
 
-    //   // Mock onLocationChanged stream
+    //   // Mock `location.onLocationChanged` to emit a stream of location updates
+    //   final locationStreamController = StreamController<LocationData>();
     //   when(mockLocation.onLocationChanged)
-    //       .thenAnswer((_) => Stream.value(mockLocationData));
+    //       .thenAnswer((_) => locationStreamController.stream);
 
     //   // Mock translation
     //   when(mockAppLocalizations.translate("mapa-on"))
@@ -99,24 +100,43 @@ void main() {
 
     //   await tester.pumpAndSettle(); // Ensure the widget tree is fully built
 
+    //   // Call `getCurrentLocation`
     //   await mapProvider
     //       .getCurrentLocation(tester.element(find.byType(Container)));
 
+    //   // Verify that the initial location is set
     //   expect(mapProvider.currentLocation, mockLocationData);
 
-    //   // Simulate location change
-    //   await Future.delayed(const Duration(milliseconds: 100), () {});
+    //   // Simulate a location update
+    //   final updatedLocationData = LocationData.fromMap({
+    //     'latitude': 37.7750,
+    //     'longitude': -122.4195,
+    //   });
+    //   locationStreamController.add(updatedLocationData);
+
+    //   await Future.delayed(const Duration(milliseconds: 100));
+    //   expect(mapProvider.currentLocation, updatedLocationData);
+
+    //   // Verify that the `onLocationChanged` stream was listened to
     //   verify(mockLocation.onLocationChanged).called(1);
 
-    //   // Verify that TTS speaks map activation message
-    //   verify(mockTtsService.speakLabels(["Map is now active."])).called(1);
+    //   // Verify that TTS speaks the "mapa-on" message
+    //   verify(mockTtsService.speakLabels(["Map is now active."], any)).called(1);
+
+    //   // Close the stream controller to ensure the test completes
+    //   await locationStreamController.close();
     // });
 
     // testWidgets(
     //     'setDestination fetches destination coordinates and sets destination',
     //     (WidgetTester tester) async {
+    //   // Mock loading the API key
     //   dotenv.testLoad(fileInput: 'GEOCODING_API_KEY=TEST_API_KEY');
+
+    //   // Mock destination address
     //   final destinationAddress = '1600 Amphitheatre Parkway, Mountain View, CA';
+
+    //   // Mock response data
     //   final mockResponse = {
     //     'status': 'OK',
     //     'results': [
@@ -128,22 +148,33 @@ void main() {
     //     ]
     //   };
 
-    //   // Mock HTTP client
-    //   when(mockHttpClient.get(any)).thenAnswer(
+    //   // Expected URL
+    //   final expectedUrl =
+    //       'https://maps.googleapis.com/maps/api/geocode/json?address=$destinationAddress&key=TEST_API_KEY';
+
+    //   // Mock the HTTP GET request
+    //   when(mockHttpClient.get(Uri.parse(expectedUrl))).thenAnswer(
     //     (_) async => http.Response(jsonEncode(mockResponse), 200),
     //   );
 
+    //   // Pump widget
     //   await tester.pumpWidget(createTestWidget(Container()));
 
-    //   await tester.pumpAndSettle(); // Ensure the widget tree is fully built
+    //   // Ensure the widget tree is built
+    //   await tester.pumpAndSettle();
 
+    //   // Call setDestination
     //   await mapProvider.setDestination(
     //     context: tester.element(find.byType(Container)),
     //     address: destinationAddress,
     //   );
 
+    //   // Verify that the destination is set correctly
     //   expect(mapProvider.destination, const LatLng(37.422, -122.084));
-    //   verify(mockHttpClient.get(any)).called(1);
+    //   expect(mapProvider.destinationName, destinationAddress);
+
+    //   // Verify that the mockHttpClient.get was called with the expected URL
+    //   verify(mockHttpClient.get(Uri.parse(expectedUrl))).called(1);
     // });
 
     // testWidgets('setDestination throws exception for invalid address',
@@ -175,7 +206,8 @@ void main() {
     //   );
 
     //   // Verify that TTS speaks the error message
-    //   verify(mockTtsService.speakLabels(["Destination not found."])).called(1);
+    //   verify(mockTtsService.speakLabels(["Destination not found."], any))
+    //       .called(1);
 
     //   // Verify that the HTTP client was called
     //   verify(mockHttpClient.get(any)).called(1);
@@ -186,14 +218,6 @@ void main() {
       dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
 
       // Set the current location
-      mapProvider.location = mockLocation;
-      when(mockLocation.getLocation()).thenAnswer(
-        (_) async => LocationData.fromMap({
-          'latitude': 37.7749,
-          'longitude': -122.4194,
-        }),
-      );
-
       mapProvider.currentLocation = LocationData.fromMap({
         'latitude': 37.7749,
         'longitude': -122.4194,
@@ -255,5 +279,12 @@ void main() {
     //   expect(mapProvider.locationSubscription, isNull);
     //   await streamController.close();
     // });
+
+    test('removeHtmlTags removes HTML tags correctly', () {
+      const htmlText = '<b>Turn right</b> at the <i>next</i> intersection.';
+      const expected = 'Turn right at the next intersection.';
+      final result = mapProvider.removeHtmlTags(htmlText);
+      expect(result, expected);
+    });
   });
 }

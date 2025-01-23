@@ -327,7 +327,7 @@ class SettingsScreenState extends State<SettingsScreen> {
     return Slider(
       value: _fontSize,
       min: 16.0,
-      max: 38.0,
+      max: 32.0,
       onChanged: _changeFontSize,
     );
   }
