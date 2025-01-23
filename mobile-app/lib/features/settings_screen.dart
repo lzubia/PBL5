@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 import 'package:pbl5_menu/features/map_widget.dart';
@@ -17,11 +18,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
+  FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
 
   // State variables
   List<Map<String, String>> contacts = [];
+
+  Timer? _debounceTimer;
 
   double _fontSize = 20.0;
   String _language = 'English';
@@ -88,22 +90,22 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _deleteContact(String contactName) async {
-    try {
-      final dbHelper = context.read<DatabaseHelper>();
-      await dbHelper.deleteContact(contactName);
+Future<void> _deleteContact(String contactName) async {
+  try {
+    final dbHelper = context.read<DatabaseHelper>();
+    await dbHelper.deleteContact(contactName);
 
-      // Re-fetch the contacts after deletion to update the list
-      final updatedContacts = await dbHelper.getContacts();
+    // Re-fetch updated contacts
+    final updatedContacts = await dbHelper.getContacts();
 
-      setState(() {
-        contacts = updatedContacts;
-      });
-      debugPrint('Contact deleted: $contactName');
-    } catch (e) {
-      debugPrint('Error deleting contact: $e');
-    }
+    setState(() {
+      contacts = updatedContacts;
+    });
+  } catch (e) {
+    debugPrint('Error deleting contact: $e');
   }
+}
+
 
   void _changeTheme(bool isDark) {
     setState(() {
@@ -129,12 +131,19 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _changeSpeechRate(double rate) {
-    final ttsService = context.read<ITtsService>();
     setState(() {
       _speechRate = rate;
     });
-    ttsService.updateSpeechRate(rate);
-    _updatePreferences();
+
+    // Cancel any existing timer
+    _debounceTimer?.cancel();
+
+    // Set a new timer to debounce updates
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      final ttsService = context.read<ITtsService>();
+      ttsService.updateSpeechRate(rate);
+      _updatePreferences();
+    });
   }
 
   @override
@@ -152,44 +161,46 @@ class SettingsScreenState extends State<SettingsScreen> {
           title: const Text('BEGIA',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         ),
-        body: Padding(
-          padding: const EdgeInsets.only(
-              left: 16.0, right: 16.0, bottom: 16.0), // Exclude top padding
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle(
-                context,
-                'contacts',
-                textColor,
-                actionButton: ElevatedButton(
-                  onPressed: () async {
-                    // Navigate to the map screen to select the home location
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => MapWidget(
-                                title: 'save',
-                              )),
-                    );
-                  },
-                  child: Icon(Icons.home, size: _fontSize),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(
+                left: 16.0, right: 16.0, bottom: 16.0), // Exclude top padding
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle(
+                  context,
+                  'contacts',
+                  textColor,
+                  actionButton: ElevatedButton(
+                    onPressed: () async {
+                      // Navigate to the map screen to select the home location
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MapWidget(
+                                  title: 'save',
+                                )),
+                      );
+                    },
+                    child: Icon(Icons.home, size: _fontSize),
+                  ),
                 ),
-              ),
-              _buildContactsList(),
-              _buildAddContactButton(),
-              const Divider(),
-              _buildThemeSwitch(),
-              const Divider(),
-              _buildSectionTitle(context, 'language', textColor),
-              _buildLanguageSelector(localeProvider),
-              const Divider(),
-              _buildSectionTitle(context, 'font_size', textColor),
-              _buildFontSizeSlider(),
-              const Divider(),
-              _buildSectionTitle(context, 'speech_rate', textColor),
-              _buildSpeechRateSlider(),
-            ],
+                _buildContactsList(),
+                _buildAddContactButton(),
+                const Divider(),
+                _buildThemeSwitch(),
+                const Divider(),
+                _buildSectionTitle(context, 'language', textColor),
+                _buildLanguageSelector(localeProvider),
+                const Divider(),
+                _buildSectionTitle(context, 'font_size', textColor),
+                _buildFontSizeSlider(),
+                const Divider(),
+                _buildSectionTitle(context, 'speech_rate', textColor),
+                _buildSpeechRateSlider(),
+              ],
+            ),
           ),
         ),
       ),
@@ -216,49 +227,49 @@ class SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildContactsList() {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: contacts.length,
-        itemBuilder: (context, index) {
-          return Dismissible(
-            key: ValueKey(contacts[index]),
-            direction: DismissDirection.endToStart,
-            onDismissed: (direction) async {
-              await _deleteContact(contacts[index]['name'] ?? '');
-            },
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            child: Card(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                title: Text(
-                  contacts[index]['name'] ?? '',
-                  style: TextStyle(
-                    fontSize: _fontSize,
-                    color: _isDarkTheme
-                        ? Colors.white
-                        : Colors.black, // Changes based on theme
-                  ),
-                ),
-                trailing: IconButton(
-                  icon: Icon(
-                    Icons.cancel,
-                    color: Colors.red,
-                    size: _fontSize + 4,
-                  ),
-                  onPressed: () async {
-                    await _deleteContact(contacts[index]['name'] ?? '');
-                  },
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: contacts.length,
+      itemBuilder: (context, index) {
+        return Dismissible(
+          key: ValueKey(contacts[index]),
+          direction: DismissDirection.endToStart,
+          onDismissed: (direction) async {
+            await _deleteContact(contacts[index]['name'] ?? '');
+          },
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: ListTile(
+              title: Text(
+                contacts[index]['name'] ?? '',
+                style: TextStyle(
+                  fontSize: _fontSize,
+                  color: _isDarkTheme
+                      ? Colors.white
+                      : Colors.black, // Changes based on theme
                 ),
               ),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.cancel,
+                  color: Colors.red,
+                  size: _fontSize + 4,
+                ),
+                onPressed: () async {
+                  await _deleteContact(contacts[index]['name'] ?? '');
+                },
+              ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
