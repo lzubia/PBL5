@@ -3,12 +3,9 @@ name: SonarQube Analysis
 on:
   push:
     branches:
+      - main
+      - mobile-main
       - mobile-develop
-      - mobile-tp
-      - mobile-tests
-      - mobile-tp
-      - unify-tests
-      - unify-tests-analysis
   pull_request:
 
 jobs:
