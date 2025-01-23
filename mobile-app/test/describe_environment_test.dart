@@ -6,22 +6,26 @@ import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
 import 'package:pbl5_menu/features/describe_environment.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'describe_environment_test.mocks.dart';
 
-@GenerateMocks([ITtsService, PictureService, AppInitializer])
+@GenerateMocks(
+    [ITtsService, PictureService, AppInitializer, TranslationProvider])
 void main() {
   group('DescribeEnvironment', () {
     late MockITtsService mockTtsService;
     late MockPictureService mockPictureService;
     late MockAppInitializer mockAppInitializer;
+    late MockTranslationProvider mockTranslationProvider;
 
     setUp(() async {
       mockTtsService = MockITtsService();
       mockPictureService = MockPictureService();
       mockAppInitializer = MockAppInitializer();
+      mockTranslationProvider = MockTranslationProvider();
 
       // Initialize dotenv
       await dotenv.load(fileName: ".env");
@@ -35,6 +39,10 @@ void main() {
 
       // Stub `sessionToken`
       when(mockAppInitializer.sessionToken).thenReturn('testSessionToken');
+
+      // Stub `translateText`
+      when(mockTranslationProvider.translateText(any, any))
+          .thenAnswer((_) async => 'TranslatedLabel');
     });
 
     testWidgets('should take and send image when button is pressed',
@@ -46,6 +54,8 @@ void main() {
             ChangeNotifierProvider<PictureService>.value(
                 value: mockPictureService),
             Provider<AppInitializer>.value(value: mockAppInitializer),
+            ChangeNotifierProvider<TranslationProvider>.value(
+                value: mockTranslationProvider),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -78,6 +88,8 @@ void main() {
             ChangeNotifierProvider<PictureService>.value(
                 value: mockPictureService),
             Provider<AppInitializer>.value(value: mockAppInitializer),
+            ChangeNotifierProvider<TranslationProvider>.value(
+                value: mockTranslationProvider),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -102,9 +114,13 @@ void main() {
       // Simulate the `onLabelsDetected` callback being invoked
       final onLabelsDetected = captured.first as Function(List<String>);
       onLabelsDetected(['Label1', 'Label2']);
+      await tester.pump(); // Allow async operations to complete
 
-      // Verify that `ttsService.speakLabels` is called with the correct labels
-      verify(mockTtsService.speakLabels(['Label1', 'Label2'])).called(1);
+      // Verify that `translateText` is called
+      verify(mockTranslationProvider.translateText('Label1', any)).called(1);
+
+      // Verify that `ttsService.speakLabels` is called with the translated labels
+      verify(mockTtsService.speakLabels(['TranslatedLabel'], any)).called(1);
     });
 
     testWidgets('should show SnackBar with correct description',
@@ -116,6 +132,8 @@ void main() {
             ChangeNotifierProvider<PictureService>.value(
                 value: mockPictureService),
             Provider<AppInitializer>.value(value: mockAppInitializer),
+            ChangeNotifierProvider<TranslationProvider>.value(
+                value: mockTranslationProvider),
           ],
           child: const MaterialApp(
             home: Scaffold(
@@ -157,6 +175,8 @@ void main() {
             ChangeNotifierProvider<PictureService>.value(
                 value: mockPictureService),
             Provider<AppInitializer>.value(value: mockAppInitializer),
+            ChangeNotifierProvider<TranslationProvider>.value(
+                value: mockTranslationProvider),
           ],
           child: const MaterialApp(
             home: Scaffold(

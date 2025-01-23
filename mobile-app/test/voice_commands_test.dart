@@ -71,7 +71,7 @@ void main() {
     when(mockAudioPlayer.play(any)).thenAnswer((_) async => Future.value());
 
     // Mock TTS Service
-    when(mockTtsService.speakLabels(any))
+    when(mockTtsService.speakLabels(any, any))
         .thenAnswer((_) async => Future.value());
 
     // Mock LocaleProvider

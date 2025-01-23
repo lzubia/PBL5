@@ -988,11 +988,17 @@ class MockITtsService extends _i1.Mock implements _i8.ITtsService {
       );
 
   @override
-  _i15.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i15.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i6.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i15.Future<void>.value(),
         returnValueForMissingStub: _i15.Future<void>.value(),

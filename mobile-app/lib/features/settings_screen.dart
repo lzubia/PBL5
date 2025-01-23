@@ -15,16 +15,16 @@ class SettingsScreen extends StatefulWidget {
 
   @override
   SettingsScreenState createState() => SettingsScreenState();
+
+  static bool kTestMode = false; // Static variable for test mode
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
+  late FlutterNativeContactPicker _contactPicker;
 
   // State variables
   List<Map<String, String>> contacts = [];
-
   Timer? _debounceTimer;
-
   double _fontSize = 20.0;
   String _language = 'English';
   bool _isDarkTheme = false;
@@ -41,16 +41,13 @@ class SettingsScreenState extends State<SettingsScreen> {
     try {
       final dbHelper = context.read<DatabaseHelper>();
       final prefs = await dbHelper.getPreferences();
-      final savedContacts =
-          await dbHelper.getContacts(); // Fetch all data (name + phone)
+      final savedContacts = await dbHelper.getContacts();
 
       setState(() {
         _fontSize = prefs['fontSize'];
         _language = prefs['language'];
         _isDarkTheme = prefs['isDarkTheme'] == 1;
         _speechRate = prefs['speechRate'] ?? 1.0;
-
-        // Populate both lists
         contacts = savedContacts;
       });
     } catch (e) {
@@ -75,14 +72,10 @@ class SettingsScreenState extends State<SettingsScreen> {
   Future<void> _addContact(String contact, String number) async {
     try {
       final dbHelper = context.read<DatabaseHelper>();
-      // Add the contact to the database
       await dbHelper.insertContact(contact, number);
-
-      // Re-fetch the contacts after inserting a new one
       final updatedContacts = await dbHelper.getContacts();
 
       setState(() {
-        // Update the contacts list
         contacts = updatedContacts;
       });
     } catch (e) {
@@ -90,22 +83,19 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-Future<void> _deleteContact(String contactName) async {
-  try {
-    final dbHelper = context.read<DatabaseHelper>();
-    await dbHelper.deleteContact(contactName);
+  Future<void> _deleteContact(String contactName) async {
+    try {
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.deleteContact(contactName);
+      final updatedContacts = await dbHelper.getContacts();
 
-    // Re-fetch updated contacts
-    final updatedContacts = await dbHelper.getContacts();
-
-    setState(() {
-      contacts = updatedContacts;
-    });
-  } catch (e) {
-    debugPrint('Error deleting contact: $e');
+      setState(() {
+        contacts = updatedContacts;
+      });
+    } catch (e) {
+      debugPrint('Error deleting contact: $e');
+    }
   }
-}
-
 
   void _changeTheme(bool isDark) {
     setState(() {
@@ -135,15 +125,22 @@ Future<void> _deleteContact(String contactName) async {
       _speechRate = rate;
     });
 
-    // Cancel any existing timer
-    _debounceTimer?.cancel();
+    debugPrint('Speech rate changed to: $rate');
 
-    // Set a new timer to debounce updates
-    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+    if (SettingsScreen.kTestMode) {
+      // Call directly in test mode
       final ttsService = context.read<ITtsService>();
       ttsService.updateSpeechRate(rate);
       _updatePreferences();
-    });
+    } else {
+      // Debounced call
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        final ttsService = context.read<ITtsService>();
+        ttsService.updateSpeechRate(rate);
+        _updatePreferences();
+      });
+    }
   }
 
   @override
@@ -163,8 +160,8 @@ Future<void> _deleteContact(String contactName) async {
         ),
         body: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.only(
-                left: 16.0, right: 16.0, bottom: 16.0), // Exclude top padding
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -173,14 +170,12 @@ Future<void> _deleteContact(String contactName) async {
                   'contacts',
                   textColor,
                   actionButton: ElevatedButton(
-                    onPressed: () async {
-                      // Navigate to the map screen to select the home location
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => MapWidget(
-                                  title: 'save',
-                                )),
+                          builder: (context) => const MapWidget(title: 'save'),
+                        ),
                       );
                     },
                     child: Icon(Icons.home, size: _fontSize),
@@ -220,8 +215,7 @@ Future<void> _deleteContact(String contactName) async {
             color: color,
           ),
         ),
-        if (actionButton != null)
-          actionButton, // If button is provided, show it
+        if (actionButton != null) actionButton,
       ],
     );
   }
@@ -229,15 +223,13 @@ Future<void> _deleteContact(String contactName) async {
   Widget _buildContactsList() {
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: contacts.length,
       itemBuilder: (context, index) {
         return Dismissible(
           key: ValueKey(contacts[index]),
           direction: DismissDirection.endToStart,
-          onDismissed: (direction) async {
-            await _deleteContact(contacts[index]['name'] ?? '');
-          },
+          onDismissed: (_) => _deleteContact(contacts[index]['name'] ?? ''),
           background: Container(
             color: Colors.red,
             alignment: Alignment.centerRight,
@@ -251,20 +243,13 @@ Future<void> _deleteContact(String contactName) async {
                 contacts[index]['name'] ?? '',
                 style: TextStyle(
                   fontSize: _fontSize,
-                  color: _isDarkTheme
-                      ? Colors.white
-                      : Colors.black, // Changes based on theme
+                  color: _isDarkTheme ? Colors.white : Colors.black,
                 ),
               ),
               trailing: IconButton(
-                icon: Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                  size: _fontSize + 4,
-                ),
-                onPressed: () async {
-                  await _deleteContact(contacts[index]['name'] ?? '');
-                },
+                icon:
+                    Icon(Icons.cancel, color: Colors.red, size: _fontSize + 4),
+                onPressed: () => _deleteContact(contacts[index]['name'] ?? ''),
               ),
             ),
           ),
@@ -275,18 +260,16 @@ Future<void> _deleteContact(String contactName) async {
 
   Widget _buildAddContactButton() {
     return ElevatedButton(
-      key: const Key('addContactButton'), // Add a unique key
+      key: const Key('addContactButton'),
       onPressed: () async {
         try {
           final contact = await _contactPicker.selectContact();
           if (contact == null) return;
 
           final contactName = contact.fullName ?? 'Unknown';
-          final phoneNumber = contact.phoneNumbers?.isNotEmpty == true
-              ? contact.phoneNumbers!.first
-              : null;
+          final phoneNumber = contact.phoneNumbers?.first ?? '';
 
-          if (phoneNumber == null || phoneNumber.isEmpty) {
+          if (phoneNumber.isEmpty) {
             debugPrint('No phone number found for selected contact.');
             return;
           }
@@ -302,23 +285,17 @@ Future<void> _deleteContact(String contactName) async {
   }
 
   Widget _buildThemeSwitch() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: SwitchListTile(
-        contentPadding:
-            EdgeInsets.zero, // Remove padding that might be adding extra space
-        title: Text(
-          AppLocalizations.of(context).translate('theme'),
-          style: TextStyle(
-            fontSize: _fontSize + 4,
-            fontWeight: FontWeight.bold,
-            color:
-                _isDarkTheme ? Colors.white : Colors.black, // Text color change
-          ),
+    return SwitchListTile(
+      title: Text(
+        AppLocalizations.of(context).translate('theme'),
+        style: TextStyle(
+          fontSize: _fontSize + 4,
+          fontWeight: FontWeight.bold,
+          color: _isDarkTheme ? Colors.white : Colors.black,
         ),
-        value: _isDarkTheme,
-        onChanged: _changeTheme,
       ),
+      value: _isDarkTheme,
+      onChanged: _changeTheme,
     );
   }
 
@@ -328,7 +305,8 @@ Future<void> _deleteContact(String contactName) async {
       children: [
         _buildLanguageButton(localeProvider, 'ENG', 'en-US', 'en-US-Wavenet-D'),
         _buildLanguageButton(localeProvider, 'ESP', 'es-ES', 'es-ES-Wavenet-B'),
-        _buildLanguageButton(localeProvider, 'EUS', 'eu-ES', 'eu-ES-Standard-A'),
+        _buildLanguageButton(
+            localeProvider, 'EUS', 'eu-ES', 'eu-ES-Standard-A'),
       ],
     );
   }

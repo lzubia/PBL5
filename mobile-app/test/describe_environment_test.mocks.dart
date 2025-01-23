@@ -20,6 +20,7 @@ import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i13;
 import 'package:pbl5_menu/services/stt/stt_service.dart' as _i9;
 import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i8;
 import 'package:pbl5_menu/shared/database_helper.dart' as _i7;
+import 'package:pbl5_menu/translation_provider.dart' as _i17;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -203,11 +204,17 @@ class MockITtsService extends _i1.Mock implements _i13.ITtsService {
       );
 
   @override
-  _i14.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i14.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i6.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i14.Future<void>.value(),
         returnValueForMissingStub: _i14.Future<void>.value(),
@@ -768,4 +775,81 @@ class MockAppInitializer extends _i1.Mock implements _i16.AppInitializer {
         returnValue: _i14.Future<void>.value(),
         returnValueForMissingStub: _i14.Future<void>.value(),
       ) as _i14.Future<void>);
+}
+
+/// A class which mocks [TranslationProvider].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTranslationProvider extends _i1.Mock
+    implements _i17.TranslationProvider {
+  MockTranslationProvider() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i14.Future<String> translateText(
+    String? text,
+    String? targetLanguage,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #translateText,
+          [
+            text,
+            targetLanguage,
+          ],
+        ),
+        returnValue: _i14.Future<String>.value(_i15.dummyValue<String>(
+          this,
+          Invocation.method(
+            #translateText,
+            [
+              text,
+              targetLanguage,
+            ],
+          ),
+        )),
+      ) as _i14.Future<String>);
+
+  @override
+  void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }

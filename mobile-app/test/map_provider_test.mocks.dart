@@ -10,6 +10,7 @@ import 'dart:ui' as _i7;
 
 import 'package:audioplayers/audioplayers.dart' as _i5;
 import 'package:flutter/services.dart' as _i6;
+import 'package:flutter/widgets.dart' as _i17;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as _i13;
 import 'package:flutter_polyline_points/src/point_lat_lng.dart' as _i15;
 import 'package:flutter_polyline_points/src/utils/polyline_request.dart'
@@ -21,9 +22,9 @@ import 'package:location_platform_interface/location_platform_interface.dart'
     as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i11;
-import 'package:pbl5_menu/services/l10n.dart' as _i18;
+import 'package:pbl5_menu/services/l10n.dart' as _i19;
 import 'package:pbl5_menu/services/tts/tts_service_google.dart' as _i16;
-import 'package:pbl5_menu/translation_provider.dart' as _i17;
+import 'package:pbl5_menu/translation_provider.dart' as _i18;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -632,6 +633,42 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
       );
 
   @override
+  String get elhuyarApiId => (super.noSuchMethod(
+        Invocation.getter(#elhuyarApiId),
+        returnValue: _i11.dummyValue<String>(
+          this,
+          Invocation.getter(#elhuyarApiId),
+        ),
+      ) as String);
+
+  @override
+  set elhuyarApiId(String? _elhuyarApiId) => super.noSuchMethod(
+        Invocation.setter(
+          #elhuyarApiId,
+          _elhuyarApiId,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  String get elhuyarApiKey => (super.noSuchMethod(
+        Invocation.getter(#elhuyarApiKey),
+        returnValue: _i11.dummyValue<String>(
+          this,
+          Invocation.getter(#elhuyarApiKey),
+        ),
+      ) as String);
+
+  @override
+  set elhuyarApiKey(String? _elhuyarApiKey) => super.noSuchMethod(
+        Invocation.setter(
+          #elhuyarApiKey,
+          _elhuyarApiKey,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i3.Client get httpClient => (super.noSuchMethod(
         Invocation.getter(#httpClient),
         returnValue: _FakeClient_5(
@@ -713,11 +750,17 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
       ) as _i9.Future<String>);
 
   @override
-  _i9.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i9.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i17.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i9.Future<void>.value(),
         returnValueForMissingStub: _i9.Future<void>.value(),
@@ -728,7 +771,7 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i16.TtsServiceGoogle {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTranslationProvider extends _i1.Mock
-    implements _i17.TranslationProvider {
+    implements _i18.TranslationProvider {
   MockTranslationProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -804,7 +847,7 @@ class MockTranslationProvider extends _i1.Mock
 /// A class which mocks [AppLocalizations].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAppLocalizations extends _i1.Mock implements _i18.AppLocalizations {
+class MockAppLocalizations extends _i1.Mock implements _i19.AppLocalizations {
   MockAppLocalizations() {
     _i1.throwOnMissingStub(this);
   }

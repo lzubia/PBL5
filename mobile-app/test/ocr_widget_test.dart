@@ -8,20 +8,24 @@ import 'package:pbl5_menu/app_initializer.dart';
 import 'package:pbl5_menu/features/ocr_widget.dart';
 import 'package:pbl5_menu/services/picture_service.dart';
 import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'ocr_widget_test.mocks.dart';
 
-@GenerateMocks([PictureService, ITtsService, AppInitializer])
+@GenerateMocks(
+    [PictureService, ITtsService, AppInitializer, TranslationProvider])
 void main() {
   late MockPictureService mockPictureService;
   late MockITtsService mockTtsService;
   late MockAppInitializer mockAppInitializer;
+  late MockTranslationProvider mockTranslationProvider;
 
   setUp(() async {
     mockPictureService = MockPictureService();
     mockTtsService = MockITtsService();
     mockAppInitializer = MockAppInitializer();
+    mockTranslationProvider = MockTranslationProvider();
 
     // Load dotenv environment variables
     await dotenv.load(fileName: ".env");
@@ -30,15 +34,19 @@ void main() {
     when(mockPictureService.isCameraInitialized).thenReturn(true);
     when(mockAppInitializer.sessionToken).thenReturn('test-session-token');
     when(mockPictureService.getCameraPreview()).thenReturn(Container());
+    when(mockTranslationProvider.translateText(any, any))
+        .thenAnswer((_) async => 'TranslatedLabel');
   });
 
   tearDown(() {
     reset(mockPictureService);
     reset(mockTtsService);
     reset(mockAppInitializer);
+    reset(mockTranslationProvider);
     clearInteractions(mockPictureService);
     clearInteractions(mockTtsService);
     clearInteractions(mockAppInitializer);
+    clearInteractions(mockTranslationProvider);
   });
 
   Future<void> pumpOcrWidget(WidgetTester tester) async {
@@ -49,6 +57,8 @@ void main() {
               value: mockPictureService),
           Provider<ITtsService>.value(value: mockTtsService),
           Provider<AppInitializer>.value(value: mockAppInitializer),
+          ChangeNotifierProvider<TranslationProvider>.value(
+              value: mockTranslationProvider),
         ],
         child: MaterialApp(
           localizationsDelegates: [
@@ -132,7 +142,7 @@ void main() {
     expect(find.text('Description: $testLabels'), findsOneWidget);
 
     // Verify that TTS is called with the correct labels
-    verify(mockTtsService.speakLabels(testLabels)).called(1);
+    verify(mockTtsService.speakLabels(['TranslatedLabel'], any)).called(1);
   });
 
   testWidgets('should show a SnackBar with response time when updated',

@@ -4,17 +4,18 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'dart:typed_data' as _i9;
+import 'dart:typed_data' as _i10;
 import 'dart:ui' as _i5;
 
 import 'package:audioplayers/audioplayers.dart' as _i3;
+import 'package:flutter/material.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i8;
-import 'package:pbl5_menu/locale_provider.dart' as _i10;
-import 'package:pbl5_menu/services/l10n.dart' as _i12;
+import 'package:mockito/src/dummies.dart' as _i9;
+import 'package:pbl5_menu/locale_provider.dart' as _i11;
+import 'package:pbl5_menu/services/l10n.dart' as _i13;
 import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i7;
 import 'package:pbl5_menu/services/stt/stt_service.dart' as _i6;
-import 'package:pbl5_menu/widgetState_provider.dart' as _i11;
+import 'package:pbl5_menu/widgetState_provider.dart' as _i12;
 import 'package:speech_to_text/speech_to_text.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -178,11 +179,17 @@ class MockITtsService extends _i1.Mock implements _i7.ITtsService {
       );
 
   @override
-  _i4.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i4.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i8.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
@@ -246,7 +253,7 @@ class MockAudioPlayer extends _i1.Mock implements _i3.AudioPlayer {
   @override
   String get playerId => (super.noSuchMethod(
         Invocation.getter(#playerId),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.getter(#playerId),
         ),
@@ -567,7 +574,7 @@ class MockAudioPlayer extends _i1.Mock implements _i3.AudioPlayer {
 
   @override
   _i4.Future<void> setSourceBytes(
-    _i9.Uint8List? bytes, {
+    _i10.Uint8List? bytes, {
     String? mimeType,
   }) =>
       (super.noSuchMethod(
@@ -612,7 +619,7 @@ class MockAudioPlayer extends _i1.Mock implements _i3.AudioPlayer {
 /// A class which mocks [LocaleProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLocaleProvider extends _i1.Mock implements _i10.LocaleProvider {
+class MockLocaleProvider extends _i1.Mock implements _i11.LocaleProvider {
   MockLocaleProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -698,7 +705,7 @@ class MockLocaleProvider extends _i1.Mock implements _i10.LocaleProvider {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockWidgetStateProvider extends _i1.Mock
-    implements _i11.WidgetStateProvider {
+    implements _i12.WidgetStateProvider {
   MockWidgetStateProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -789,7 +796,7 @@ class MockWidgetStateProvider extends _i1.Mock
 /// A class which mocks [AppLocalizations].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAppLocalizations extends _i1.Mock implements _i12.AppLocalizations {
+class MockAppLocalizations extends _i1.Mock implements _i13.AppLocalizations {
   MockAppLocalizations() {
     _i1.throwOnMissingStub(this);
   }
@@ -818,7 +825,7 @@ class MockAppLocalizations extends _i1.Mock implements _i12.AppLocalizations {
           #translate,
           [key],
         ),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i9.dummyValue<String>(
           this,
           Invocation.method(
             #translate,

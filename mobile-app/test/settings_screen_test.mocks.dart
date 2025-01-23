@@ -6,12 +6,13 @@
 import 'dart:async' as _i5;
 import 'dart:ui' as _i3;
 
+import 'package:flutter/material.dart' as _i8;
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart'
-    as _i9;
-import 'package:flutter_native_contact_picker/model/contact.dart' as _i10;
+    as _i10;
+import 'package:flutter_native_contact_picker/model/contact.dart' as _i11;
 import 'package:google_maps_flutter/google_maps_flutter.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:pbl5_menu/locale_provider.dart' as _i8;
+import 'package:pbl5_menu/locale_provider.dart' as _i9;
 import 'package:pbl5_menu/services/stt/i_tts_service.dart' as _i7;
 import 'package:pbl5_menu/shared/database_helper.dart' as _i4;
 import 'package:sqflite/sqflite.dart' as _i2;
@@ -287,11 +288,17 @@ class MockITtsService extends _i1.Mock implements _i7.ITtsService {
       );
 
   @override
-  _i5.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i5.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i8.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
@@ -329,7 +336,7 @@ class MockITtsService extends _i1.Mock implements _i7.ITtsService {
 /// A class which mocks [LocaleProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLocaleProvider extends _i1.Mock implements _i8.LocaleProvider {
+class MockLocaleProvider extends _i1.Mock implements _i9.LocaleProvider {
   MockLocaleProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -415,35 +422,35 @@ class MockLocaleProvider extends _i1.Mock implements _i8.LocaleProvider {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFlutterNativeContactPicker extends _i1.Mock
-    implements _i9.FlutterNativeContactPicker {
+    implements _i10.FlutterNativeContactPicker {
   MockFlutterNativeContactPicker() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i5.Future<_i10.Contact?> selectContact() => (super.noSuchMethod(
+  _i5.Future<_i11.Contact?> selectContact() => (super.noSuchMethod(
         Invocation.method(
           #selectContact,
           [],
         ),
-        returnValue: _i5.Future<_i10.Contact?>.value(),
-      ) as _i5.Future<_i10.Contact?>);
+        returnValue: _i5.Future<_i11.Contact?>.value(),
+      ) as _i5.Future<_i11.Contact?>);
 
   @override
-  _i5.Future<List<_i10.Contact>?> selectContacts() => (super.noSuchMethod(
+  _i5.Future<List<_i11.Contact>?> selectContacts() => (super.noSuchMethod(
         Invocation.method(
           #selectContacts,
           [],
         ),
-        returnValue: _i5.Future<List<_i10.Contact>?>.value(),
-      ) as _i5.Future<List<_i10.Contact>?>);
+        returnValue: _i5.Future<List<_i11.Contact>?>.value(),
+      ) as _i5.Future<List<_i11.Contact>?>);
 
   @override
-  _i5.Future<_i10.Contact?> selectPhoneNumber() => (super.noSuchMethod(
+  _i5.Future<_i11.Contact?> selectPhoneNumber() => (super.noSuchMethod(
         Invocation.method(
           #selectPhoneNumber,
           [],
         ),
-        returnValue: _i5.Future<_i10.Contact?>.value(),
-      ) as _i5.Future<_i10.Contact?>);
+        returnValue: _i5.Future<_i11.Contact?>.value(),
+      ) as _i5.Future<_i11.Contact?>);
 }

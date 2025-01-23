@@ -977,6 +977,42 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i3.TtsServiceGoogle {
       );
 
   @override
+  String get elhuyarApiId => (super.noSuchMethod(
+        Invocation.getter(#elhuyarApiId),
+        returnValue: _i20.dummyValue<String>(
+          this,
+          Invocation.getter(#elhuyarApiId),
+        ),
+      ) as String);
+
+  @override
+  set elhuyarApiId(String? _elhuyarApiId) => super.noSuchMethod(
+        Invocation.setter(
+          #elhuyarApiId,
+          _elhuyarApiId,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  String get elhuyarApiKey => (super.noSuchMethod(
+        Invocation.getter(#elhuyarApiKey),
+        returnValue: _i20.dummyValue<String>(
+          this,
+          Invocation.getter(#elhuyarApiKey),
+        ),
+      ) as String);
+
+  @override
+  set elhuyarApiKey(String? _elhuyarApiKey) => super.noSuchMethod(
+        Invocation.setter(
+          #elhuyarApiKey,
+          _elhuyarApiKey,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i10.Client get httpClient => (super.noSuchMethod(
         Invocation.getter(#httpClient),
         returnValue: _FakeClient_8(
@@ -1058,11 +1094,17 @@ class MockTtsServiceGoogle extends _i1.Mock implements _i3.TtsServiceGoogle {
       ) as _i21.Future<String>);
 
   @override
-  _i21.Future<void> speakLabels(List<dynamic>? detectedObjects) =>
+  _i21.Future<void> speakLabels(
+    List<dynamic>? detectedObjects,
+    _i12.BuildContext? context,
+  ) =>
       (super.noSuchMethod(
         Invocation.method(
           #speakLabels,
-          [detectedObjects],
+          [
+            detectedObjects,
+            context,
+          ],
         ),
         returnValue: _i21.Future<void>.value(),
         returnValueForMissingStub: _i21.Future<void>.value(),
