@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:pbl5_menu/app_initializer.dart';
+import 'package:pbl5_menu/services/l10n.dart';
+import 'package:pbl5_menu/translation_provider.dart';
 import 'package:provider/provider.dart';
 import '../services/picture_service.dart';
 import '../services/stt/i_tts_service.dart';
@@ -28,7 +30,12 @@ class DescribeEnvironmentState extends State<DescribeEnvironment> {
       httpClient: client,
       endpoint: dotenv.env["API_URL"]! + '4&session_id=${sessionToken}',
       onLabelsDetected: (labels) {
-        ttsService.speakLabels(labels);
+        Provider.of<TranslationProvider>(context, listen: false)
+            .translateText(labels.first as String,
+                Localizations.localeOf(context).languageCode)
+            .then((translatedText) {
+          ttsService.speakLabels([translatedText], context);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Description: $labels')),
         );

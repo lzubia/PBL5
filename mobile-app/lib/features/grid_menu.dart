@@ -43,8 +43,8 @@ class GridMenuState extends State<GridMenu> {
 
     // Avoid showing duplicate bottom sheets
     if (currentWidgetTitle == title) {
-      ttsService
-          .speakLabels([AppLocalizations.of(context).translate("opened")]);
+      ttsService.speakLabels(
+          [AppLocalizations.of(context).translate("opened")], context);
       return;
     } else if (currentWidgetTitle != null) {
       Navigator.of(context).pop(); // Close the previous bottom sheet
@@ -153,9 +153,8 @@ class GridMenuState extends State<GridMenu> {
             final contacts = await dbHelper.getContacts();
 
             // Send SOS request
-            await sosService
-                
-                .sendSosRequest(contacts.cast<Map<String, String>>(), context);
+            await sosService.sendSosRequest(
+                contacts.cast<Map<String, String>>(), context);
           } catch (e) {
             print('Error calling SOS service: $e');
           }
@@ -184,13 +183,16 @@ class GridMenuState extends State<GridMenu> {
               // Optionally, use TTS to confirm to the user
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
-              await ttsService
-                  .speakLabels([AppLocalizations.of(context).translate("going-home")]);
+              await ttsService.speakLabels(
+                  [AppLocalizations.of(context).translate("going-home")],
+                  context);
             } else {
               // Handle case when no home location is saved
               final ttsService =
                   Provider.of<ITtsService>(context, listen: false);
-              await ttsService.speakLabels([AppLocalizations.of(context).translate("home-not-set")]);
+              await ttsService.speakLabels(
+                  [AppLocalizations.of(context).translate("home-not-set")],
+                  context);
             }
           } catch (e) {
             print('Error setting home destination: $e');
@@ -214,13 +216,13 @@ class GridMenuState extends State<GridMenu> {
                 break;
               case 3:
                 showBottomSheet(
-                    context,
-                    AppLocalizations.of(context)
-                        .translate("describe_environment"));
+                    context, AppLocalizations.of(context).translate("scanner"));
                 break;
               case 4:
                 showBottomSheet(
-                    context, AppLocalizations.of(context).translate("scanner"));
+                    context,
+                    AppLocalizations.of(context)
+                        .translate("describe_environment"));
                 break;
               default:
                 break;
@@ -264,7 +266,7 @@ class GridMenuState extends State<GridMenu> {
                 },
                 onDoubleTap: () {
                   ttsService.speakLabels(
-                      [AppLocalizations.of(context).translate(title)]);
+                      [AppLocalizations.of(context).translate(title)], context);
                 },
                 child: SizedBox(
                   height: 150,

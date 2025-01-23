@@ -12,10 +12,13 @@ import 'package:flutter/services.dart';
 class TtsServiceGoogle implements ITtsService {
   late AudioPlayer audioPlayer;
   final String _authFilePath = 'assets/tts-english.json';
+  final String _elhuyarFilePath = 'assets/tts-elhuyar.json';
   String languageCode = 'en-US';
   String voiceName = 'en-US-Wavenet-D';
   double speechRate = 1.6; // Default speech rate
   final DatabaseHelper _dbHelper;
+  late String elhuyarApiId;
+  late String elhuyarApiKey;
   final http.Client httpClient;
   final AssetBundle assetBundle;
 
@@ -28,6 +31,7 @@ class TtsServiceGoogle implements ITtsService {
     WidgetsFlutterBinding.ensureInitialized();
     this.audioPlayer = audioPlayer ?? AudioPlayer(); // Allow mock injection
     loadSettings();
+    _loadElhuyarCredentials();
   }
 
   @override
@@ -40,6 +44,13 @@ class TtsServiceGoogle implements ITtsService {
     languageCode = settings['languageCode'] ?? 'en-US';
     voiceName = settings['voiceName'] ?? 'en-US-Wavenet-D';
     print("Loaded settings: languageCode=$languageCode, voiceName=$voiceName");
+  }
+
+  Future<void> _loadElhuyarCredentials() async {
+    final String response = await rootBundle.loadString(_elhuyarFilePath);
+    final data = json.decode(response);
+    elhuyarApiId = data['api_id'];
+    elhuyarApiKey = data['api_key'];
   }
 
   @override
@@ -96,30 +107,60 @@ class TtsServiceGoogle implements ITtsService {
   }
 
   @override
-  Future<void> speakLabels(List<dynamic> detectedObjects) async {
-    final token = await getAccessToken();
+  Future<void> speakLabels(
+      List<dynamic> detectedObjects, BuildContext context) async {
+    final token = await _getAccessToken();
+    final locale = Localizations.localeOf(context).languageCode;
 
     for (var obj in detectedObjects) {
       String label = obj;
       try {
         print("Speaking label: $label");
-
-        final response = await httpClient.post(
-          Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
-          headers: {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-          },
-          body: json.encode({
-            "input": {"text": label},
-            "voice": {"languageCode": languageCode, "name": voiceName},
-            "audioConfig": {"audioEncoding": "MP3", "speakingRate": speechRate},
-          }),
-        );
+        final response;
+        if (locale == 'eu') {
+          response = await http.post(
+            Uri.parse("https://ttsneuronala.elhuyar.eus/api/standard"),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: json.encode(
+              {
+                "text": label,
+                "speaker": "female_low",
+                "language": "eu",
+                "extension": "mp3",
+                "api_id": elhuyarApiId,
+                "api_key": elhuyarApiKey
+              },
+            ),
+          );
+        } else {
+          response = await http.post(
+            Uri.parse("https://texttospeech.googleapis.com/v1/text:synthesize"),
+            headers: {
+              "Authorization": "Bearer $token",
+              "Content-Type": "application/json",
+            },
+            body: json.encode({
+              "input": {"text": label},
+              "voice": {"languageCode": languageCode, "name": voiceName},
+              "audioConfig": {
+                "audioEncoding": "MP3",
+                "speakingRate": speechRate
+              },
+            }),
+          );
+        }
 
         if (response.statusCode == 200) {
-          final audioContent = json.decode(response.body)['audioContent'];
-          final bytes = base64.decode(audioContent);
+          final audioContent;
+          final bytes;
+          if (locale == 'eu') {
+            bytes = response.bodyBytes;
+          } else {
+            audioContent = json.decode(response.body)['audioContent'];
+            bytes = base64.decode(audioContent);
+          }
 
           final tempDir = await getTemporaryDirectory();
           final file = File('${tempDir.path}/output.mp3');

@@ -120,9 +120,12 @@ class VoiceCommands extends ChangeNotifier {
     } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
-      playActivationSound();
+      _command = '';
+      _playActivationSound();
       notifyListeners();
       _startCommandTimer();
+      sttService.stopListening();
+      startListening();
     } else {
       startListening();
     }
@@ -134,7 +137,6 @@ class VoiceCommands extends ChangeNotifier {
     _command = '';
     notifyListeners();
     sttService.stopListening();
-    startListening();
   }
 
   void _startCommandTimer() {
@@ -166,6 +168,7 @@ class VoiceCommands extends ChangeNotifier {
     print('Activated command: $command');
 
     bool matched = false;
+    bool matchedRisk = false;
     const double similarityThreshold = 80.0;
 
     for (var commandGroup in voiceCommands.entries) {
@@ -183,12 +186,18 @@ class VoiceCommands extends ChangeNotifier {
             break;
 
           case 'risk_detection_command':
-            matched = true;
             riskTrigger = true;
             notifyListeners();
+            _isActivated = false;
+            useVoiceControlNotifier.value = false;
+            _command = '';
+            notifyListeners();
+            sttService.stopListening();
+            startListening();
             Future.delayed(Duration(seconds: 2), () {
               riskTrigger = false;
             });
+
             break;
 
           case 'money_identifier_command':
@@ -204,8 +213,8 @@ class VoiceCommands extends ChangeNotifier {
             if (onMenuCommand != null) {
               onMenuCommand!(); // Trigger the callback
             }
-            _cancelCommandTimer();
-            _desactivateBegia();
+            // _cancelCommandTimer();
+            // _desactivateBegia();
             break;
 
           case 'text_command':
@@ -235,12 +244,11 @@ class VoiceCommands extends ChangeNotifier {
       }
     }
 
-    if (!matched) {
-      startListening();
-    } else {
+    if (matched) {
       _cancelCommandTimer();
       _desactivateBegia();
     }
+    startListening();
   }
 
   bool _executeCommand(int triggerVariable) {

@@ -60,7 +60,7 @@ class MapProvider extends ChangeNotifier {
     // Use context safely within this method
     final localizationMessage =
         AppLocalizations.of(context).translate("mapa-on");
-    ttsService.speakLabels([localizationMessage]);
+    ttsService.speakLabels([localizationMessage], context);
 
     _currentLocation = await location.getLocation();
     notifyListeners();
@@ -108,7 +108,7 @@ class MapProvider extends ChangeNotifier {
           if (data['status'] == 'ZERO_RESULTS') {
             await ttsService.speakLabels([
               AppLocalizations.of(context).translate("destination-not-found")
-            ]);
+            ], context);
             return;
           }
 
@@ -129,7 +129,7 @@ class MapProvider extends ChangeNotifier {
           if (data['status'] == 'ZERO_RESULTS') {
             await ttsService.speakLabels([
               AppLocalizations.of(context).translate("destination-not-found")
-            ]);
+            ], context);
             return;
           }
 
@@ -225,7 +225,7 @@ class MapProvider extends ChangeNotifier {
             Localizations.localeOf(context)
                 .languageCode); // Replace 'es' with the desired language
 
-        await ttsService.speakLabels([translatedInstruction]);
+        await ttsService.speakLabels([translatedInstruction], context);
       }
 
       notifyListeners();
@@ -269,10 +269,9 @@ class MapProvider extends ChangeNotifier {
       final translatedInstruction = await translationProvider.translateText(
           instruction, Localizations.localeOf(context).languageCode);
 
-      ttsService.speakLabels([
-        AppLocalizations.of(context).translate("Now"),
-        translatedInstruction,
-      ]);
+      await ttsService.speakLabels([
+        AppLocalizations.of(context).translate("Now" + translatedInstruction)
+      ], context);
 
       _instructions = _instructions.sublist(closestIndex + 1);
       notifyListeners();
@@ -282,7 +281,7 @@ class MapProvider extends ChangeNotifier {
       ttsService.speakLabels([
         AppLocalizations.of(context).translate("Destination-reached"),
         _destinationName ?? "",
-      ]);
+      ], context);
     }
   }
 
