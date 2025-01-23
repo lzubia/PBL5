@@ -1,0 +1,61 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - ai-model-main
+      - ai-model-develop
+
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./ai-models/service    
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install Tesseract
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ultralytics \
+            torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 \
+            fastapi uvicorn python-multipart \
+            flask flask-cors \
+            opencv-python opencv-python-headless \
+            onnx==1.16.1 onnxruntime onnxruntime-gpu \
+            tensorflow openvino==2024.6.0 pytesseract \
+            symspellpy \
+            pytest pytest-cov httpx
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=. --cov-report=xml
+
+      - name: SonarCloud Scan using Docker
+        run: |
+          docker run \
+            --rm \
+            -v ${{ github.workspace }}/ai-models/service:/usr/src/ai-models/service \
+            -e SONAR_TOKEN=${{ secrets.SONAR_PY_TOKEN }} \
+            sonarsource/sonar-scanner-cli:latest \
+            -Dsonar.projectBaseDir=/usr/src/ai-models/service \
+            -Dsonar.login=${{ secrets.SONAR_PY_TOKEN }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.branch.name=${{ github.ref_name }} \
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
+
