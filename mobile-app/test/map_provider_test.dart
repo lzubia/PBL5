@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -268,4 +269,115 @@ void main() {
       expect(result, expected);
     });
   });
+
+  group('fetchPolylineCoordinates Tests', () {
+    testWidgets('fetchPolylineCoordinates retrieves coordinates successfully',
+        (WidgetTester tester) async {
+      dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
+
+      mapProvider.currentLocation = LocationData.fromMap({
+        'latitude': 37.7749,
+        'longitude': -122.4194,
+      });
+      mapProvider.destination = const LatLng(37.422, -122.084);
+
+      final mockPolylineResult = PolylineResult(
+        points: [
+          PointLatLng(37.7749, -122.4194),
+          PointLatLng(37.422, -122.084),
+        ],
+        status: 'OK',
+        errorMessage: null,
+      );
+
+      when(mockPolylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: 'TEST_API_KEY',
+        request: anyNamed('request'),
+      )).thenAnswer((_) async => mockPolylineResult);
+
+      await tester.pumpWidget(createTestWidget(Container()));
+      await mapProvider.fetchPolylineCoordinates();
+
+      expect(mapProvider.polylineCoordinates.length, 2);
+      expect(
+          mapProvider.polylineCoordinates[0], const LatLng(37.7749, -122.4194));
+      expect(
+          mapProvider.polylineCoordinates[1], const LatLng(37.422, -122.084));
+
+      verify(mockPolylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: 'TEST_API_KEY',
+        request: anyNamed('request'),
+      )).called(1);
+    });
+
+    testWidgets('fetchPolylineCoordinates handles errors gracefully',
+        (WidgetTester tester) async {
+      dotenv.testLoad(fileInput: 'GOOGLE_MAPS_API_KEY=TEST_API_KEY');
+
+      mapProvider.currentLocation = LocationData.fromMap({
+        'latitude': 37.7749,
+        'longitude': -122.4194,
+      });
+      mapProvider.destination = const LatLng(37.422, -122.084);
+
+      final mockPolylineResult = PolylineResult(
+        points: [],
+        status: 'ZERO_RESULTS',
+        errorMessage: 'No route found.',
+      );
+
+      when(mockPolylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: 'TEST_API_KEY',
+        request: anyNamed('request'),
+      )).thenAnswer((_) async => mockPolylineResult);
+
+      await tester.pumpWidget(createTestWidget(Container()));
+
+      expect(
+        () async => await mapProvider.fetchPolylineCoordinates(),
+        throwsException,
+      );
+
+      verify(mockPolylinePoints.getRouteBetweenCoordinates(
+        googleApiKey: 'TEST_API_KEY',
+        request: anyNamed('request'),
+      )).called(1);
+    });
+  });
+
+  group('calculateDistance Tests', () {
+    double calculateDistance(LatLng point1, LatLng point2) {
+      const double R = 6371000; // Earth's radius in meters
+      double toRadians(double degrees) => degrees * (pi / 180);
+
+      final double lat1 = toRadians(point1.latitude);
+      final double lon1 = toRadians(point1.longitude);
+      final double lat2 = toRadians(point2.latitude);
+      final double lon2 = toRadians(point2.longitude);
+
+      final double dLat = lat2 - lat1;
+      final double dLon = lon2 - lon1;
+
+      final double a =
+          pow(sin(dLat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dLon / 2), 2);
+      final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+      return R * c; // Distance in meters
+    }
+
+    test('calculates distance correctly between two points', () {
+      final point1 = const LatLng(37.7749, -122.4194);
+      final point2 = const LatLng(37.422, -122.084);
+      final distance = mapProvider.calculateDistance(point1, point2);
+
+      // Adjusted expected value
+      expect(distance, closeTo(49122, 10)); // Allow 10 meters margin
+    });
+
+    test('calculates distance as zero for the same point', () {
+      final point = const LatLng(37.7749, -122.4194);
+      final distance = mapProvider.calculateDistance(point, point);
+      expect(distance, 0.0);
+    });
+  });
+
 }

@@ -254,7 +254,7 @@ class MapProvider extends ChangeNotifier {
 
     for (int i = 0; i < _instructions.length; i++) {
       final instructionLatLng = _instructions[i]['start_location'] as LatLng;
-      final distance = _calculateDistance(currentLatLng, instructionLatLng);
+      final distance = calculateDistance(currentLatLng, instructionLatLng);
 
       if (distance < closestDistance) {
         closestDistance = distance;
@@ -286,7 +286,7 @@ class MapProvider extends ChangeNotifier {
   }
 
   /// Calculate distance between two points in meters.
-  double _calculateDistance(LatLng start, LatLng end) {
+  double calculateDistance(LatLng start, LatLng end) {
     const double p = 0.017453292519943295; // Pi/180
     final double a = 0.5 -
         cos((end.latitude - start.latitude) * p) / 2 +
