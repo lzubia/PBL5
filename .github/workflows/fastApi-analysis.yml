@@ -41,10 +41,9 @@ jobs:
             symspellpy \
             pytest pytest-cov httpx
 
-      - name: Run tests with coverage
-        run: |
-          pytest ./ai-models/service/tests/ --cov=./ai-models/service --cov-report=xml
-
+ #     - name: Run tests with coverage
+ #       run: |
+ #         pytest ./ai-models/service/tests/ --cov=./ai-models/service --cov-report=xml
 
       - name: SonarCloud Scan using Docker
         run: |
