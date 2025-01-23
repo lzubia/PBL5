@@ -95,8 +95,8 @@ void main() {
     when(mockMapProvider.polylineCoordinates).thenReturn([]);
     when(mockMapProvider.destination).thenReturn(LatLng(1.0, 1.0));
     when(mockMapProvider.isLoading).thenReturn(false); // Add this stub
-    when(mockMapProvider.currentLocation)
-        .thenReturn(LocationData.fromMap({'latitude': 37.7749, 'longitude': -122.4194})); // Stub currentLocation
+    when(mockMapProvider.currentLocation).thenReturn(LocationData.fromMap(
+        {'latitude': 37.7749, 'longitude': -122.4194})); // Stub currentLocation
     when(mockDatabaseHelper.getContacts()).thenAnswer((_) async => [
           {'name': 'Test Contact', 'phone': '123456'},
         ]);
@@ -168,6 +168,28 @@ void main() {
     // Check if the MapWidget exists
     expect(find.byType(MapWidget), findsOneWidget);
   });
+
+  testWidgets('should display grid menu with correct number of items',
+      (WidgetTester tester) async {
+    await pumpGridMenu(tester);
+
+    // Verify the number of menu options
+    expect(find.byType(Card), findsNWidgets(4));
+  });
+
+  testWidgets('should speak labels on double-tap', (WidgetTester tester) async {
+    await pumpGridMenu(tester);
+
+    // Double-tap on a grid item
+    await tester.tap(find.byIcon(Icons.map));
+    await tester.pump(const Duration(milliseconds: 100)); // Simulate delay
+    await tester.tap(find.byIcon(Icons.map));
+    await tester.pumpAndSettle();
+
+    // Verify TTS call
+    verify(mockTtsService.speakLabels(['GPS (Map)'], any)).called(1);
+  });
+
 
   // testWidgets('should open bottom sheet for Money Identifier',
   //     (WidgetTester tester) async {
