@@ -1,31 +1,35 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pbl5_menu/app_initializer.dart';
+import 'package:pbl5_menu/translation_provider.dart';
+import 'package:provider/provider.dart';
 import '../services/picture_service.dart';
 import '../services/stt/i_tts_service.dart';
+import 'package:http/http.dart' as http;
 
 class OcrWidget extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsService;
-  final String sessionToken;
-
-  const OcrWidget({
-    super.key,
-    required this.pictureService,
-    required this.ttsService,
-    required this.sessionToken,
-  });
+  const OcrWidget({super.key});
 
   @override
   OcrWidgetState createState() => OcrWidgetState();
 }
 
 class OcrWidgetState extends State<OcrWidget> {
-  Future<void> takeAndSendImage() async {
-    await widget.pictureService.takePicture(
-      endpoint:
-          'https://begiapbl.duckdns.org:1880/ocr?session_id=${widget.sessionToken}',
+  Future<void> takeAndSendImage({http.Client? client}) async {
+    final pictureService = context.read<PictureService>();
+    final ttsService = context.read<ITtsService>();
+    final sessionToken = context.read<AppInitializer>().sessionToken;
+
+    await pictureService.takePicture(
+      httpClient: client,
+      endpoint: dotenv.env["API_URL"]! + '6&session_id=${sessionToken}',
       onLabelsDetected: (labels) {
-        widget.ttsService.speakLabels(labels);
+        Provider.of<TranslationProvider>(context, listen: false)
+            .translateText(labels.first as String,
+                Localizations.localeOf(context).languageCode)
+            .then((translatedText) {
+          ttsService.speakLabels([translatedText], context);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Description: $labels')),
         );
@@ -40,9 +44,14 @@ class OcrWidgetState extends State<OcrWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final pictureService = Provider.of<PictureService>(context);
+
+    if (!pictureService.isCameraInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
-        Expanded(child: widget.pictureService.getCameraPreview()),
+        Expanded(child: pictureService.getCameraPreview()),
         ElevatedButton(
           onPressed: () => takeAndSendImage(),
           child: const Text('Take and Send Image'),

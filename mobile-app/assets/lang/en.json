@@ -9,7 +9,7 @@
     "describe_environment": "Describe",
     "gps_map": "GPS (Map)",
     "money_identifier": "Money Identifier",
-    "scanner": "Scanner (Read Texts, QRs, ...)",
+    "scanner": "Read Texts",
     "voice_commands": {
         "risk_detection_command": [
             "risk",
@@ -51,11 +51,18 @@
             "tehst"
         ],
         "photo_command": [
-            "photo",
-            "foto",
-            "fotto",
-            "fohtoh",
-            "photto"
+            "describe",
+            "deskribe",
+            "discribe",
+            "descrybe",
+            "diskribe",
+            "discrib",
+            "describ"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "back",
@@ -78,5 +85,11 @@
     "start_trip": "Starting your trip to",
     "first": "Firstly",
     "now": "Now",
-    "reached": "And you will get to"
+    "reached": "And you will get to",
+    "opened": "Widget already open",
+    "Map-active" : "Map is already active",
+    "destination-not-found": "Destination not found",
+    "going-home": "Going home",
+    "home-not-set": "Home not set",
+    "Sos-sent-successfully": "SOS sent successfully"
 }

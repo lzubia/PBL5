@@ -9,7 +9,7 @@
     "describe_environment": "Describir",
     "gps_map": "GPS (Mapa)",
     "money_identifier": "Identificador de Dinero",
-    "scanner": "Escáner (Leer Textos, QRs, ...)",
+    "scanner": "Leer Textos",
     "voice_commands": {
         "risk_detection_command": [
             "peligro",
@@ -35,7 +35,8 @@
         "menu_command": [
             "menú",
             "menua",
-            "menúa"
+            "menúa",
+            "menu"
         ],
         "text_command": [
             "texto",
@@ -45,11 +46,16 @@
             "teks"
         ],
         "photo_command": [
-            "foto",
-            "phóto",
-            "fóto",
-            "photto",
-            "fotto"
+            "describir",
+            "deskribir",
+            "escribir",
+            "eskribir",
+            "describi"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "back_command": [
             "atrás",
@@ -71,5 +77,12 @@
     "start_trip": "Iniciando tu viaje a",
     "first": "Primero",
     "now": "Ahora",
-    "reached": "Y llegarás a"
+    "reached": "Y llegarás a",
+    "opened": "La página ya está abierta",
+    "Map-active": "Mapa abierto",
+    "destination-not-found": "Destino no encontrado",
+    "going-home": "Regresando a casa",
+    "home-not-set": "Casa no establecida",
+    "Sos-sent-successfully": "SOS enviado con éxito"
+
 }

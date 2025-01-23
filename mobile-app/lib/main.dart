@@ -1,234 +1,111 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:pbl5_menu/app_initializer.dart';
-import 'package:pbl5_menu/features/map_widget.dart';
-import 'package:pbl5_menu/features/describe_environment.dart';
-import 'package:pbl5_menu/features/money_identifier.dart';
-import 'package:pbl5_menu/features/ocr_widget.dart';
-import 'package:pbl5_menu/features/voice_commands.dart';
-import 'package:pbl5_menu/services/l10n.dart';
-import 'package:pbl5_menu/services/tts/tts_service_google.dart';
-import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/stt/i_stt_service.dart';
-import 'package:pbl5_menu/services/stt/i_tts_service.dart';
-import 'package:pbl5_menu/features/risk_detection.dart';
-import 'package:pbl5_menu/features/grid_menu.dart';
-import 'package:pbl5_menu/features/settings_screen.dart';
-import 'package:pbl5_menu/services/picture_service.dart';
-import 'package:pbl5_menu/shared/database_helper.dart';
-import 'package:audioplayers/audioplayers.dart'; // For audio playback
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:pbl5_menu/app_initializer.dart';
+import 'package:pbl5_menu/features/grid_menu.dart';
+import 'package:pbl5_menu/features/risk_detection.dart';
+import 'package:pbl5_menu/features/settings_screen.dart';
+import 'package:pbl5_menu/features/voice_commands.dart';
+import 'package:pbl5_menu/locale_provider.dart';
+import 'package:pbl5_menu/map_provider.dart';
+import 'package:pbl5_menu/services/l10n.dart';
+import 'package:pbl5_menu/services/picture_service.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/services/stt/stt_service.dart';
+import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:pbl5_menu/shared/database_helper.dart';
+import 'package:pbl5_menu/theme_provider.dart';
+import 'package:pbl5_menu/translation_provider.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
-  await AppInitializer.initialize();
-  runApp(MyApp(
-    pictureService: AppInitializer.pictureService,
-    ttsServiceGoogle: AppInitializer.ttsServiceGoogle,
-    databaseHelper: AppInitializer.databaseHelper,
-    sttService: AppInitializer.sttService,
-    voiceCommands: AppInitializer.voiceCommands,
-    riskDetectionKey: AppInitializer.riskDetectionKey,
-    gridMenuKey: AppInitializer.gridMenuKey,
-    moneyIdentifierKey: AppInitializer.moneyIdentifierKey,
-    describeEnvironmentKey: AppInitializer.describeEnvironmentKey,
-    ocrWidgetKey: AppInitializer.ocrWidgetKey,
-    mapKey: AppInitializer.mapKey,
-    locale: AppInitializer.locale,
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize dependencies
+  final pictureService = PictureService();
+  final sttService = SttService();
+  final dbHelper = DatabaseHelper(); // Create an instance of DatabaseHelper
+  final ttsService = TtsServiceGoogle(
+      dbHelper); // Initialize TtsServiceGoogle with DatabaseHelper
+  final appInitializer = AppInitializer();
+  await appInitializer.initialize(pictureService: pictureService);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider(create: (_) => appInitializer), // Provide AppInitializer
+        ChangeNotifierProvider(
+            create: (_) => LocaleProvider()), // LocaleProvider
+        ChangeNotifierProvider(create: (_) => ThemeProvider()), // ThemeProvider
+        ChangeNotifierProvider.value(value: pictureService), // PictureService
+        ChangeNotifierProvider(
+          create: (_) => MapProvider(
+              ttsService: ttsService), // MapProvider with TtsServiceGoogle
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              VoiceCommands(sttService), // VoiceCommands with SttService
+        ),
+        ChangeNotifierProvider(create: (_) => TranslationProvider()),
+
+        Provider(create: (_) => dbHelper), // Provide DatabaseHelper
+        Provider<ITtsService>(
+          create: (_) => ttsService, // Provide TtsServiceGoogle as ITtsService
+        ),
+        Provider(
+            create: (_) => appInitializer.sttService), // Provide SttService
+        Provider(
+            create: (_) => appInitializer.sosService), // Provide SosService
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsServiceGoogle;
-  final DatabaseHelper databaseHelper;
-  final ISttService sttService;
-
-  final GlobalKey<RiskDetectionState> riskDetectionKey;
-  final GlobalKey<GridMenuState> gridMenuKey;
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
-  final GlobalKey<OcrWidgetState> ocrWidgetKey;
-  final GlobalKey<MapWidgetState> mapKey;
-  final VoiceCommands voiceCommands;
-
-  Locale locale;
-
-  MyApp({
-    super.key,
-    required this.pictureService,
-    required this.ttsServiceGoogle,
-    required this.databaseHelper,
-    required this.sttService,
-    required this.voiceCommands,
-    required this.riskDetectionKey,
-    required this.gridMenuKey,
-    required this.moneyIdentifierKey,
-    required this.describeEnvironmentKey,
-    required this.ocrWidgetKey,
-    required this.mapKey,
-    required this.locale,
-  });
-
-  @override
-  _MyAppState createState() => _MyAppState(this.locale);
-}
-
-class _MyAppState extends State<MyApp> {
-  Locale locale;
-
-  _MyAppState(this.locale);
-
-  void setLocale(Locale locale) {
-    setState(() {
-      this.locale = locale;
-    });
-    widget.voiceCommands.setContext(context, this.locale);
-    widget.ttsServiceGoogle.updateLanguage(this.locale.languageCode,
-        '${this.locale.languageCode}-${this.locale.countryCode}-Wavenet-B');
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = Provider.of<LocaleProvider>(context);
+
     return MaterialApp(
-      locale: this.locale,
+      locale: localeProvider.currentLocale,
       localizationsDelegates: [
         AppLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        Locale('en', 'US'),
-        Locale('es', 'ES'),
-        Locale('eu', 'ES'),
-      ],
+      supportedLocales: localeProvider.supportedLocales,
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(
-        pictureService: widget.pictureService,
-        ttsServiceGoogle: widget.ttsServiceGoogle,
-        databaseHelper: widget.databaseHelper,
-        sttService: widget.sttService,
-        voiceCommands: widget.voiceCommands,
-        riskDetectionKey: widget.riskDetectionKey,
-        gridMenuKey: widget.gridMenuKey,
-        moneyIdentifierKey: widget.moneyIdentifierKey,
-        describeEnvironmentKey: widget.describeEnvironmentKey,
-        ocrWidgetKey: widget.ocrWidgetKey,
-        mapKey: widget.mapKey,
-        setLocale: setLocale,
-        locale: this.locale,
-      ),
+      home: const MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  final PictureService pictureService;
-  final ITtsService ttsServiceGoogle;
-  final DatabaseHelper databaseHelper;
-  final ISttService sttService;
-  final VoiceCommands voiceCommands;
-
-  final GlobalKey<RiskDetectionState> riskDetectionKey;
-  final GlobalKey<GridMenuState> gridMenuKey;
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
-  final GlobalKey<OcrWidgetState> ocrWidgetKey;
-  final GlobalKey<MapWidgetState> mapKey;
-  final Function(Locale) setLocale; // Add this line
-
-  Locale locale;
-
-  MyHomePage({
-    super.key,
-    required this.pictureService,
-    required this.ttsServiceGoogle,
-    required this.databaseHelper,
-    required this.sttService,
-    required this.voiceCommands,
-    required this.riskDetectionKey,
-    required this.gridMenuKey,
-    required this.moneyIdentifierKey,
-    required this.describeEnvironmentKey,
-    required this.ocrWidgetKey,
-    required this.mapKey,
-    required this.setLocale,
-    required this.locale,
-  });
-
-  @override
-  MyHomePageState createState() => MyHomePageState(
-      riskDetectionKey: riskDetectionKey,
-      gridMenuKey: gridMenuKey,
-      moneyIdentifierKey: moneyIdentifierKey,
-      describeEnvironmentKey: describeEnvironmentKey,
-      ocrWidgetKey: ocrWidgetKey,
-      mapKey: mapKey,
-      locale: locale);
-}
-
-class MyHomePageState extends State<MyHomePage> {
-  bool useGoogleStt = false;
-  bool useGoogleTts = false;
-  bool _isActivated = false;
-  final String sessionToken = AppInitializer.sessionToken;
-  final GlobalKey<RiskDetectionState> riskDetectionKey;
-  final GlobalKey<GridMenuState> gridMenuKey;
-  final GlobalKey<MoneyIdentifierState> moneyIdentifierKey;
-  final GlobalKey<DescribeEnvironmentState> describeEnvironmentKey;
-  final GlobalKey<OcrWidgetState> ocrWidgetKey;
-  final GlobalKey<MapWidgetState> mapKey;
-
-  Locale locale;
-
-  MyHomePageState({
-    required this.riskDetectionKey,
-    required this.gridMenuKey,
-    required this.moneyIdentifierKey,
-    required this.describeEnvironmentKey,
-    required this.ocrWidgetKey,
-    required this.mapKey,
-    required this.locale,
-  });
-
-  final player = AudioPlayer(); // Para reproducir sonidos de notificación
-
-  @override
-  void initState() {
-    super.initState();
-    widget.voiceCommands.setContext(context, locale);
-    widget.voiceCommands.loadVoiceCommands();
-    widget.voiceCommands.startListening();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Ensure VoiceCommands initializes dependencies after the app starts
+      Provider.of<VoiceCommands>(context, listen: false).initialize(context);
+    });
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BEGIA', style: TextStyle(fontSize: 24)),
+        toolbarHeight: 100.0,
+        title: const Text('BEGIA',
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             key: const Key('settingsButton'),
-            icon: const Icon(Icons.settings, size: 50),
+            icon: const Icon(Icons.settings, size: 70),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SettingsScreen(
-                    setLocale: widget.setLocale,
-                    ttsServiceGoogle: widget.ttsServiceGoogle,
-                    databaseHelper: widget.databaseHelper,
-                  ),
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },
@@ -236,66 +113,37 @@ class MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: GestureDetector(
+        key: const Key('voiceControlGesture'),
         behavior: HitTestBehavior.opaque, // Detecta toques en áreas vacías.
         onDoubleTap: () {
-          setState(() {
-            VoiceCommands.useVoiceControlNotifier.value =
-                !VoiceCommands.useVoiceControlNotifier.value;
-            if (VoiceCommands.useVoiceControlNotifier.value) {
-              _isActivated = true;
-              widget.voiceCommands.startListening();
-              widget.voiceCommands.handleSpeechResult('begia');
-            } else {
-              _isActivated = false;
-              widget.voiceCommands.startListening();
-            }
-          });
+          // Toggle state using Provider
+          final voiceCommands = context.read<VoiceCommands>();
+          voiceCommands.toggleVoiceControl();
         },
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: RiskDetection(
-                key: riskDetectionKey,
-                pictureService: widget.pictureService,
-                ttsService: widget.ttsServiceGoogle,
-                sttService: widget.sttService,
-                sessionToken:
-                    sessionToken, // Pass sessionToken to RiskDetection
-              ),
+              child: RiskDetection(),
             ),
             Expanded(
-              child: GridMenu(
-                key: gridMenuKey,
-                pictureService: widget.pictureService,
-                ttsService: widget.ttsServiceGoogle,
-                sessionToken: sessionToken, // Pass sessionToken to GridMenu
-                moneyIdentifierKey: moneyIdentifierKey,
-                describeEnvironmentKey: describeEnvironmentKey,
-                ocrWidgetKey: ocrWidgetKey,
-                mapKey: mapKey,
-              ),
+              child: GridMenu(),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  ValueListenableBuilder<bool>(
-                    valueListenable: VoiceCommands.useVoiceControlNotifier,
-                    builder: (context, useVoiceControl, child) {
-                      return Visibility(
-                        visible: VoiceCommands.useVoiceControlNotifier.value,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Image.asset(
-                            'assets/BegiaGif.gif',
-                            height: 100,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              child: Consumer<VoiceCommands>(
+                builder: (context, voiceCommands, child) {
+                  return Visibility(
+                    visible: VoiceCommands.useVoiceControlNotifier.value,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Image.asset(
+                        'assets/BegiaGif.gif',
+                        height: 120,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

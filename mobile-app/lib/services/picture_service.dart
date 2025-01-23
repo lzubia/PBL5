@@ -28,7 +28,7 @@ class MultipartFileWrapper {
 typedef MultipartRequestFactory = http.MultipartRequest Function(
     String method, Uri url);
 
-class PictureService {
+class PictureService extends ChangeNotifier {
   late CameraController controller;
   late http.Client httpClient;
   bool isCameraInitialized = false;
@@ -61,16 +61,24 @@ class PictureService {
     try {
       await controller.initialize();
       isCameraInitialized = true;
+      notifyListeners(); // Notify listeners about the state change
     } catch (e) {
       print('Error initializing camera: $e');
       isCameraInitialized = false;
+      notifyListeners(); // Notify listeners about the state change
     }
   }
 
   void disposeCamera() {
     if (isCameraInitialized) {
-      controller.dispose();
-      isCameraInitialized = false;
+      try {
+        controller.dispose();
+      } catch (e) {
+        print('Error disposing camera: $e');
+      } finally {
+        isCameraInitialized = false;
+        notifyListeners(); // Notify listeners about the state change
+      }
     }
   }
 
@@ -86,11 +94,12 @@ class PictureService {
     required String endpoint,
     required Function(List<dynamic>) onLabelsDetected,
     required Function(Duration) onResponseTimeUpdated,
+    http.Client? httpClient,
   }) async {
     try {
       final imagePath = await captureAndProcessImage();
-      await sendImageAndHandleResponse(
-          imagePath, endpoint, onLabelsDetected, onResponseTimeUpdated);
+      await sendImageAndHandleResponse(imagePath, endpoint, onLabelsDetected,
+          onResponseTimeUpdated, httpClient);
     } catch (e) {
       print('Error taking picture: $e');
     }
@@ -126,17 +135,19 @@ class PictureService {
       String filePath,
       String endpoint,
       Function(List<String>) onDetectedObjects,
-      Function(Duration) onResponseTime) async {
+      Function(Duration) onResponseTime,
+      http.Client? client) async {
     print("sendImageAndHandleResponse called"); // Debug print
     final request = multipartRequestFactory('POST', Uri.parse(endpoint));
 
     // Add the image file to the request
     final file = await multipartFileWrapper.fromPath('file', filePath);
     request.files.add(file);
+    client ??= http.Client();
 
     final startTime = DateTime.now();
     final response =
-        await httpClient.send(request); // Ensure this uses the mock httpClient
+        await client.send(request); // Ensure this uses the mock httpClient
     final endTime = DateTime.now();
     final duration = endTime.difference(startTime);
     onResponseTime(duration);

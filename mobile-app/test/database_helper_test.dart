@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:sqflite/sqflite.dart';
@@ -72,22 +73,26 @@ void main() {
 
     test('should insert a contact', () async {
       // Stub the insert method
-      when(mockDatabase.insert('contacts', {'name': 'John Doe'}))
+      when(mockDatabase
+              .insert('contacts', {'name': 'John Doe', 'phone': '1234567890'}))
           .thenAnswer((_) async => 1);
 
       // Call the method to test
-      await databaseHelper.insertContact('John Doe');
+      await databaseHelper.insertContact('John Doe', '1234567890');
 
       // Verify the behavior
-      verify(mockDatabase.insert('contacts', {'name': 'John Doe'})).called(1);
+      verify(mockDatabase.insert(
+          'contacts', {'name': 'John Doe', 'phone': '1234567890'})).called(1);
     });
 
     test('should get all contacts', () async {
       when(mockDatabase.query('contacts')).thenAnswer((_) async => [
-            {'name': 'John Doe'}
+            {'name': 'John Doe', 'phone': '1234567890'}
           ]);
       final contacts = await databaseHelper.getContacts();
-      expect(contacts, ['John Doe']);
+      expect(contacts, [
+        {'name': 'John Doe', 'phone': '1234567890'}
+      ]);
     });
 
     test('should delete a contact by name', () async {
@@ -206,6 +211,30 @@ void main() {
       when(mockDatabase.close()).thenAnswer((_) async => Future.value());
       await databaseHelper.resetDatabase();
       verify(mockDatabase.close()).called(1);
+    });
+
+    test('should insert home location', () async {
+      // Stub the insert method
+      when(mockDatabase
+              .insert('home', {'latitude': 37.7749, 'longitude': -122.4194}))
+          .thenAnswer((_) async => 1);
+
+      // Call the method to test
+      await databaseHelper.insertHome(37.7749, -122.4194);
+
+      // Verify the behavior
+      verify(mockDatabase.insert(
+          'home', {'latitude': 37.7749, 'longitude': -122.4194})).called(1);
+    });
+
+    test('should get home location', () async {
+      when(mockDatabase.query('home',
+              columns: ['latitude', 'longitude'], limit: 1))
+          .thenAnswer((_) async => [
+                {'latitude': 37.7749, 'longitude': -122.4194}
+              ]);
+      final homeLocation = await databaseHelper.getHomeLocation();
+      expect(homeLocation, LatLng(37.7749, -122.4194));
     });
   });
 }

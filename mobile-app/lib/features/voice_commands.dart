@@ -1,87 +1,96 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:googleapis/admob/v1.dart';
-import 'package:pbl5_menu/features/describe_environment.dart';
-import 'package:pbl5_menu/features/grid_menu.dart';
-import 'package:pbl5_menu/features/map_widget.dart';
-import 'package:pbl5_menu/features/money_identifier.dart';
-import 'package:pbl5_menu/features/ocr_widget.dart';
-import 'package:pbl5_menu/features/risk_detection.dart';
-import 'package:pbl5_menu/services/stt/stt_service.dart';
-import 'package:pbl5_menu/services/tts/tts_service_google.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:path/path.dart';
+import 'package:pbl5_menu/locale_provider.dart';
 import 'package:pbl5_menu/services/l10n.dart';
+import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:provider/provider.dart';
+import 'package:pbl5_menu/services/stt/stt_service.dart';
 
-class VoiceCommands {
-  final AudioPlayer player = AudioPlayer();
-  Map<String, List<String>> voiceCommands = {};
-  static bool _isActivated = false;
-  // static bool useVoiceControl = false;
+class VoiceCommands extends ChangeNotifier {
+  VoidCallback? onMenuCommand;
+  ValueChanged<LatLng>? onMapSearchHome; // Updated to accept LatLng
+
+  VoidCallback? onSosCommand;
+  VoidCallback? onHomeCommand;
+  bool _isActivated = false;
+  bool riskTrigger = false; //state of risk detection
+  int triggerVariable = 0; // trigger widget
+
+  Timer? _commandTimer;
+  Timer? get commandTimer => _commandTimer;
+  set commandTimer(Timer? timer) {
+    _commandTimer = timer;
+    notifyListeners();
+  }
+
+  final SttService _sttService;
+  late AudioPlayer player;
+
+  final AppLocalizations? appLocalizations; // Injected for testing
+
+  VoiceCommands(this._sttService,
+      {AudioPlayer? audioPlayer, this.appLocalizations})
+      : player = audioPlayer ?? AudioPlayer();
+
+  bool get isActivated => _isActivated;
+
+  void toggleActivation(bool value) {
+    _isActivated = value;
+    notifyListeners();
+
+    if (_isActivated) {
+      _sttService.startListening((result) {
+        print("Voice command detected: $result");
+      });
+    } else {
+      _sttService.stopListening();
+    }
+  }
+
+  final Map<String, List<String>> voiceCommands = {};
+
   static final ValueNotifier<bool> useVoiceControlNotifier =
       ValueNotifier(false);
+
   String _command = '';
-
-  Locale locale;
-
-  GlobalKey<RiskDetectionState> _riskDetectionKey =
-      GlobalKey<RiskDetectionState>();
-  GlobalKey<GridMenuState> _gridMenuKey = GlobalKey<GridMenuState>();
-  GlobalKey<MoneyIdentifierState> _moneyIdentifierKey =
-      GlobalKey<MoneyIdentifierState>();
-  GlobalKey<DescribeEnvironmentState> _describeEnvironmentKey =
-      GlobalKey<DescribeEnvironmentState>();
-  GlobalKey<OcrWidgetState> _ocrWidgetKey = GlobalKey<OcrWidgetState>();
-  GlobalKey<MapWidgetState> _mapKey = GlobalKey<MapWidgetState>();
-
-  SttService sttService;
-  TtsServiceGoogle ttsServiceGoogle;
-
-  late BuildContext context;
-
-  // Inside the class
+  String get command => _command;
   List<String> activationCommands = [];
 
-  VoiceCommands(
-      this.sttService,
-      this.ttsServiceGoogle,
-      this._riskDetectionKey,
-      this._gridMenuKey,
-      this._moneyIdentifierKey,
-      this._describeEnvironmentKey,
-      this._ocrWidgetKey,
-      this._mapKey,
-      this.locale) {
-    loadActivationCommands();
+  // Dependencies fetched from Provider
+  late Locale locale;
+  late SttService sttService;
+  late ITtsService ttsServiceGoogle;
+
+  // New dependency for managing widget states
+
+  /// Initialize VoiceCommands with dependencies via Provider
+  Future<void> initialize(BuildContext context) async {
+    locale = Provider.of<LocaleProvider>(context, listen: false).currentLocale;
+    sttService = Provider.of<SttService>(context, listen: false);
+    ttsServiceGoogle = Provider.of<ITtsService>(context, listen: false);
+
+    await loadActivationCommands();
+    await loadVoiceCommands();
     startListening();
   }
 
-  void setContext(BuildContext context, Locale locale) {
-    this.context = context;
-    this.locale = locale;
-    loadVoiceCommands();
-  }
-
   Future<void> loadVoiceCommands() async {
-    // final locale = Locale('en', 'EU');
     final String fileName = 'assets/lang/${locale.languageCode}.json';
     final String fileContent = await rootBundle.loadString(fileName);
-
     final Map<String, dynamic> jsonContent = json.decode(fileContent);
 
     if (jsonContent.containsKey('voice_commands')) {
       final voiceCommandsMap = jsonContent['voice_commands'];
-
       if (voiceCommandsMap is Map) {
-        voiceCommands = voiceCommandsMap.map(
-          (key, value) {
-            return MapEntry(
-              key,
-              List<String>.from(value.map((cmd) => cmd.trim().toLowerCase())),
-            );
-          },
-        );
+        voiceCommands.addAll(voiceCommandsMap.map(
+          (key, value) => MapEntry(key,
+              List<String>.from(value.map((cmd) => cmd.trim().toLowerCase()))),
+        ));
       }
     }
   }
@@ -93,6 +102,18 @@ class VoiceCommands {
         fileContent.split('\n').map((cmd) => cmd.trim().toLowerCase()).toList();
   }
 
+  void toggleVoiceControl() {
+    useVoiceControlNotifier.value = !useVoiceControlNotifier.value;
+    if (useVoiceControlNotifier.value) {
+      handleSpeechResult('begia');
+    } else {
+      _desactivateBegia();
+      _playDesactivationSound();
+      _sttService.stopListening();
+      startListening();
+    }
+  }
+
   void startListening() async {
     await sttService.startListening(handleSpeechResult);
   }
@@ -101,151 +122,219 @@ class VoiceCommands {
     print('Texto reconocido: $recognizedText');
     if (_isActivated) {
       _command = recognizedText;
-      _handleCommand(_command);
-    } else if (_isActivationCommand(recognizedText)) {
+      handleCommand(_command);
+    } else if (isActivationCommand(recognizedText)) {
       _isActivated = true;
       useVoiceControlNotifier.value = true;
-      _activateVoiceControl();
+      _command = '';
+      playActivationSound();
+      notifyListeners();
+      _startCommandTimer();
+      sttService.stopListening();
+      startListening();
     } else {
       startListening();
     }
   }
 
-  bool _isActivationCommand(String transcript) {
+  void _desactivateBegia() {
+    _isActivated = false;
+    useVoiceControlNotifier.value = false;
+    _command = '';
+    notifyListeners();
+    sttService.stopListening();
+  }
+
+  void _startCommandTimer() {
+    _cancelCommandTimer();
+    _commandTimer = Timer(const Duration(seconds: 10), () {
+      _desactivateBegia();
+    });
+  }
+
+  void _cancelCommandTimer() {
+    if (_commandTimer != null && _commandTimer!.isActive) {
+      _commandTimer!.cancel();
+    }
+  }
+
+  bool isActivationCommand(String transcript) {
     return activationCommands.any((command) => transcript.contains(command));
   }
 
-  void _activateVoiceControl() {
-    useVoiceControlNotifier.value = true;
-    // Reproducir sonido de activación
-    _playActivationSound();
+  Future<void> playActivationSound() async {
+    await player.play(AssetSource('sounds/Begia-on.mp3'));
   }
 
-  Map<String, bool> widgetStates = {
-    'map_command': false,
-    'money_identifier_command': false,
-    'text_command': false,
-    'photo_command': false,
-    // Add other widgets as needed
-  };
+  Future<void> _playDesactivationSound() async {
+    await player.play(AssetSource('sounds/Begia-off.mp3'));
+  }
 
-  void _handleCommand(String command) {
+  bool isCommandMatched(
+      String command, MapEntry<String, List<String>> commandGroup) {
+    const double similarityThreshold = 80.0;
+    final similarity = calculateSimilarity(command, commandGroup.value.first);
+
+    return similarity >= similarityThreshold ||
+        commandGroup.value.any((synonym) => command.contains(synonym));
+  }
+
+  Future<void> handleRiskDetectionCommand() async {
+    riskTrigger = true;
+    notifyListeners();
+    _isActivated = false;
+    useVoiceControlNotifier.value = false;
+    _command = '';
+    notifyListeners();
+    sttService.stopListening();
+    startListening();
+    await Future.delayed(const Duration(seconds: 2), () {
+      riskTrigger = false;
+    });
+  }
+
+  void handleMenuCommand() {
+    if (onMenuCommand != null) {
+      onMenuCommand!();
+    }
+  }
+
+  void _handleSosCommand() {
+    if (onSosCommand != null) {
+      onSosCommand!();
+    }
+  }
+
+  void _handleHomeCommand() {
+    if (onHomeCommand != null) {
+      onHomeCommand!();
+    }
+  }
+
+  Future<void> handleCommand(String command) async {
     print('Activated command: $command');
 
     bool matched = false;
-    const double similarityThreshold = 80.0;
 
     for (var commandGroup in voiceCommands.entries) {
-      final similarity = calculateSimilarity(command, commandGroup.value.first);
+      if (isCommandMatched(command, commandGroup)) {
+        final primaryCommand = commandGroup.key;
 
-      for (var synonym in commandGroup.value) {
-        // Calculamos la similitud usando la distancia de Levenshtein
-        if (similarity >= similarityThreshold || command.contains(synonym)) {
-          final primaryCommand = commandGroup.key;
+        switch (primaryCommand) {
+          case 'risk_detection_command':
+            await handleRiskDetectionCommand();
+            break;
 
-          switch (primaryCommand) {
-            case 'risk_detection_command': // Comando principal del grupo de riesgo
-              _riskDetectionKey.currentState?.toggleRiskDetection();
-              matched = true;
-              break;
+          case 'money_identifier_command':
+            matched = _executeCommand(1);
+            break;
 
-            case 'money_identifier_command': // Comando principal del grupo de identificador de dinero
-              if (!widgetStates['money_identifier_command']!) {
-                _gridMenuKey.currentState
-                    ?.showBottomSheet(context!, 'Money Identifier');
-                widgetStates['Money Identifier'] = true;
-              } else {
-                ttsServiceGoogle.speakLabels(
-                    ['El identificador de dinero ya está abierto']);
-              }
-              matched = true;
-              break;
+          case 'map_command':
+            matched = _executeCommand(2);
+            break;
 
-            case 'map_command': // Comando principal del grupo de mapas
-              if (!widgetStates['map_command']!) {
-                _gridMenuKey.currentState
-                    ?.showBottomSheet(context!, 'GPS (Map)');
-                widgetStates['map_command'] = true;
-              } else {
-                ttsServiceGoogle.speakLabels(['El mapa ya está abierto']);
-              }
-              matched = true;
-              break;
+          case 'menu_command':
+            matched = true;
+            handleMenuCommand();
+            // _cancelCommandTimer();
+            // _desactivateBegia();
+            break;
 
-            case 'menu_command': // Comando principal del grupo de navegación a casa
-              Navigator.popUntil(context!, (route) => route.isFirst);
-              ttsServiceGoogle.speakLabels(
-                  [AppLocalizations.of(context).translate("menu")]);
-              matched = true;
-              break;
+          case 'text_command':
+            matched = _executeCommand(3);
+            break;
 
-            case 'text_command': // Comando principal del grupo de identificador de dinero
-              _gridMenuKey.currentState
-                  ?.showBottomSheet(context!, 'Scanner (Read Texts, QRs, ...)');
-              matched = true;
-              break;
-
-            case 'photo_command': // Handle 'foto' voice command
-              if (_gridMenuKey.currentState?.currentWidgetTitle ==
-                  'describe_environment') {
-                _describeEnvironmentKey.currentState?.takeAndSendImage();
-              } else if (_gridMenuKey.currentState?.currentWidgetTitle ==
-                  scannerTitle) {
-                _ocrWidgetKey.currentState?.takeAndSendImage();
-              }
-              matched = true;
-              break;
-            default:
-              break;
-          }
-
-          if (matched) {
-            widgetStates.forEach((key, value) {
-              if (key != primaryCommand) {
-                widgetStates[key] = false;
-              }
-            });
-          }
-          break; // Detenemos el bucle si encontramos un comando válido
+          case 'photo_command':
+            matched = _executeCommand(4);
+            break;
+          case 'sos_command':
+            matched = true;
+            _handleSosCommand();
+            break;
+          case 'home_command':
+            matched = true;
+            _handleHomeCommand();
+            break;
+          default:
+            break;
         }
-      }
-      if (matched)
-        break; // Salimos del bucle principal si ya hemos procesado el comando
-    }
 
-    if (!matched) {
-      startListening();
-    } else {
-      _isActivated = false;
-      useVoiceControlNotifier.value = false;
+        break;
+      }
+      //
+    }
+    if (matched) {
+      _cancelCommandTimer();
+      _desactivateBegia();
+    }
+    startListening();
+  }
+
+  Future<void> handleCommandAction(
+      String primaryCommand, bool Function(int) executeCommand) async {
+    switch (primaryCommand) {
+      case 'risk_detection_command':
+        riskTrigger = true;
+        notifyListeners();
+        _isActivated = false;
+        useVoiceControlNotifier.value = false;
+        _command = '';
+        notifyListeners();
+        sttService.stopListening();
+        startListening();
+        Future.delayed(const Duration(seconds: 2), () {
+          riskTrigger = false;
+        });
+        break;
+
+      case 'money_identifier_command':
+        executeCommand(1);
+        break;
+
+      case 'map_command':
+        executeCommand(2);
+        break;
+
+      case 'menu_command':
+        if (onMenuCommand != null) {
+          onMenuCommand!(); // Trigger the callback
+        }
+        break;
+
+      case 'text_command':
+        executeCommand(3);
+        break;
+
+      case 'photo_command':
+        executeCommand(4);
+        break;
+
+      case 'sos_command':
+        if (onSosCommand != null) {
+          onSosCommand!(); // Trigger the callback
+        }
+        break;
+
+      case 'home_command':
+        if (onHomeCommand != null) {
+          onHomeCommand!(); // Trigger the callback
+        }
+        break;
+
+      default:
+        break;
     }
   }
 
-  int levenshteinDistance(String s1, String s2) {
-    final len1 = s1.length;
-    final len2 = s2.length;
-    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+  bool _executeCommand(int triggerVariable) {
+    this.triggerVariable = triggerVariable;
+    notifyListeners();
+    _cancelCommandTimer();
+    Future.delayed(const Duration(seconds: 2), () {
+      triggerVariable = 0; // Reset Trigger after the delay
+    });
 
-    for (var i = 0; i <= len1; i++) {
-      for (var j = 0; j <= len2; j++) {
-        if (i == 0) {
-          dp[i][j] = j;
-        } else if (j == 0) {
-          dp[i][j] = i;
-        } else if (s1[i - 1] == s2[j - 1]) {
-          dp[i][j] = dp[i - 1][j - 1];
-        } else {
-          dp[i][j] = 1 +
-              [
-                dp[i - 1][j], // Eliminación
-                dp[i][j - 1], // Inserción
-                dp[i - 1][j - 1] // Sustitución
-              ].reduce((a, b) => a < b ? a : b);
-        }
-      }
-    }
-
-    return dp[len1][len2];
+    return true;
   }
 
   double calculateSimilarity(String s1, String s2) {
@@ -268,8 +357,27 @@ class VoiceCommands {
     return highestSimilarity;
   }
 
-  Future<void> _playActivationSound() async {
-    await player.play(AssetSource(
-        'sounds/activation_sound.mp3')); // Reproducir sonido de activación
+  int levenshteinDistance(String s1, String s2) {
+    final len1 = s1.length;
+    final len2 = s2.length;
+    final dp = List.generate(len1 + 1, (_) => List.filled(len2 + 1, 0));
+
+    for (var i = 0; i <= len1; i++) {
+      for (var j = 0; j <= len2; j++) {
+        if (i == 0) {
+          dp[i][j] = j;
+        } else if (j == 0) {
+          dp[i][j] = i;
+        } else if (s1[i - 1] == s2[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1];
+        } else {
+          dp[i][j] = 1 +
+              [dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]]
+                  .reduce((a, b) => a < b ? a : b);
+        }
+      }
+    }
+
+    return dp[len1][len2];
   }
 }

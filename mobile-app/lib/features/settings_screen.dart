@@ -1,52 +1,52 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
-import 'package:flutter_native_contact_picker/model/contact.dart';
-import 'package:flutter/services.dart'; // For vibration
-import 'package:pbl5_menu/services/stt/i_tts_service.dart';
+import 'package:pbl5_menu/features/map_widget.dart';
+import 'package:provider/provider.dart';
 import '../shared/database_helper.dart';
-import 'package:pbl5_menu/services/l10n.dart';
+import '../locale_provider.dart';
+import '../services/stt/i_tts_service.dart';
+import '../services/l10n.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final ITtsService ttsServiceGoogle;
-  final DatabaseHelper databaseHelper;
-  final Function(Locale) setLocale;
+  final FlutterNativeContactPicker? contactPicker;
 
-  const SettingsScreen({
-    required this.ttsServiceGoogle,
-    required this.databaseHelper,
-    required this.setLocale,
-    super.key,
-  });
+  const SettingsScreen({super.key, this.contactPicker});
 
   @override
   SettingsScreenState createState() => SettingsScreenState();
+
+  static bool kTestMode = false; // Static variable for test mode
 }
 
 class SettingsScreenState extends State<SettingsScreen> {
-  List<String> contacts = [];
-  double _fontSize = 20.0; // Larger default font size
+  late FlutterNativeContactPicker _contactPicker;
+
+  // State variables
+  List<Map<String, String>> contacts = [];
+  Timer? _debounceTimer;
+  double _fontSize = 20.0;
   String _language = 'English';
   bool _isDarkTheme = false;
-  double _speechRate = 1.0; // Default speech rate
-
-  final FlutterNativeContactPicker _contactPicker =
-      FlutterNativeContactPicker();
+  double _speechRate = 1.0;
 
   @override
   void initState() {
     super.initState();
+    _contactPicker = widget.contactPicker ?? FlutterNativeContactPicker();
     _loadSettings();
   }
 
   Future<void> _loadSettings() async {
     try {
-      final prefs = await widget.databaseHelper.getPreferences();
-      final savedContacts = await widget.databaseHelper.getContacts();
+      final dbHelper = context.read<DatabaseHelper>();
+      final prefs = await dbHelper.getPreferences();
+      final savedContacts = await dbHelper.getContacts();
 
       setState(() {
         _fontSize = prefs['fontSize'];
         _language = prefs['language'];
-        _isDarkTheme = prefs['isDarkTheme'] == 1 ? true : false;
+        _isDarkTheme = prefs['isDarkTheme'] == 1;
         _speechRate = prefs['speechRate'] ?? 1.0;
         contacts = savedContacts;
       });
@@ -55,31 +55,45 @@ class SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _addContact(String contact) async {
+  Future<void> _updatePreferences() async {
     try {
-      await widget.databaseHelper.insertContact(contact);
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.updatePreferences(
+        _fontSize,
+        _language,
+        _isDarkTheme,
+        _speechRate,
+      );
+    } catch (e) {
+      debugPrint('Error saving preferences: $e');
+    }
+  }
+
+  Future<void> _addContact(String contact, String number) async {
+    try {
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.insertContact(contact, number);
+      final updatedContacts = await dbHelper.getContacts();
+
       setState(() {
-        contacts.add(contact);
+        contacts = updatedContacts;
       });
     } catch (e) {
       debugPrint('Error adding contact: $e');
     }
   }
 
-  Future<void> _deleteContact(String contact) async {
-    await widget.databaseHelper.deleteContact(contact);
-    setState(() {
-      contacts.remove(contact);
-    });
-    //_provideFeedback('Contact deleted');
-  }
-
-  Future<void> _savePreferences() async {
+  Future<void> _deleteContact(String contactName) async {
     try {
-      await widget.databaseHelper
-          .updatePreferences(_fontSize, _language, _isDarkTheme, _speechRate);
+      final dbHelper = context.read<DatabaseHelper>();
+      await dbHelper.deleteContact(contactName);
+      final updatedContacts = await dbHelper.getContacts();
+
+      setState(() {
+        contacts = updatedContacts;
+      });
     } catch (e) {
-      debugPrint('Error saving preferences: $e');
+      debugPrint('Error deleting contact: $e');
     }
   }
 
@@ -87,280 +101,243 @@ class SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _isDarkTheme = isDark;
     });
-    _savePreferences();
+    _updatePreferences();
   }
 
   void _changeLanguage(String languageCode, String voiceName) {
-    widget.ttsServiceGoogle.updateLanguage(languageCode, voiceName);
+    final ttsService = context.read<ITtsService>();
+    ttsService.updateLanguage(languageCode, voiceName);
     setState(() {
       _language = languageCode;
     });
-    _savePreferences();
-    widget.databaseHelper
-        .updateTtsSettings(languageCode, voiceName); // Update the database
-    //_provideFeedback('Language changed');
-  }
-
-  void _changeSpeechRate(double rate) {
-    setState(() {
-      _speechRate = rate;
-    });
-    widget.ttsServiceGoogle.updateSpeechRate(rate);
-    _savePreferences();
+    _updatePreferences();
   }
 
   void _changeFontSize(double size) {
     setState(() {
       _fontSize = size;
     });
-    _savePreferences();
-    //_provideFeedback('Font size adjusted');
+    _updatePreferences();
   }
 
-  void _provideFeedback(String message) {
-    // Vibrate for tactile feedback
-    HapticFeedback.vibrate();
-    // Optional: Add auditory feedback here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(fontSize: _fontSize, color: Colors.white),
-        ),
-        backgroundColor: Colors.black,
-      ),
-    );
+  void _changeSpeechRate(double rate) {
+    setState(() {
+      _speechRate = rate;
+    });
+
+    debugPrint('Speech rate changed to: $rate');
+
+    if (SettingsScreen.kTestMode) {
+      // Call directly in test mode
+      final ttsService = context.read<ITtsService>();
+      ttsService.updateSpeechRate(rate);
+      _updatePreferences();
+    } else {
+      // Debounced call
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        final ttsService = context.read<ITtsService>();
+        ttsService.updateSpeechRate(rate);
+        _updatePreferences();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final localeProvider = context.watch<LocaleProvider>();
     final themeData = _isDarkTheme ? ThemeData.dark() : ThemeData.light();
     final textColor = _isDarkTheme ? Colors.white : Colors.black;
-
-    // Language options
-    final List<Map<String, String>> languages = [
-      {
-        "label": "English",
-        "languageCode": "en-US",
-        "voiceName": "en-US-Wavenet-D"
-      },
-      {
-        "label": "Spanish",
-        "languageCode": "es-ES",
-        "voiceName": "es-ES-Wavenet-B"
-      },
-      {
-        "label": "Basque",
-        "languageCode": "eu-ES",
-        "voiceName": "eu-ES-Wavenet-A"
-      },
-    ];
 
     return MaterialApp(
       theme: themeData,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
-            AppLocalizations.of(context).translate('title'),
-            style: TextStyle(fontSize: 24.0), // Increase font size
-          ),
-          centerTitle: true,
-          backgroundColor: themeData.primaryColor,
+          toolbarHeight: 100.0,
+          title: const Text('BEGIA',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.of(context).translate('contacts'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: contacts.length,
-                  itemBuilder: (context, index) {
-                    return Dismissible(
-                      key: ValueKey(contacts[index]),
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) async {
-                        await _deleteContact(contacts[index]);
-                      },
-                      background: Container(
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: const Icon(Icons.delete, color: Colors.white),
-                      ),
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          title: Text(
-                            contacts[index],
-                            style: TextStyle(
-                                fontSize: _fontSize, color: textColor),
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.cancel,
-                              color: Colors.red,
-                              size: _fontSize + 4,
-                            ),
-                            onPressed: () async {
-                              await _deleteContact(contacts[index]);
-                            },
-                          ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle(
+                  context,
+                  'contacts',
+                  textColor,
+                  actionButton: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MapWidget(title: 'save'),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                    child: Icon(Icons.home, size: _fontSize),
+                  ),
                 ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  Contact? contact = await _contactPicker.selectContact();
-                  if (contact != null) {
-                    await _addContact(contact.fullName ?? '');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                ),
-                child: Icon(
-                  Icons.add,
-                  size: _fontSize,
-                  color: Colors.white,
-                ),
-              ),
-              const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('theme'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              SwitchListTile(
-                title: Text(
-                  AppLocalizations.of(context).translate('dark_theme'),
-                  style: TextStyle(fontSize: _fontSize, color: textColor),
-                ),
-                value: _isDarkTheme,
-                onChanged: _changeTheme,
-              ),
-              const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('language'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  // Calculate compactness dynamically based on screen width, height, and font size
-                  double screenWidth = constraints.maxWidth;
-                  double screenHeight = MediaQuery.of(context).size.height;
-                  bool isCompact = (screenWidth / _fontSize < 18.0) ||
-                      (screenHeight / _fontSize < 18.0);
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          widget.setLocale(Locale('en', 'US'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'English',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          widget.setLocale(Locale('es', 'ES'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'Español',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          widget.setLocale(Locale('eu', 'ES'));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 15),
-                        ),
-                        child: Text(
-                          'Euskera',
-                          style: TextStyle(
-                              fontSize: _fontSize, color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('font_size'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Slider(
-                value: _fontSize,
-                min: 16.0,
-                max: 38.0,
-                onChanged: _changeFontSize,
-              ),
-              const Divider(),
-              Text(
-                AppLocalizations.of(context).translate('speech_rate'),
-                style: TextStyle(
-                  fontSize: _fontSize + 4,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Slider(
-                value: _speechRate,
-                min: 1,
-                max: 2.7,
-                divisions: 15,
-                label: _speechRate.toStringAsFixed(1),
-                onChanged: _changeSpeechRate,
-              ),
-            ],
+                _buildContactsList(),
+                _buildAddContactButton(),
+                const Divider(),
+                _buildThemeSwitch(),
+                const Divider(),
+                _buildSectionTitle(context, 'language', textColor),
+                _buildLanguageSelector(localeProvider),
+                const Divider(),
+                _buildSectionTitle(context, 'font_size', textColor),
+                _buildFontSizeSlider(),
+                const Divider(),
+                _buildSectionTitle(context, 'speech_rate', textColor),
+                _buildSpeechRateSlider(),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String key, Color color,
+      {Widget? actionButton}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          AppLocalizations.of(context).translate(key),
+          style: TextStyle(
+            fontSize: _fontSize + 4,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        if (actionButton != null) actionButton,
+      ],
+    );
+  }
+
+  Widget _buildContactsList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: contacts.length,
+      itemBuilder: (context, index) {
+        return Dismissible(
+          key: ValueKey(contacts[index]),
+          direction: DismissDirection.endToStart,
+          onDismissed: (_) => _deleteContact(contacts[index]['name'] ?? ''),
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          child: Card(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            child: ListTile(
+              title: Text(
+                contacts[index]['name'] ?? '',
+                style: TextStyle(
+                  fontSize: _fontSize,
+                  color: _isDarkTheme ? Colors.white : Colors.black,
+                ),
+              ),
+              trailing: IconButton(
+                icon:
+                    Icon(Icons.cancel, color: Colors.red, size: _fontSize + 4),
+                onPressed: () => _deleteContact(contacts[index]['name'] ?? ''),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAddContactButton() {
+    return ElevatedButton(
+      key: const Key('addContactButton'),
+      onPressed: () async {
+        try {
+          final contact = await _contactPicker.selectContact();
+          if (contact == null) return;
+
+          final contactName = contact.fullName ?? 'Unknown';
+          final phoneNumber = contact.phoneNumbers?.first ?? '';
+
+          if (phoneNumber.isEmpty) {
+            debugPrint('No phone number found for selected contact.');
+            return;
+          }
+
+          final cleanedPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
+          await _addContact(contactName, cleanedPhone);
+        } catch (e) {
+          debugPrint('Error picking contact: $e');
+        }
+      },
+      child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildThemeSwitch() {
+    return SwitchListTile(
+      title: Text(
+        AppLocalizations.of(context).translate('theme'),
+        style: TextStyle(
+          fontSize: _fontSize + 4,
+          fontWeight: FontWeight.bold,
+          color: _isDarkTheme ? Colors.white : Colors.black,
+        ),
+      ),
+      value: _isDarkTheme,
+      onChanged: _changeTheme,
+    );
+  }
+
+  Widget _buildLanguageSelector(LocaleProvider localeProvider) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildLanguageButton(localeProvider, 'ENG', 'en-US', 'en-US-Wavenet-D'),
+        _buildLanguageButton(localeProvider, 'ESP', 'es-ES', 'es-ES-Wavenet-B'),
+        _buildLanguageButton(
+            localeProvider, 'EUS', 'eu-ES', 'eu-ES-Standard-A'),
+      ],
+    );
+  }
+
+  Widget _buildLanguageButton(
+      LocaleProvider localeProvider, String label, String code, String voice) {
+    return ElevatedButton(
+      onPressed: () {
+        localeProvider
+            .setLocale(Locale(code.split('-')[0], code.split('-')[1]));
+        _changeLanguage(code, voice);
+      },
+      child: Text(label, style: TextStyle(fontSize: _fontSize)),
+    );
+  }
+
+  Widget _buildFontSizeSlider() {
+    return Slider(
+      value: _fontSize,
+      min: 16.0,
+      max: 32.0,
+      onChanged: _changeFontSize,
+    );
+  }
+
+  Widget _buildSpeechRateSlider() {
+    return Slider(
+      value: _speechRate,
+      min: 1.0,
+      max: 2.7,
+      onChanged: _changeSpeechRate,
     );
   }
 }

@@ -9,7 +9,7 @@
     "describe_environment": "Deskribatu",
     "gps_map": "GPS (Mapa)",
     "money_identifier": "Dirua",
-    "scanner": "Eskanerra (Testuak, QRak, ... irakurri)",
+    "scanner": "Testuak Irakurri",
     "voice_commands": {
         "risk_detection_command": [
             "arrisku",
@@ -92,22 +92,22 @@
             "test uá"
         ],
         "photo_command": [
-            "foto",
-            "photo",
-            "photto",
-            "fotó",
-            "fóto",
-            "fotto",
-            "phóto",
-            "phottó",
-            "fo'to",
-            "fótto"
+            "deskribatu",
+            "describatu",
+            "deskibatu",
+            "diskribatu",
+            "describatu"
         ],
         "back_command": [
             "atzera",
             "atsera",
             "a tzera",
             "atxera"
+        ],"sos_command": [
+            "sos",
+            "esohes",
+            "esoh",
+            "esohes"
         ],
         "command_not_recognized": [
             "Komandoa ez da ezagutu"
@@ -124,5 +124,12 @@
     "start_trip": "Zure bidaia hasten",
     "first": "Lehenik",
     "now": "Orain",
-    "reached": "Eta iritsiko zara"
+    "reached": "Eta iritsiko zara",
+    "opened": "Orrialdea irekita dago",
+    "Map-active" : "Mapa aktibatuta dago",
+    "destination-not-found": "Helmuga ez da aurkitu",
+    "going-home": "Etxera bueltatzen",
+    "home-not-set": "Etxea ez da ezarrita",
+    "Sos-sent-successfully": "SOS arrakastaz bidali da"
+
 }

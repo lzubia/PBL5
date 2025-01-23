@@ -61,6 +61,8 @@ dependencies:
   flutter_launcher_icons: ^0.14.2
   flutter_localizations:
                   sdk: flutter
+  shared_preferences: ^2.3.5
+  provider: ^6.1.2
   #dcdg: ^4.1.0
 
 dev_dependencies:
@@ -91,8 +93,10 @@ flutter:
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
     - assets/tts-english.json
+    - assets/tts-elhuyar.json
     - ./.env
-    - assets/sounds/activation_sound.mp3
+    - assets/sounds/Begia-on.mp3
+    - assets/sounds/Begia-off.mp3
     - assets/voice_commands.txt
     - assets/activation_commands.txt
     - assets/icons/app_icon.png
@@ -102,9 +106,9 @@ flutter:
     - assets/BegiaGif.gif
 
 flutter_icons:
-                android: true
-                ios: true
-                image_path: "assets/icons/app_icon.png"
+    android: true
+    ios: true
+    image_path: "assets/icons/app_icon.png"
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
