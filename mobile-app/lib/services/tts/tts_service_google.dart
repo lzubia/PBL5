@@ -6,22 +6,25 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:pbl5_menu/services/l10n.dart';
 import '../../shared/database_helper.dart';
 import '../stt/i_tts_service.dart';
 
 class TtsServiceGoogle implements ITtsService {
   late AudioPlayer audioPlayer;
   final String _authFilePath = 'assets/tts-english.json';
+  final String _elhuyarFilePath = 'assets/tts-elhuyar.json';
   String languageCode = 'en-US';
   String voiceName = 'en-US-Wavenet-D';
   double speechRate = 1.6; // Default speech rate
   final DatabaseHelper _dbHelper;
+  late String elhuyarApiId;
+  late String elhuyarApiKey;
 
   TtsServiceGoogle(this._dbHelper) {
     WidgetsFlutterBinding.ensureInitialized();
     audioPlayer = AudioPlayer();
     _loadSettings();
+    _loadElhuyarCredentials();
   }
 
   @override
@@ -34,6 +37,13 @@ class TtsServiceGoogle implements ITtsService {
     languageCode = settings['languageCode']!;
     voiceName = settings['voiceName']!;
     print("Loaded settings: languageCode=$languageCode, voiceName=$voiceName");
+  }
+
+  Future<void> _loadElhuyarCredentials() async {
+    final String response = await rootBundle.loadString(_elhuyarFilePath);
+    final data = json.decode(response);
+    elhuyarApiId = data['api_id'];
+    elhuyarApiKey = data['api_key'];
   }
 
   @override
@@ -108,8 +118,8 @@ class TtsServiceGoogle implements ITtsService {
                 "speaker": "female_low",
                 "language": "eu",
                 "extension": "mp3",
-                "api_id": "6e1438a5d2d544d9bdb71a89a4e37d2c",
-                "api_key": "25f45ae7dab14458af4b6ee229c36ac8"
+                "api_id": elhuyarApiId,
+                "api_key": elhuyarApiKey
               },
             ),
           );
