@@ -93,6 +93,7 @@ flutter:
     # - images/a_dot_burr.jpeg
     # - images/a_dot_ham.jpeg
     - assets/tts-english.json
+    - assets/tts-elhuyar.json
     - ./.env
     - assets/sounds/Begia-on.mp3
     - assets/sounds/Begia-off.mp3
